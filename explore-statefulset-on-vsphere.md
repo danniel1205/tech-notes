@@ -270,3 +270,20 @@ web-1
 root@423ff1d6680e6d6469f3f001313a0791 [ ~/statefulset-test ]# curl http://192.168.123.3:80
 web-2
 ```
+
+### What happens if Pod is rescheduled to a different node
+
+* Label two nodes
+* Modify the statefulset yaml to have replicas = 1. And have a node selector to one of the labeled node
+* Update the statefulset yaml to make the pod to be rescheduled on another node
+* Volume will be detached from first node and reattach to second node
+  
+``` text
+I0505 19:46:24.644822       1 csi_handler.go:509] Found NodeID test-cluster-e2e-script-workers-r7rzh-967bc4648-2rf5m in CSINode test-cluster-e2e-script-workers-r7rzh-967bc4648-2rf5m
+I0505 19:46:28.646976       1 csi_handler.go:371] Detached "csi-19b38af007545a2b3f3829ec0d81d3e33684cde3fa767558f1c03b7bed46fc81"
+I0505 19:46:28.649622       1 util.go:70] Marking as detached "csi-19b38af007545a2b3f3829ec0d81d3e33684cde3fa767558f1c03b7bed46fc81"
+...
+I0505 19:46:28.750689       1 csi_handler.go:253] Starting attach operation for "csi-f1b869767a025090a975b0ad8f8ac087c3898e5ac8839a195d70b2cf2bd9dab1"
+I0505 19:46:28.759960       1 csi_handler.go:208] PV finalizer is already set on "pvc-968afdfa-482f-4feb-8526-3ed50c9bb3c2"
+I0505 19:46:28.763325       1 csi_handler.go:509] Found NodeID test-cluster-e2e-script-workers-r7rzh-967bc4648-9pngx in CSINode test-cluster-e2e-script-workers-r7rzh-967bc4648-9pngx
+```
