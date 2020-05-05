@@ -2,20 +2,26 @@
 tags: k8s-fundamentals
 ---
 # StatefulSets
-https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+<https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>
 
 ## What are the differences between StatefulSets and Deployments
-https://www.magalix.com/blog/kubernetes-statefulsets-101-state-of-the-pods
-https://stackoverflow.com/questions/41583672/kubernetes-deployments-vs-statefulsets
-https://medium.com/stakater/k8s-deployments-vs-statefulsets-vs-daemonsets-60582f0c62d4
+
+<https://www.magalix.com/blog/kubernetes-statefulsets-101-state-of-the-pods>
+<https://stackoverflow.com/questions/41583672/kubernetes-deployments-vs-statefulsets>
+<https://medium.com/stakater/k8s-deployments-vs-statefulsets-vs-daemonsets-60582f0c62d4>
 
 In short, every replica of a stateful set will have its own state, and each of the pods will be creating its own PVC(Persistent Volume Claim). So a statefulset with 3 replicas will create 3 pods, each having its own Volume, so total 3 PVCs.
 
 ## StatefulSet try-out on vShpere
+
 ### Create storageclass if needed
+
 To make things easier, I am using dynamci provisioning for my volumes. So, I have my storageclass created before hand.
+
 ### (Optional) Create ServiceAccount and Rolebinding
-```
+
+``` yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -48,8 +54,10 @@ subjects:
   name: statefulset-sa
   namespace: default
 ```
+
 ### Create sample nginx statefulset
-```
+
+``` yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -99,8 +107,10 @@ spec:
         requests:
           storage: 1Gi
 ```
+
 After apply above yaml, you will see the output like this:
-```
+
+``` bash
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl get statefulset,pod,pv,pvc,storageclass
 NAME                   READY   AGE
 statefulset.apps/web   2/2     13m
@@ -125,8 +135,10 @@ storageclass.storage.k8s.io/gc-storage-profile   csi.vsphere.vmware.com   Delete
 * Two PVs and PVCs got created for each individule pod
 
 ### Scale the statefulset
+
 #### Scale up to 3 replicas
-```
+
+``` bash
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl scale statefulset web --replicas=3
 
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl get pods,pvc,pv
@@ -145,10 +157,11 @@ NAME                                                        CAPACITY   ACCESS MO
 persistentvolume/pvc-26f864a9-803f-47e2-ba06-c03426888bd7   1Gi        RWO            Delete           Bound    default/www-web-1   gc-storage-profile            17h
 persistentvolume/pvc-3588dcb0-ce2e-4e1f-9938-4d4b35d5252b   1Gi        RWO            Delete           Bound    default/www-web-2   gc-storage-profile            45s
 persistentvolume/pvc-a405fce4-81cc-4739-bf43-7aefb3831384   1Gi        RWO            Delete           Bound    default/www-web-0   gc-storage-profile            17h
+```
 
-```
 #### Scale down to 0 replicas
-```
+
+``` bash
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl scale statefulset web --replicas=0
 
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl get pods,pvc,pv
@@ -165,10 +178,12 @@ persistentvolume/pvc-26f864a9-803f-47e2-ba06-c03426888bd7   1Gi        RWO      
 persistentvolume/pvc-3588dcb0-ce2e-4e1f-9938-4d4b35d5252b   1Gi        RWO            Delete           Bound    default/www-web-2   gc-storage-profile            3m14s
 persistentvolume/pvc-a405fce4-81cc-4739-bf43-7aefb3831384   1Gi        RWO            Delete           Bound    default/www-web-0   gc-storage-profile            17h
 ```
+
 * The PVs and PVCs were not deleted automatically. This is also a expected behavior mentioned in [doc](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations)
 
 #### Scale up to 3 replicas again
-```
+
+``` bash
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl scale statefulset web --replicas=3
 
 root@42143908e772adcf6eec02e7bfc59758 [ ~/statefull-set-test ]# kubectl get pods,pvc,pv
@@ -188,10 +203,12 @@ persistentvolume/pvc-26f864a9-803f-47e2-ba06-c03426888bd7   1Gi        RWO      
 persistentvolume/pvc-3588dcb0-ce2e-4e1f-9938-4d4b35d5252b   1Gi        RWO            Delete           Bound    default/www-web-2   gc-storage-profile            7m8s
 persistentvolume/pvc-a405fce4-81cc-4739-bf43-7aefb3831384   1Gi        RWO            Delete           Bound    default/www-web-0   gc-storage-profile            17h
 ```
+
 * The PVs and PVCs will not be recreated, they are reused
 
 ### Access to the pods behind statefulset
-```
+
+``` bash
 root@42143908e772adcf6eec02e7bfc59758 [ ~ ]# kubectl get svc nginx -o wide
 NAME    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE   SELECTOR
 nginx   ClusterIP   None         <none>        80/TCP    17h   app=nginx
@@ -206,8 +223,10 @@ web-0   1/1     Running   0          29m   192.0.160.9    test-cluster-e2e-scrip
 web-1   1/1     Running   0          29m   192.0.160.10   test-cluster-e2e-script-workers-hzggp-79ff5fb574-2z8nd   <none>           <none>
 web-2   1/1     Running   0          28m   192.0.160.11   test-cluster-e2e-script-workers-hzggp-79ff5fb574-2z8nd   <none>           <none>
 ```
+
 #### Write some dummy data to volume
-```
+
+``` bash
 for i in 0 1 2; do kubectl exec web-$i -- sh -c 'echo $(hostname) > /usr/share/nginx/html/index.html'; done
 
 for i in 0 1 2; do kubectl exec -it web-$i -- curl localhost; done
@@ -215,9 +234,12 @@ web-0
 web-1
 web-2
 ```
+
 #### Create a wrapper LB service to expose the statefulset
-https://itnext.io/exposing-statefulsets-in-kubernetes-698730fb92a1
-```
+
+<https://itnext.io/exposing-statefulsets-in-kubernetes-698730fb92a1>
+
+``` yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -233,9 +255,12 @@ spec:
   selector:
     app: nginx
 ```
+
 #### Try access the service from curl
+
 It will randomly send the traffic to the pod in statefulset, and each pod has different state
-```
+
+``` bash
 root@423ff1d6680e6d6469f3f001313a0791 [ ~/statefulset-test ]# curl http://192.168.123.3:80
 web-0
 root@423ff1d6680e6d6469f3f001313a0791 [ ~/statefulset-test ]# curl http://192.168.123.3:80
