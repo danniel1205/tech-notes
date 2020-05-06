@@ -1,8 +1,6 @@
 # Create the K8S cluster on vSphere the hard way
 
-## Prepare the nodes
-
-### Provision nodes
+## Provision nodes
 
 - Provision a vSphere environment ready with 3 EXSi hosts
 - Create a datacenter named "Datacenter"
@@ -14,14 +12,14 @@
 - Create 3 worker vm named "worker-x" from the ova template
   - CPUs: 2; Mem: 4GiB
 
-### Configure nodes
+## Configure nodes
 
-#### Change the hostname on each node accordingly
+### Change the hostname on each node accordingly
 
 - hostname on control plane vm: control
 - hostname on worker vm: worker-x
 
-#### Apply the following configurations to all nodes
+### Apply the following configurations to all nodes
   
 Run the following script as root user
 
@@ -102,7 +100,7 @@ Update the `/etc/hosts` to map the IP address to the hostname
 ...
 ```
 
-#### Run kubeadm on control plane node
+### Run kubeadm on control plane node
 
 ``` bash
 # kubeadm init
@@ -132,7 +130,7 @@ kubeadm join 10.184.109.237:6443 --token tmst40.4hqgq5hzpb6a50so \
 
 ```
 
-#### Install pod networking add-on on control plane node
+### Install pod networking add-on on control plane node
 
 - Switch to regular user
 - Get the kubeconfig ready
@@ -149,7 +147,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 ```
 
-#### Join cluster on worker nodes
+### Join cluster on worker nodes
 
 Run the join command from `kubeadm init` output on each worker nodes
 
