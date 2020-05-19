@@ -28,7 +28,7 @@ kubectl delete nodes worker-0
 
 ### Backup etcd database
 
-Link: https://discuss.kubernetes.io/t/etcd-backup-ssues/8304
+Link: <https://discuss.kubernetes.io/t/etcd-backup-ssues/8304>
 
 ### Configure a node to run static nginx pod
 
