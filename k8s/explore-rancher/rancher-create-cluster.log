@@ -1,0 +1,703 @@
+rancher-create-cluster.log
+
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Creating namespace c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Creating Default project for cluster c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Creating namespace p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Creating creator projectRoleTemplateBinding for user user-pwjc5 for project p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Creating System project for cluster c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Updating cluster c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Creating namespace p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Creating creator clusterRoleTemplateBinding for user user-pwjc5 for cluster c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Creating creator projectRoleTemplateBinding for user user-pwjc5 for project p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Setting InitialRolesPopulated condition on project p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Updating project p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRole p-ttk82-projectowner
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating clusterRole c-f8gc9-clusterowner
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating clusterRoleBinding for membership in cluster c-f8gc9 for subject user-pwjc5
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Setting InitialRolesPopulated condition on cluster
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Updating cluster c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for membership in project p-ttk82 for subject user-pwjc5
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Setting InitialRolesPopulated condition on project p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating role cluster-owner in namespace c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Updating project p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRole c-f8gc9-clustermember
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Updating project p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject user-pwjc5 with role cluster-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRoleBinding for membership in cluster c-f8gc9 for subject user-pwjc5
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating role cluster-owner in namespace p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRole p-5w9qp-projectowner
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-owner in namespace c-f8gc9
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject user-pwjc5 with role cluster-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for membership in project p-5w9qp for subject user-pwjc5
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role project-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Updating clusterRoleBinding clusterrolebinding-hzh4g for cluster membership in cluster c-f8gc9 for subject user-pwjc5
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating role cluster-owner in namespace p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-project-rbac-create] Updating project p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role project-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-owner in namespace p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-owner in namespace p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject user-pwjc5 with role cluster-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating role admin in namespace p-5w9qp
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role project-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating role admin in namespace p-ttk82
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role project-owner in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role admin in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject user-pwjc5 with role admin in namespace
+2020/06/11 23:00:02 [INFO] [mgmt-cluster-rbac-delete] Updating cluster c-f8gc9
+2020-06-11 23:00:03.005414 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/projects/c-f8gc9/p-5w9qp\" " with result "range_response_count:1 size:1362" took too long (101.735202ms) to execute
+2020-06-11 23:00:05.566452 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/nodetemplates/cattle-global-nt/nt-6wnhk\" " with result "range_response_count:1 size:1462" took too long (364.228247ms) to execute
+2020-06-11 23:00:05.567412 W | etcdserver: read-only range request "key:\"/registry/serviceaccounts\" range_end:\"/registry/serviceaccountt\" count_only:true " with result "range_response_count:0 size:8" took too long (294.390197ms) to execute
+2020/06/11 23:00:05 [INFO] Creating jail for c-f8gc9
+2020/06/11 23:00:05 [INFO] Provisioning node master1
+2020/06/11 23:00:05 [INFO] [node-controller-rancher-machine] Creating CA: /management-state/node/nodes/master1/certs/ca.pem
+2020/06/11 23:00:06 [INFO] [node-controller-rancher-machine] Creating client certificate: /management-state/node/nodes/master1/certs/cert.pem
+2020/06/11 23:00:06 [INFO] [node-controller-rancher-machine] Running pre-create checks...
+2020-06-11 23:00:06.784875 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/kube-controller-manager\" " with result "range_response_count:1 size:306" took too long (299.446467ms) to execute
+2020/06/11 23:00:07 [INFO] [node-controller-rancher-machine] Creating machine...
+2020/06/11 23:00:07 [INFO] [node-controller-rancher-machine] (master1) Generating SSH Keypair...
+2020/06/11 23:00:08 [INFO] [node-controller-rancher-machine] (master1) Cloning VM from VM or Template: /Datacenter/vm/rancher-folder/rancher-vm...
+2020/06/11 23:00:08 [INFO] [node-controller-rancher-machine] (master1) Finding datastore /Datacenter/datastore/nfs0-1
+2020-06-11 23:00:10.972578 W | etcdserver: read-only range request "key:\"/registry/services/endpoints/kube-system/kube-controller-manager\" " with result "range_response_count:1 size:455" took too long (123.653845ms) to execute
+2020-06-11 23:00:10.973141 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/dynamicschemas\" range_end:\"/registry/management.cattle.io/dynamicschemat\" count_only:true " with result "range_response_count:0 size:8" took too long (113.671802ms) to execute
+2020-06-11 23:00:10.974740 W | etcdserver: read-only range request "key:\"/registry/configmaps/kube-system/cattle-controllers\" " with result "range_response_count:1 size:400" took too long (158.382844ms) to execute
+2020-06-11 23:03:45.199620 I | mvcc: store.index: compact 62149
+2020-06-11 23:03:45.259049 I | mvcc: finished scheduled compaction at 62149 (took 56.313603ms)
+2020/06/11 23:04:25 [INFO] [node-controller-rancher-machine] (master1) Adding network: /Datacenter/network/VM Network
+2020/06/11 23:04:25 [INFO] [node-controller-rancher-machine] (master1) Can only resize up, passed size is less than or equal to the cloned disk size: 10240000Kb <= 10485760Kb
+2020/06/11 23:04:25 [INFO] [node-controller-rancher-machine] (master1) Setting disk.enableUUID to TRUE
+2020/06/11 23:04:25 [INFO] [node-controller-rancher-machine] (master1) Creating cloud-init.iso
+2020/06/11 23:04:25 [INFO] [node-controller-rancher-machine] (master1) Uploading cloud-init.iso
+2020/06/11 23:04:27 [INFO] [node-controller-rancher-machine] (master1) Waiting for VMware Tools to come online...
+E0611 23:05:28.741720      29 watcher.go:214] watch chan error: etcdserver: mvcc: required revision has been compacted
+2020/06/11 23:05:31 [INFO] [node-controller-rancher-machine] Waiting for machine to be running, this may take a few minutes...
+2020/06/11 23:05:31 [INFO] [node-controller-rancher-machine] Detecting operating system of created instance...
+2020/06/11 23:05:31 [INFO] [node-controller-rancher-machine] Waiting for SSH to be available...
+2020/06/11 23:05:35 [INFO] [node-controller-rancher-machine] Detecting the provisioner...
+2020/06/11 23:05:36 [INFO] [node-controller-rancher-machine] Provisioning with ubuntu(systemd)...
+2020/06/11 23:05:54 [INFO] [node-controller-rancher-machine] Installing Docker...
+E0611 23:06:18.657590      29 watcher.go:214] watch chan error: etcdserver: mvcc: required revision has been compacted
+2020-06-11 23:06:51.690306 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/kube-scheduler\" " with result "range_response_count:1 size:288" took too long (205.899754ms) to execute
+2020/06/11 23:07:27 [INFO] [node-controller-rancher-machine] Copying certs to the local machine directory...
+2020/06/11 23:07:30 [INFO] [node-controller-rancher-machine] Copying certs to the remote machine...
+2020/06/11 23:07:36 [INFO] [node-controller-rancher-machine] Setting Docker configuration on the remote daemon...
+2020/06/11 23:07:45 [INFO] [node-controller-rancher-machine] Checking connection to Docker...
+2020/06/11 23:07:45 [INFO] [node-controller-rancher-machine] Docker is up and running!
+2020/06/11 23:08:03 [INFO] Provisioning node master1 done
+2020/06/11 23:08:03 [INFO] Generating and uploading node config master1
+2020/06/11 23:08:04 [INFO] Creating jail for c-f8gc9
+2020/06/11 23:08:04 [INFO] Generating and uploading node config
+2020/06/11 23:08:04 [INFO] Handling backend connection request [c-f8gc9:m-czzr2]
+2020/06/11 23:08:04 [INFO] Provisioning cluster [c-f8gc9]
+2020/06/11 23:08:04 [INFO] Creating cluster [c-f8gc9]
+2020/06/11 23:08:09 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:35119
+2020/06/11 23:08:09 [INFO] cluster [c-f8gc9] provisioning: Initiating Kubernetes cluster
+2020/06/11 23:08:09 [INFO] cluster [c-f8gc9] provisioning: [dialer] Setup tunnel for host [10.184.102.165]
+2020/06/11 23:08:09 [INFO] Checking if container [cluster-state-deployer] is running on host [10.184.102.165], try #1
+2020/06/11 23:08:09 [INFO] Pulling image [rancher/rke-tools:v0.1.56] on host [10.184.102.165], try #1
+2020/06/11 23:08:18 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:21 [INFO] Starting container [cluster-state-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:22 [INFO] cluster [c-f8gc9] provisioning: [state] Successfully started [cluster-state-deployer] container on host [10.184.102.165]
+2020/06/11 23:08:22 [INFO] [certificates] Generating CA kubernetes certificates
+2020/06/11 23:08:23 [INFO] [certificates] Generating Kubernetes API server aggregation layer requestheader client CA certificates
+2020/06/11 23:08:23 [INFO] [certificates] GenerateServingCertificate is disabled, checking if there are unused kubelet certificates
+2020/06/11 23:08:23 [INFO] [certificates] Generating Kubernetes API server certificates
+2020/06/11 23:08:23 [INFO] [certificates] Generating Service account token key
+2020/06/11 23:08:23 [INFO] [certificates] Generating Kube Controller certificates
+2020/06/11 23:08:24 [INFO] [certificates] Generating Kube Scheduler certificates
+2020/06/11 23:08:24 [INFO] [certificates] Generating Kube Proxy certificates
+2020/06/11 23:08:24 [INFO] [certificates] Generating Node certificate
+2020/06/11 23:08:24 [INFO] [certificates] Generating admin certificates and kubeconfig
+2020/06/11 23:08:24 [INFO] [certificates] Generating Kubernetes API server proxy client certificates
+2020/06/11 23:08:25 [INFO] [certificates] Generating kube-etcd-10-184-102-165 certificate and key
+2020/06/11 23:08:25 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed state file at [management-state/rke/rke-827353625/cluster.rkestate]
+2020/06/11 23:08:25 [INFO] cluster [c-f8gc9] provisioning: Building Kubernetes cluster
+2020/06/11 23:08:25 [INFO] cluster [c-f8gc9] provisioning: [dialer] Setup tunnel for host [10.184.102.165]
+2020/06/11 23:08:25 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:25 [INFO] cluster [c-f8gc9] provisioning: [network] Deploying port listener containers
+2020/06/11 23:08:26 [INFO] Starting container [rke-etcd-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:27 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-etcd-port-listener] container on host [10.184.102.165]
+2020/06/11 23:08:27 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:28 [INFO] Starting container [rke-cp-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:29 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-cp-port-listener] container on host [10.184.102.165]
+2020/06/11 23:08:29 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:30 [INFO] Starting container [rke-worker-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:31 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-worker-port-listener] container on host [10.184.102.165]
+2020/06/11 23:08:31 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:31 [INFO] cluster [c-f8gc9] provisioning: [network] Port listener containers deployed successfully
+2020/06/11 23:08:31 [INFO] cluster [c-f8gc9] provisioning: [network] Running control plane -> etcd port checks
+2020/06/11 23:08:32 [INFO] Starting container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:32 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-port-checker] container on host [10.184.102.165]
+2020/06/11 23:08:32 [INFO] Removing container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:33 [INFO] cluster [c-f8gc9] provisioning: [network] Running control plane -> worker port checks
+2020/06/11 23:08:33 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:33 [INFO] Starting container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:34 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-port-checker] container on host [10.184.102.165]
+2020/06/11 23:08:34 [INFO] Removing container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:34 [INFO] cluster [c-f8gc9] provisioning: [network] Running workers -> control plane port checks
+2020/06/11 23:08:34 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:35 [INFO] Starting container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:36 [INFO] cluster [c-f8gc9] provisioning: [network] Successfully started [rke-port-checker] container on host [10.184.102.165]
+2020/06/11 23:08:37 [INFO] Removing container [rke-port-checker] on host [10.184.102.165], try #1
+2020/06/11 23:08:37 [INFO] cluster [c-f8gc9] provisioning: [network] Skipping kubeapi port check
+2020/06/11 23:08:37 [INFO] Removing container [rke-etcd-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:37 [INFO] cluster [c-f8gc9] provisioning: [network] Removing port listener containers
+2020/06/11 23:08:37 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-etcd-port-listener] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:08:37 [INFO] Removing container [rke-cp-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:38 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-cp-port-listener] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:08:38 [INFO] Removing container [rke-worker-port-listener] on host [10.184.102.165], try #1
+2020/06/11 23:08:39 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020/06/11 23:08:39 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-worker-port-listener] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:08:39 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:39 [INFO] cluster [c-f8gc9] provisioning: [network] Port listener containers removed successfully
+2020/06/11 23:08:39 [INFO] cluster [c-f8gc9] provisioning: [certificates] Deploying kubernetes certificates to Cluster nodes
+2020/06/11 23:08:39 [INFO] Starting container [cert-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:40 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020-06-11 23:08:45.231043 I | mvcc: store.index: compact 63464
+2020-06-11 23:08:45.303958 I | mvcc: finished scheduled compaction at 63464 (took 70.458107ms)
+2020/06/11 23:08:45 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020/06/11 23:08:45 [INFO] Removing container [cert-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:45 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Rebuilding and updating local kube config
+2020/06/11 23:08:45 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed local admin kubeconfig at [management-state/rke/rke-827353625/kube_config_cluster.yml]
+2020/06/11 23:08:45 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:45 [INFO] cluster [c-f8gc9] provisioning: [certificates] Successfully deployed kubernetes certificates to Cluster nodes
+2020/06/11 23:08:45 [INFO] cluster [c-f8gc9] provisioning: [file-deploy] Deploying file [/etc/kubernetes/kube-api-authn-webhook.yaml] to node [10.184.102.165]
+2020/06/11 23:08:46 [INFO] Starting container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:47 [INFO] cluster [c-f8gc9] provisioning: Successfully started [file-deployer] container on host [10.184.102.165]
+2020/06/11 23:08:47 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:47 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:47 [INFO] cluster [c-f8gc9] provisioning: Container [file-deployer] is still running on host [10.184.102.165]
+2020/06/11 23:08:48 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:48 [INFO] Removing container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:48 [INFO] cluster [c-f8gc9] provisioning: [remove/file-deployer] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:08:48 [INFO] cluster [c-f8gc9] provisioning: [/etc/kubernetes/kube-api-authn-webhook.yaml] Successfully deployed authentication webhook config Cluster nodes
+2020/06/11 23:08:48 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:08:48 [INFO] cluster [c-f8gc9] provisioning: [file-deploy] Deploying file [/etc/kubernetes/audit-policy.yaml] to node [10.184.102.165]
+2020/06/11 23:08:49 [INFO] Starting container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:49 [INFO] cluster [c-f8gc9] provisioning: Successfully started [file-deployer] container on host [10.184.102.165]
+2020/06/11 23:08:49 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:50 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:50 [INFO] cluster [c-f8gc9] provisioning: Container [file-deployer] is still running on host [10.184.102.165]
+2020/06/11 23:08:50 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:08:50 [INFO] Removing container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:08:51 [INFO] cluster [c-f8gc9] provisioning: [remove/file-deployer] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:08:51 [INFO] Pulling image [rancher/hyperkube:v1.17.6-rancher2] on host [10.184.102.165], try #1
+2020/06/11 23:08:51 [INFO] cluster [c-f8gc9] provisioning: [/etc/kubernetes/audit-policy.yaml] Successfully deployed audit policy file to Cluster control nodes
+2020/06/11 23:08:51 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Reconciling cluster state
+2020/06/11 23:08:51 [INFO] cluster [c-f8gc9] provisioning: [reconcile] This is newly generated cluster
+2020/06/11 23:08:51 [INFO] cluster [c-f8gc9] provisioning: Pre-pulling kubernetes images
+2020-06-11 23:09:48.643789 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/cloud-controller-manager\" " with result "range_response_count:1 size:308" took too long (278.508046ms) to execute
+2020/06/11 23:10:02 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:10:02 [INFO] cluster [c-f8gc9] provisioning: Kubernetes images pulled successfully
+2020/06/11 23:10:02 [INFO] cluster [c-f8gc9] provisioning: [etcd] Building up etcd plane..
+2020/06/11 23:10:02 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:10:04 [INFO] Starting container [etcd-fix-perm] on host [10.184.102.165], try #1
+2020/06/11 23:10:06 [INFO] cluster [c-f8gc9] provisioning: Successfully started [etcd-fix-perm] container on host [10.184.102.165]
+2020/06/11 23:10:06 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:10:06 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:10:06 [INFO] cluster [c-f8gc9] provisioning: Container [etcd-fix-perm] is still running on host [10.184.102.165]
+2020/06/11 23:10:07 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:10:07 [INFO] Removing container [etcd-fix-perm] on host [10.184.102.165], try #1
+2020/06/11 23:10:07 [INFO] cluster [c-f8gc9] provisioning: [remove/etcd-fix-perm] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:10:07 [INFO] Pulling image [rancher/coreos-etcd:v3.4.3-rancher1] on host [10.184.102.165], try #1
+2020/06/11 23:10:13 [INFO] Image [rancher/coreos-etcd:v3.4.3-rancher1] exists on host [10.184.102.165]
+2020/06/11 23:10:15 [INFO] Starting container [etcd] on host [10.184.102.165], try #1
+2020/06/11 23:10:15 [INFO] cluster [c-f8gc9] provisioning: [etcd] Successfully started [etcd] container on host [10.184.102.165]
+2020/06/11 23:10:15 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020-06-11 23:10:17.010055 W | etcdserver: read-only range request "key:\"/registry/services/endpoints/kube-system/kube-controller-manager\" " with result "range_response_count:1 size:455" took too long (340.322994ms) to execute
+2020/06/11 23:10:17 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:17 [INFO] cluster [c-f8gc9] provisioning: [etcd] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:10:17 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:18 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:10:18 [INFO] cluster [c-f8gc9] provisioning: [etcd] Successfully started etcd plane.. Checking etcd cluster health
+2020/06/11 23:10:19 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Building up Controller Plane..
+2020/06/11 23:10:19 [INFO] Checking if container [service-sidekick] is running on host [10.184.102.165], try #1
+2020/06/11 23:10:19 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:10:20 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:10:20 [INFO] Starting container [kube-apiserver] on host [10.184.102.165], try #1
+2020/06/11 23:10:21 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [kube-apiserver] container on host [10.184.102.165]
+2020/06/11 23:10:21 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] Start Healthcheck on service [kube-apiserver] on host [10.184.102.165]
+E0611 23:10:23.674596      29 watcher.go:214] watch chan error: etcdserver: mvcc: required revision has been compacted
+2020/06/11 23:10:34 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] service [kube-apiserver] on host [10.184.102.165] is healthy
+2020/06/11 23:10:34 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:10:35 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:36 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:10:36 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:36 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:10:36 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:10:37 [INFO] Starting container [kube-controller-manager] on host [10.184.102.165], try #1
+2020/06/11 23:10:38 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [kube-controller-manager] container on host [10.184.102.165]
+2020/06/11 23:10:38 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] Start Healthcheck on service [kube-controller-manager] on host [10.184.102.165]
+2020/06/11 23:10:43 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] service [kube-controller-manager] on host [10.184.102.165] is healthy
+2020/06/11 23:10:43 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:10:43 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:44 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:10:44 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:45 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:10:45 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:10:45 [INFO] Starting container [kube-scheduler] on host [10.184.102.165], try #1
+2020/06/11 23:10:46 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [kube-scheduler] container on host [10.184.102.165]
+2020/06/11 23:10:46 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] Start Healthcheck on service [kube-scheduler] on host [10.184.102.165]
+2020/06/11 23:10:51 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] service [kube-scheduler] on host [10.184.102.165] is healthy
+2020/06/11 23:10:51 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:10:52 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:52 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:10:52 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully started Controller Plane..
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating rke-job-deployer ServiceAccount
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] rke-job-deployer ServiceAccount created successfully
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating system:node ClusterRoleBinding
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] system:node ClusterRoleBinding created successfully
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating kube-apiserver proxy ClusterRole and ClusterRoleBinding
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [authz] kube-apiserver proxy ClusterRole and ClusterRoleBinding created successfully
+2020/06/11 23:10:53 [INFO] Checking if container [service-sidekick] is running on host [10.184.102.165], try #1
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed state file at [management-state/rke/rke-827353625/cluster.rkestate]
+2020/06/11 23:10:53 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [state] Saving full cluster state to Kubernetes
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [state] Successfully Saved full cluster state to Kubernetes ConfigMap: full-cluster-state
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [worker] Building up Worker Plane..
+2020/06/11 23:10:53 [INFO] cluster [c-f8gc9] provisioning: [sidekick] Sidekick container already created on host [10.184.102.165]
+2020/06/11 23:10:53 [INFO] Starting container [kubelet] on host [10.184.102.165], try #1
+2020/06/11 23:10:54 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully started [kubelet] container on host [10.184.102.165]
+2020/06/11 23:10:54 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] Start Healthcheck on service [kubelet] on host [10.184.102.165]
+2020/06/11 23:11:24 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] service [kubelet] on host [10.184.102.165] is healthy
+2020/06/11 23:11:24 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:11:25 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:11:25 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:11:25 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:11:26 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:11:26 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:11:26 [INFO] Starting container [kube-proxy] on host [10.184.102.165], try #1
+2020/06/11 23:11:27 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully started [kube-proxy] container on host [10.184.102.165]
+2020/06/11 23:11:27 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] Start Healthcheck on service [kube-proxy] on host [10.184.102.165]
+2020/06/11 23:11:32 [INFO] cluster [c-f8gc9] provisioning: [healthcheck] service [kube-proxy] on host [10.184.102.165] is healthy
+2020/06/11 23:11:32 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:11:33 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:11:33 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:11:33 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:11:34 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:11:34 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:11:34 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully started Worker Plane..
+2020/06/11 23:11:35 [INFO] Starting container [rke-log-cleaner] on host [10.184.102.165], try #1
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [cleanup] Successfully started [rke-log-cleaner] container on host [10.184.102.165]
+2020/06/11 23:11:36 [INFO] Removing container [rke-log-cleaner] on host [10.184.102.165], try #1
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-cleaner] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [sync] Syncing nodes Labels and Taints
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [sync] Successfully synced nodes Labels and Taints
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [network] Setting up network plugin: calico
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [addons] Saving ConfigMap for addon rke-network-plugin to Kubernetes
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [addons] Successfully saved ConfigMap for addon rke-network-plugin to Kubernetes
+2020/06/11 23:11:36 [INFO] cluster [c-f8gc9] provisioning: [addons] Executing deploy job rke-network-plugin
+2020-06-11 23:11:51.909095 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/kube-scheduler\" " with result "range_response_count:1 size:288" took too long (344.849691ms) to execute
+2020/06/11 23:12:06 [ERROR] cluster [c-f8gc9] provisioning: Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system
+2020/06/11 23:12:06 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:12:07 [ERROR] ClusterController c-f8gc9 [cluster-provisioner-controller] failed with : Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system
+2020/06/11 23:12:37 [INFO] Provisioning cluster [c-f8gc9]
+2020/06/11 23:12:37 [INFO] Creating cluster [c-f8gc9]
+2020-06-11 23:12:42.463447 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/globaldnsproviders\" range_end:\"/registry/management.cattle.io/globaldnsprovidert\" count_only:true " with result "range_response_count:0 size:6" took too long (1.050360274s) to execute
+2020-06-11 23:12:42.465823 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clustertemplates\" range_end:\"/registry/management.cattle.io/clustertemplatet\" count_only:true " with result "range_response_count:0 size:6" took too long (1.503222711s) to execute
+2020-06-11 23:12:42.466250 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/projectalertrules\" range_end:\"/registry/management.cattle.io/projectalertrulet\" count_only:true " with result "range_response_count:0 size:6" took too long (1.03602224s) to execute
+2020-06-11 23:12:42.467164 W | etcdserver: read-only range request "key:\"/registry/events\" range_end:\"/registry/eventt\" count_only:true " with result "range_response_count:0 size:6" took too long (458.139614ms) to execute
+2020-06-11 23:12:42.467591 W | etcdserver: read-only range request "key:\"/registry/namespaces/default\" " with result "range_response_count:1 size:171" took too long (236.238108ms) to execute
+2020-06-11 23:12:42.467670 W | etcdserver: read-only range request "key:\"/registry/configmaps/kube-system/k3s\" " with result "range_response_count:1 size:370" took too long (207.615714ms) to execute
+2020-06-11 23:12:42.467740 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/cloud-controller-manager\" " with result "range_response_count:1 size:308" took too long (1.697513019s) to execute
+2020-06-11 23:12:42.468686 W | etcdserver: read-only range request "key:\"/registry/services/endpoints/kube-system/kube-controller-manager\" " with result "range_response_count:1 size:455" took too long (1.595306127s) to execute
+2020-06-11 23:12:42.469493 W | etcdserver: read-only range request "key:\"/registry/k3s.cattle.io/addons\" range_end:\"/registry/k3s.cattle.io/addont\" count_only:true " with result "range_response_count:0 size:8" took too long (1.325852638s) to execute
+I0611 23:12:42.471396      29 trace.go:116] Trace[317890246]: "Get" url:/api/v1/namespaces/kube-system/endpoints/kube-controller-manager,user-agent:k3s/v1.17.2+k3s1 (linux/amd64) kubernetes/cdab19b/leader-election,client:127.0.0.1 (started: 2020-06-11 23:12:40.869142274 +0000 UTC m=+15238.160680019) (total time: 1.601971126s):
+Trace[317890246]: [1.601903765s] [1.601876685s] About to write a response
+I0611 23:12:42.473184      29 trace.go:116] Trace[664058963]: "Get" url:/apis/coordination.k8s.io/v1/namespaces/kube-system/leases/cloud-controller-manager,user-agent:k3s/v1.17.2+k3s1 (linux/amd64) kubernetes/cdab19b/leader-election,client:127.0.0.1 (started: 2020-06-11 23:12:40.766560571 +0000 UTC m=+15238.058098321) (total time: 1.706516357s):
+Trace[664058963]: [1.706465007s] [1.70645986s] About to write a response
+2020/06/11 23:12:42 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:34833
+2020/06/11 23:12:42 [ERROR] Cluster c-f8gc9 previously failed to create
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: Initiating Kubernetes cluster
+2020/06/11 23:12:43 [INFO] [certificates] GenerateServingCertificate is disabled, checking if there are unused kubelet certificates
+2020/06/11 23:12:43 [INFO] [certificates] Generating admin certificates and kubeconfig
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed state file at [management-state/rke/rke-607866020/cluster.rkestate]
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: Building Kubernetes cluster
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: [dialer] Setup tunnel for host [10.184.102.165]
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: [network] No hosts added existing cluster, skipping port check
+2020/06/11 23:12:43 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020/06/11 23:12:43 [INFO] cluster [c-f8gc9] provisioning: [certificates] Deploying kubernetes certificates to Cluster nodes
+2020/06/11 23:12:43 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:12:46 [INFO] Starting container [cert-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:12:47 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020-06-11 23:12:52.410109 W | etcdserver: read-only range request "key:\"/registry/services/endpoints/default/kubernetes\" " with result "range_response_count:1 size:214" took too long (124.00064ms) to execute
+2020/06/11 23:12:53 [INFO] Checking if container [cert-deployer] is running on host [10.184.102.165], try #1
+2020/06/11 23:12:53 [INFO] Removing container [cert-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:12:53 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Rebuilding and updating local kube config
+2020/06/11 23:12:53 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed local admin kubeconfig at [management-state/rke/rke-607866020/kube_config_cluster.yml]
+2020/06/11 23:12:53 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:12:53 [INFO] cluster [c-f8gc9] provisioning: [reconcile] host [10.184.102.165] is active master on the cluster
+2020/06/11 23:12:53 [INFO] cluster [c-f8gc9] provisioning: [certificates] Successfully deployed kubernetes certificates to Cluster nodes
+2020/06/11 23:12:53 [INFO] cluster [c-f8gc9] provisioning: [file-deploy] Deploying file [/etc/kubernetes/kube-api-authn-webhook.yaml] to node [10.184.102.165]
+2020/06/11 23:12:54 [INFO] Starting container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:12:55 [INFO] cluster [c-f8gc9] provisioning: Successfully started [file-deployer] container on host [10.184.102.165]
+2020/06/11 23:12:55 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:12:55 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020-06-11 23:12:56.800021 W | etcdserver: read-only range request "key:\"/registry/configmaps/kube-system/k3s\" " with result "range_response_count:1 size:370" took too long (226.851813ms) to execute
+2020-06-11 23:12:56.801257 W | etcdserver: read-only range request "key:\"/registry/ingress\" range_end:\"/registry/ingrest\" count_only:true " with result "range_response_count:0 size:6" took too long (222.782853ms) to execute
+2020/06/11 23:12:57 [INFO] Removing container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:12:57 [INFO] cluster [c-f8gc9] provisioning: [remove/file-deployer] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:12:57 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:12:57 [INFO] cluster [c-f8gc9] provisioning: [/etc/kubernetes/kube-api-authn-webhook.yaml] Successfully deployed authentication webhook config Cluster nodes
+2020/06/11 23:12:57 [INFO] cluster [c-f8gc9] provisioning: [file-deploy] Deploying file [/etc/kubernetes/audit-policy.yaml] to node [10.184.102.165]
+2020/06/11 23:12:59 [INFO] Starting container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:13:00 [INFO] cluster [c-f8gc9] provisioning: Successfully started [file-deployer] container on host [10.184.102.165]
+2020/06/11 23:13:00 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:13:00 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:13:00 [INFO] cluster [c-f8gc9] provisioning: Container [file-deployer] is still running on host [10.184.102.165]
+2020/06/11 23:13:01 [INFO] cluster [c-f8gc9] provisioning: Waiting for [file-deployer] container to exit on host [10.184.102.165]
+2020/06/11 23:13:02 [INFO] Removing container [file-deployer] on host [10.184.102.165], try #1
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [remove/file-deployer] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:13:02 [INFO] max_unavailable_worker got rounded down to 0, resetting to 1
+2020/06/11 23:13:02 [INFO] Setting maxUnavailable for worker nodes to: 1
+2020/06/11 23:13:02 [INFO] Setting maxUnavailable for controlplane nodes to: 1
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [/etc/kubernetes/audit-policy.yaml] Successfully deployed audit policy file to Cluster control nodes
+2020/06/11 23:13:02 [INFO] Image [rancher/hyperkube:v1.17.6-rancher2] exists on host [10.184.102.165]
+2020/06/11 23:13:02 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Reconciling cluster state
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Check etcd hosts to be deleted
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Check etcd hosts to be added
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Rebuilding and updating local kube config
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed local admin kubeconfig at [management-state/rke/rke-607866020/kube_config_cluster.yml]
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] host [10.184.102.165] is active master on the cluster
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: [reconcile] Reconciled cluster state successfully
+2020/06/11 23:13:02 [INFO] cluster [c-f8gc9] provisioning: Pre-pulling kubernetes images
+2020/06/11 23:13:03 [INFO] cluster [c-f8gc9] provisioning: Kubernetes images pulled successfully
+2020/06/11 23:13:03 [INFO] cluster [c-f8gc9] provisioning: [etcd] Building up etcd plane..
+2020/06/11 23:13:04 [INFO] Starting container [etcd-fix-perm] on host [10.184.102.165], try #1
+2020/06/11 23:13:06 [INFO] cluster [c-f8gc9] provisioning: Successfully started [etcd-fix-perm] container on host [10.184.102.165]
+2020/06/11 23:13:06 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:13:06 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:13:06 [INFO] cluster [c-f8gc9] provisioning: Container [etcd-fix-perm] is still running on host [10.184.102.165]
+2020/06/11 23:13:07 [INFO] cluster [c-f8gc9] provisioning: Waiting for [etcd-fix-perm] container to exit on host [10.184.102.165]
+2020/06/11 23:13:07 [INFO] Removing container [etcd-fix-perm] on host [10.184.102.165], try #1
+2020/06/11 23:13:07 [INFO] cluster [c-f8gc9] provisioning: [remove/etcd-fix-perm] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:13:07 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:13:08 [INFO] Starting container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:13:08 [INFO] cluster [c-f8gc9] provisioning: [etcd] Successfully started [rke-log-linker] container on host [10.184.102.165]
+2020/06/11 23:13:08 [INFO] Removing container [rke-log-linker] on host [10.184.102.165], try #1
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-linker] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [etcd] Successfully started etcd plane.. Checking etcd cluster health
+2020/06/11 23:13:09 [INFO] [controlplane] Now checking status of node master1, try #1
+2020/06/11 23:13:09 [INFO] [controlplane] Now checking status of node master1, try #1
+2020/06/11 23:13:09 [INFO] [controlplane] Getting list of nodes for upgrade
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Processing controlplane hosts for upgrade 1 at a time
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: Processing controlplane host master1
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: Upgrade not required for controlplane and worker components of host master1
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [controlplane] Successfully upgraded Controller Plane..
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating rke-job-deployer ServiceAccount
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] rke-job-deployer ServiceAccount created successfully
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating system:node ClusterRoleBinding
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] system:node ClusterRoleBinding created successfully
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] Creating kube-apiserver proxy ClusterRole and ClusterRoleBinding
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [authz] kube-apiserver proxy ClusterRole and ClusterRoleBinding created successfully
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: Successfully Deployed state file at [management-state/rke/rke-607866020/cluster.rkestate]
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [state] Saving full cluster state to Kubernetes
+2020/06/11 23:13:09 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [state] Successfully Saved full cluster state to Kubernetes ConfigMap: full-cluster-state
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [worker] Upgrading Worker Plane..
+2020/06/11 23:13:09 [INFO] cluster [c-f8gc9] provisioning: [worker] Successfully upgraded Worker Plane..
+2020/06/11 23:13:10 [INFO] Starting container [rke-log-cleaner] on host [10.184.102.165], try #1
+2020/06/11 23:13:11 [INFO] cluster [c-f8gc9] provisioning: [cleanup] Successfully started [rke-log-cleaner] container on host [10.184.102.165]
+2020/06/11 23:13:11 [INFO] Removing container [rke-log-cleaner] on host [10.184.102.165], try #1
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [remove/rke-log-cleaner] Successfully removed container on host [10.184.102.165]
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [sync] Syncing nodes Labels and Taints
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [sync] Successfully synced nodes Labels and Taints
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [network] Setting up network plugin: calico
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Saving ConfigMap for addon rke-network-plugin to Kubernetes
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Successfully saved ConfigMap for addon rke-network-plugin to Kubernetes
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Executing deploy job rke-network-plugin
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Setting up coredns
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Saving ConfigMap for addon rke-coredns-addon to Kubernetes
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Successfully saved ConfigMap for addon rke-coredns-addon to Kubernetes
+2020/06/11 23:13:12 [INFO] cluster [c-f8gc9] provisioning: [addons] Executing deploy job rke-coredns-addon
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [addons] CoreDNS deployed successfully
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [dns] DNS provider coredns deployed successfully
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [addons] Setting up Metrics Server
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [addons] Saving ConfigMap for addon rke-metrics-addon to Kubernetes
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [addons] Successfully saved ConfigMap for addon rke-metrics-addon to Kubernetes
+2020-06-11 23:13:22.740863 I | http: TLS handshake error from 127.0.0.1:60996: EOF
+2020/06/11 23:13:22 [INFO] cluster [c-f8gc9] provisioning: [addons] Executing deploy job rke-metrics-addon
+2020/06/11 23:13:38 [INFO] cluster [c-f8gc9] provisioning: [addons] Metrics Server deployed successfully
+2020/06/11 23:13:38 [INFO] cluster [c-f8gc9] provisioning: [ingress] Setting up nginx ingress controller
+2020/06/11 23:13:38 [INFO] cluster [c-f8gc9] provisioning: [addons] Saving ConfigMap for addon rke-ingress-controller to Kubernetes
+2020/06/11 23:13:38 [INFO] cluster [c-f8gc9] provisioning: [addons] Successfully saved ConfigMap for addon rke-ingress-controller to Kubernetes
+2020/06/11 23:13:38 [INFO] cluster [c-f8gc9] provisioning: [addons] Executing deploy job rke-ingress-controller
+2020-06-11 23:13:45.250412 I | mvcc: store.index: compact 64732
+2020-06-11 23:13:45.299722 I | mvcc: finished scheduled compaction at 64732 (took 46.149742ms)
+2020/06/11 23:13:48 [INFO] cluster [c-f8gc9] provisioning: [ingress] ingress controller nginx deployed successfully
+2020/06/11 23:13:48 [INFO] cluster [c-f8gc9] provisioning: [addons] Setting up user addons
+2020/06/11 23:13:48 [INFO] cluster [c-f8gc9] provisioning: [addons] no user addons defined
+2020/06/11 23:13:48 [INFO] cluster [c-f8gc9] provisioning: Finished building Kubernetes cluster successfully
+2020/06/11 23:13:49 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:13:54 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:42399
+2020/06/11 23:13:54 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:13:54 [INFO] Updated cluster [c-f8gc9] with node version [1]
+2020/06/11 23:13:54 [INFO] Provisioned cluster [c-f8gc9]
+2020/06/11 23:13:55 [INFO] Creating user for principal system://c-f8gc9
+2020/06/11 23:13:55 [INFO] Creating globalRoleBindings for u-hcpeggqps7
+2020/06/11 23:13:55 [INFO] Creating new GlobalRoleBinding for GlobalRoleBinding grb-jzgdg
+2020/06/11 23:13:55 [INFO] [mgmt-auth-grb-controller] Creating clusterRoleBinding for globalRoleBinding grb-jzgdg for user u-hcpeggqps7 with role cattle-globalrole-user
+2020/06/11 23:13:55 [INFO] Creating token for user u-hcpeggqps7
+2020/06/11 23:13:55 [INFO] [mgmt-auth-crtb-controller] Creating clusterRoleBinding for membership in cluster c-f8gc9 for subject u-hcpeggqps7
+2020/06/11 23:13:55 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject u-hcpeggqps7 with role cluster-owner in namespace
+2020/06/11 23:13:55 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject u-hcpeggqps7 with role cluster-owner in namespace
+2020/06/11 23:13:55 [INFO] [mgmt-auth-crtb-controller] Creating roleBinding for subject u-hcpeggqps7 with role cluster-owner in namespace
+2020/06/11 23:13:55 [INFO] checking cluster [c-f8gc9] for worker nodes upgrade
+2020/06/11 23:13:55 [INFO] Registering project network policy
+2020/06/11 23:13:55 [INFO] Registering CIS controllers for cluster: c-f8gc9
+2020/06/11 23:13:55 [INFO] registering podsecuritypolicy cluster handler for cluster c-f8gc9
+2020/06/11 23:13:55 [INFO] registering podsecuritypolicy project handler for cluster c-f8gc9
+2020/06/11 23:13:55 [INFO] registering podsecuritypolicy namespace handler for cluster c-f8gc9
+2020/06/11 23:13:55 [INFO] registering podsecuritypolicy serviceaccount handler for cluster c-f8gc9
+2020/06/11 23:13:55 [INFO] registering podsecuritypolicy template handler for cluster c-f8gc9
+2020/06/11 23:13:55 [INFO] Registering monitoring for cluster "c-f8gc9"
+2020/06/11 23:13:55 [INFO] Registering istio for cluster "c-f8gc9"
+2020/06/11 23:13:55 [INFO] Creating CRD clusterauthtokens.cluster.cattle.io
+2020/06/11 23:13:55 [INFO] Creating CRD clusteruserattributes.cluster.cattle.io
+2020/06/11 23:13:56 [INFO] Waiting for CRD clusterauthtokens.cluster.cattle.io to become available
+2020/06/11 23:13:57 [INFO] Done waiting for CRD clusterauthtokens.cluster.cattle.io to become available
+2020/06/11 23:13:57 [INFO] Waiting for CRD clusteruserattributes.cluster.cattle.io to become available
+2020/06/11 23:13:58 [INFO] Done waiting for CRD clusteruserattributes.cluster.cattle.io to become available
+2020/06/11 23:13:58 [INFO] Starting cluster controllers for c-f8gc9
+2020/06/11 23:14:01 [INFO] Starting cluster agent for c-f8gc9 [owner=true]
+2020/06/11 23:14:01 [INFO] Starting rbac.authorization.k8s.io/v1, Kind=ClusterRole controller
+2020/06/11 23:14:01 [INFO] Starting rbac.authorization.k8s.io/v1, Kind=Role controller
+2020/06/11 23:14:01 [INFO] Refreshing driverMetadata in 1440 minutes
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Project Owner (project-owner).
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Cluster Owner (cluster-owner).
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Cluster Owner (cluster-owner).
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Project Owner (project-owner).
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Cluster Owner (cluster-owner).
+2020/06/11 23:14:01 [INFO] Creating clusterRole for roleTemplate Project Owner (project-owner).
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/scheduler-system-service [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [INFO] Updating role project-owner in p-ttk82 because of rules difference with roleTemplate Project Owner (project-owner).
+2020/06/11 23:14:01 [INFO] Updating role project-owner in p-5w9qp because of rules difference with roleTemplate Project Owner (project-owner).
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/no-leader [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [INFO] Creating roleBinding User user-pwjc5 Role cluster-owner
+2020/06/11 23:14:01 [INFO] driverMetadata: refreshing data from upstream https://releases.rancher.com/kontainer-driver-metadata/release-v2.4/data.json
+2020/06/11 23:14:01 [INFO] Retrieve data.json from local path /var/lib/rancher-data/driver-metadata/data.json
+2020/06/11 23:14:01 [ERROR] CatalogController system-library [system-image-upgrade-catalog-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:01 [INFO] Creating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/high-number-of-leader-changes [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020-06-11 23:14:01.528506 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (103.507622ms) to execute
+2020-06-11 23:14:01.529883 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (104.937512ms) to execute
+2020-06-11 23:14:01.530482 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (107.334604ms) to execute
+2020-06-11 23:14:01.533156 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (110.0592ms) to execute
+2020-06-11 23:14:01.533289 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (110.21773ms) to execute
+2020-06-11 23:14:01.534421 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (109.346264ms) to execute
+2020-06-11 23:14:01.535226 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (110.542218ms) to execute
+2020-06-11 23:14:01.535645 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (112.693256ms) to execute
+2020-06-11 23:14:01.536275 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (113.681068ms) to execute
+2020-06-11 23:14:01.536677 W | etcdserver: read-only range request "key:\"/registry/management.cattle.io/clusters/c-f8gc9\" " with result "range_response_count:1 size:11054" took too long (114.173532ms) to execute
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/etcd-system-service [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/cluster-scan-manual-all [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/high-cpu-load [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertGroupController c-f8gc9/kube-components-alert [cluster-alert-group-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/controllermanager-system-service [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertGroupController c-f8gc9/cluster-scan-alert [cluster-alert-group-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/high-memmory [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/cluster-scan-scheduled-all [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/deployment-event-alert [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/node-disk-running-full [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertGroupController c-f8gc9/event-alert [cluster-alert-group-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/cluster-scan-scheduled--failure-only [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [ERROR] ClusterAlertRuleController c-f8gc9/cluster-scan-manual-failure-only [cluster-alert-rule-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [INFO] Creating roleBinding User u-hcpeggqps7 Role cluster-owner
+2020/06/11 23:14:01 [ERROR] ClusterAlertGroupController c-f8gc9/node-alert [cluster-alert-group-deployer] failed with : update cluster c-f8gc9 failed, Operation cannot be fulfilled on clusters.management.cattle.io "c-f8gc9": the object has been modified; please apply your changes to the latest version and try again
+2020/06/11 23:14:01 [INFO] Creating user for principal system://p-5w9qp
+2020/06/11 23:14:01 [INFO] Creating user for principal system://p-ttk82
+2020/06/11 23:14:01 [INFO] Creating globalRoleBindings for u-lh3c2sv4n4
+2020/06/11 23:14:01 [INFO] Creating globalRoleBindings for u-z5obmy4arg
+2020/06/11 23:14:01 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:01 [INFO] Creating new GlobalRoleBinding for GlobalRoleBinding grb-fj8t4
+2020/06/11 23:14:01 [INFO] [mgmt-auth-grb-controller] Creating clusterRoleBinding for globalRoleBinding grb-fj8t4 for user u-z5obmy4arg with role cattle-globalrole-user
+2020/06/11 23:14:01 [INFO] Creating new GlobalRoleBinding for GlobalRoleBinding grb-vw8pw
+2020/06/11 23:14:01 [INFO] [mgmt-auth-grb-controller] Creating clusterRoleBinding for globalRoleBinding grb-vw8pw for user u-lh3c2sv4n4 with role cattle-globalrole-user
+2020/06/11 23:14:01 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:02 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRole p-ttk82-projectmember
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRole p-5w9qp-projectmember
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for membership in project p-ttk82 for subject u-z5obmy4arg
+2020/06/11 23:14:02 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:02 [ERROR] CatalogController system-library [system-image-upgrade-catalog-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:02 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRoleBinding for membership in cluster c-f8gc9 for subject u-z5obmy4arg
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for membership in project p-5w9qp for subject u-lh3c2sv4n4
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-member in namespace c-f8gc9
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating clusterRoleBinding for membership in cluster c-f8gc9 for subject u-lh3c2sv4n4
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-member in namespace c-f8gc9
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-z5obmy4arg with role project-member in namespace
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-member in namespace p-ttk82
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-lh3c2sv4n4 with role project-member in namespace
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role project-member in namespace p-5w9qp
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role edit in namespace p-ttk82
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating role edit in namespace p-5w9qp
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-z5obmy4arg with role project-member in namespace
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-z5obmy4arg with role edit in namespace
+2020/06/11 23:14:02 [INFO] Updating clusterRole project-owner-promoted for project access to global resource.
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-lh3c2sv4n4 with role project-member in namespace
+2020/06/11 23:14:02 [INFO] [mgmt-auth-prtb-controller] Creating roleBinding for subject u-lh3c2sv4n4 with role edit in namespace
+2020/06/11 23:14:02 [INFO] Creating clusterRole for roleTemplate Project Member (project-member).
+2020/06/11 23:14:02 [INFO] Creating clusterRole for roleTemplate Create Namespaces (create-ns).
+2020/06/11 23:14:02 [INFO] Updating role project-member in p-ttk82 because of rules difference with roleTemplate Project Member (project-member).
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] Updating role project-member in p-5w9qp because of rules difference with roleTemplate Project Member (project-member).
+2020/06/11 23:14:02 [INFO] Creating clusterRole for roleTemplate Project Member (project-member).
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-z5obmy4arg Role project-member
+2020/06/11 23:14:02 [ERROR] ProjectController c-f8gc9/p-ttk82 [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:02 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:02 [INFO] Creating clusterRoleBinding for project access to global resource for subject user-pwjc5 role p-5w9qp-namespaces-edit.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] Creating clusterRoleBinding for project access to global resource for subject user-pwjc5 role project-owner-promoted.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:02 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] Creating clusterRoleBinding for project access to global resource for subject user-pwjc5 role p-ttk82-namespaces-edit.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-z5obmy4arg Role edit
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:02 [INFO] Creating clusterRoleBinding for project access to global resource for subject user-pwjc5 role create-ns.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:02 [INFO] Updating clusterRoleBinding clusterrolebinding-59v5s for project access to global resource for subject user-pwjc5 role project-owner-promoted.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [INFO] Creating clusterRole project-member-promoted for project access to global resource.
+2020/06/11 23:14:02 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:02 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:02 [ERROR] ProjectController c-f8gc9/p-ttk82 [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:02 [ERROR] ProjectController c-f8gc9/p-ttk82 [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:03 [ERROR] ProjectController c-f8gc9/p-ttk82 [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:03 [INFO] Creating clusterRole project-member-promoted for project access to global resource.
+2020/06/11 23:14:03 [INFO] Updating clusterRoleBinding clusterrolebinding-lgpsl for project access to global resource for subject user-pwjc5 role create-ns.
+2020/06/11 23:14:03 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:03 [INFO] Creating roleBinding User user-pwjc5 Role project-owner
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:03 [ERROR] CatalogController system-library [system-image-upgrade-catalog-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:03 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready, [project-namespace-auth] failed with : clusterroles.rbac.authorization.k8s.io "p-5w9qp-namespaces-edit" already exists
+2020/06/11 23:14:03 [ERROR] NamespaceController kube-public [namespace-auth] failed with : clusterroles.rbac.authorization.k8s.io "p-5w9qp-namespaces-readonly" already exists
+2020/06/11 23:14:03 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:03 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:03 [INFO] Updating clusterRole project-member-promoted for project access to global resource.
+2020/06/11 23:14:03 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-q76d6
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:03 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-q76d6
+2020/06/11 23:14:03 [INFO] Updating clusterRole project-member-promoted for project access to global resource.
+2020/06/11 23:14:03 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:03 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-z5obmy4arg role p-ttk82-namespaces-edit.
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-xljhl
+2020/06/11 23:14:03 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-z5obmy4arg role project-member-promoted.
+2020/06/11 23:14:03 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role project-member
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-hbmmf
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-q76d6
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-585hs
+2020/06/11 23:14:03 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-z5obmy4arg role create-ns.
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-xljhl
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-585hs
+2020/06/11 23:14:03 [INFO] Updating clusterRole project-member-promoted for project access to global resource.
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-tv5nj
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-slsh7
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-9qftp
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-bdfv8
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-9fddd
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-mhwc5
+2020/06/11 23:14:03 [INFO] Deleting roleBinding clusterrolebinding-tv5nj
+2020/06/11 23:14:04 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-lh3c2sv4n4 role p-5w9qp-namespaces-edit.
+2020/06/11 23:14:04 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:04 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-lh3c2sv4n4 role project-member-promoted.
+2020/06/11 23:14:04 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-lh3c2sv4n4 role project-member-promoted.
+2020/06/11 23:14:04 [INFO] Creating clusterRoleBinding for project access to global resource for subject u-lh3c2sv4n4 role create-ns.
+2020/06/11 23:14:04 [INFO] Creating roleBinding User u-lh3c2sv4n4 Role edit
+2020/06/11 23:14:05 [ERROR] CatalogController system-library [system-image-upgrade-catalog-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:05 [ERROR] ProjectController c-f8gc9/p-5w9qp [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:06 [INFO] Creating roleBinding User user-pwjc5 Role admin
+2020/06/11 23:14:07 [ERROR] ProjectController c-f8gc9/p-ttk82 [system-image-upgrade-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:09 [ERROR] CatalogController system-library [system-image-upgrade-catalog-controller] failed with : upgrade cluster c-f8gc9 system service logging failed: cluster c-f8gc9 not ready
+2020/06/11 23:14:13 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:37425
+2020/06/11 23:14:14 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:14:18 [INFO] Handling backend connection request [c-f8gc9]
+2020/06/11 23:14:18 [INFO] Handling backend connection request [c-f8gc9:m-czzr2]
+2020/06/11 23:14:19 [INFO] Handling backend connection request [c-f8gc9:m-czzr2]
+2020/06/11 23:14:19 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:38737
+2020/06/11 23:14:20 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:14:23 [INFO] Updating workload [ingress-nginx/nginx-ingress-controller] with public endpoints [[{"nodeName":"c-f8gc9:m-czzr2","addresses":["10.184.102.165"],"port":80,"protocol":"TCP","podName":"ingress-nginx:nginx-ingress-controller-llgcw","allNodes":false},{"nodeName":"c-f8gc9:m-czzr2","addresses":["10.184.102.165"],"port":443,"protocol":"TCP","podName":"ingress-nginx:nginx-ingress-controller-llgcw","allNodes":false}]]
+2020/06/11 23:14:25 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:39949
+2020/06/11 23:14:26 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:14:31 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:37705
+2020/06/11 23:14:31 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020/06/11 23:14:33 [INFO] [etcd-backup] Cluster [c-f8gc9] has no backups, creating first backup
+2020/06/11 23:14:33 [INFO] [etcd-backup] Cluster [c-f8gc9] new backup is created: c-f8gc9-rl-9b2jf
+2020/06/11 23:14:34 [INFO] error in remotedialer server [400]: websocket: close 1006 (abnormal closure): unexpected EOF
+W0611 23:14:34.134327       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.DaemonSet ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.134563       7 reflector.go:326] k8s.io/client-go/informers/factory.go:135: watch of *v1.ClusterRole ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.134689       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Deployment ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.134722       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Job ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.135459       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Namespace ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136183       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Pod ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136227       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ReplicationController ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136240       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Event ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136253       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.RoleBinding ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136316       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ClusterRoleBinding ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.136352       7 reflector.go:326] k8s.io/client-go/informers/factory.go:135: watch of *v1.RoleBinding ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137037       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.NetworkPolicy ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137093       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.StatefulSet ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137111       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ClusterRole ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137138       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ResourceQuota ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137153       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1beta1.Ingress ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137168       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Service ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137184       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ConfigMap ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137196       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1beta1.CronJob ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137208       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ConfigMap ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137228       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ServiceAccount ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137239       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Node ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137591       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.LimitRange ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.137734       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.DaemonSet ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138266       7 reflector.go:326] k8s.io/client-go/informers/factory.go:135: watch of *v1.ClusterRoleBinding ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138296       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.APIService ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138310       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v3.ClusterUserAttribute ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138324       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Pod ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138337       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ConfigMap ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138355       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Secret ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138367       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1beta1.PodSecurityPolicy ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138380       7 reflector.go:326] k8s.io/client-go/informers/factory.go:135: watch of *v1.Role ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138490       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.ReplicaSet ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138519       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v3.ClusterAuthToken ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+W0611 23:14:34.138533       7 reflector.go:326] github.com/rancher/norman/controller/generic_controller.go:229: watch of *v1.Endpoints ended with: an error on the server ("unable to decode an event from the watch stream: tunnel disconnect") has prevented the request from succeeding
+2020/06/11 23:14:34 [INFO] error in remotedialer server [400]: websocket: close 1006 (abnormal closure): unexpected EOF
+2020/06/11 23:14:38 [INFO] kontainerdriver rancherkubernetesengine listening on address 127.0.0.1:40807
+2020/06/11 23:14:38 [INFO] Starting saving snapshot on etcd hosts
+2020/06/11 23:14:38 [INFO] [dialer] Setup tunnel for host [10.184.102.165]
+2020/06/11 23:14:38 [INFO] [etcd] Running snapshot save once on host [10.184.102.165]
+2020/06/11 23:14:38 [INFO] Image [rancher/rke-tools:v0.1.56] exists on host [10.184.102.165]
+2020/06/11 23:14:39 [INFO] Starting container [etcd-snapshot-once] on host [10.184.102.165], try #1
+2020/06/11 23:14:41 [INFO] [etcd] Successfully started [etcd-snapshot-once] container on host [10.184.102.165]
+2020/06/11 23:14:41 [INFO] Waiting for [etcd-snapshot-once] container to exit on host [10.184.102.165]
+2020/06/11 23:14:41 [INFO] Container [etcd-snapshot-once] is still running on host [10.184.102.165]
+2020/06/11 23:14:42 [INFO] Waiting for [etcd-snapshot-once] container to exit on host [10.184.102.165]
+2020/06/11 23:14:42 [INFO] Container [etcd-snapshot-once] is still running on host [10.184.102.165]
+2020/06/11 23:14:43 [INFO] Waiting for [etcd-snapshot-once] container to exit on host [10.184.102.165]
+2020/06/11 23:14:43 [INFO] Removing container [etcd-snapshot-once] on host [10.184.102.165], try #1
+2020/06/11 23:14:43 [INFO] Finished saving/uploading snapshot [c-f8gc9-rl-9b2jf_2020-06-11T23:14:33Z] on all etcd hosts
+2020/06/11 23:14:43 [INFO] kontainerdriver rancherkubernetesengine stopped
+2020-06-11 23:14:57.122087 W | etcdserver: read-only range request "key:\"/registry/services/endpoints/kube-system/kube-controller-manager\" " with result "range_response_count:1 size:455" took too long (116.531246ms) to execute
+2020-06-11 23:15:06.950982 W | etcdserver: read-only range request "key:\"/registry/jobs/\" range_end:\"/registry/jobs0\" limit:500 " with result "range_response_count:0 size:6" took too long (362.672769ms) to execute
+2020-06-11 23:15:06.951214 W | etcdserver: read-only range request "key:\"/registry/leases/kube-system/cloud-controller-manager\" " with result "range_response_count:1 size:308" took too long (368.700053ms) to execute
+2020-06-11 23:15:15.780830 W | etcdserver: read-only range request "key:\"/registry/configmaps/kube-system/cattle-controllers\" " with result "range_response_count:1 size:400" took too long (219.950954ms) to execute
+E0611 23:15:29.715632      29 watcher.go:214] watch chan error: etcdserver: mvcc: required revision has been compacted
