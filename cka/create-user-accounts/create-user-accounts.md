@@ -65,18 +65,18 @@ kubectl config set-context alice-context --cluster=kubernetes --user=alice
     # You need to already have a Role named "pod-reader" in that namespace.
     kind: RoleBinding
     metadata:
-    name: reader-rolebinding
-    namespace: default
+      name: reader-rolebinding
+      namespace: default
     subjects:
-    # You can specify more than one "subject"
+      # You can specify more than one "subject"
     - kind: User
-    name: alice # "name" is case sensitive
-    apiGroup: rbac.authorization.k8s.io
+      name: alice # "name" is case sensitive
+      apiGroup: rbac.authorization.k8s.io
     roleRef:
-    # "roleRef" specifies the binding to a Role / ClusterRole
-    kind: Role #this must be Role or ClusterRole
-    name: reader # this must match the name of the Role or ClusterRole you wish to bind to
-    apiGroup: rbac.authorization.k8s.io
+      # "roleRef" specifies the binding to a Role / ClusterRole
+      kind: Role #this must be Role or ClusterRole
+      name: reader # this must match the name of the Role or ClusterRole you wish to bind to
+      apiGroup: rbac.authorization.k8s.io
     ```
 
   - Bind Alice to writer role and test it out
@@ -87,18 +87,18 @@ kubectl config set-context alice-context --cluster=kubernetes --user=alice
     # You need to already have a Role named "pod-reader" in that namespace.
     kind: RoleBinding
     metadata:
-    name: writer-rolebinding
-    namespace: default
+      name: writer-rolebinding
+      namespace: default
     subjects:
-    # You can specify more than one "subject"
+      # You can specify more than one "subject"
     - kind: User
-    name: alice # "name" is case sensitive
-    apiGroup: rbac.authorization.k8s.io
+      name: alice # "name" is case sensitive
+      apiGroup: rbac.authorization.k8s.io
     roleRef:
-    # "roleRef" specifies the binding to a Role / ClusterRole
-    kind: Role #this must be Role or ClusterRole
-    name: writer # this must match the name of the Role or ClusterRole you wish to bind to
-    apiGroup: rbac.authorization.k8s.io
+      # "roleRef" specifies the binding to a Role / ClusterRole
+      kind: Role #this must be Role or ClusterRole
+      name: writer # this must match the name of the Role or ClusterRole you wish to bind to
+      apiGroup: rbac.authorization.k8s.io
     ```
 
 - Create RBAC ClusterRoles
