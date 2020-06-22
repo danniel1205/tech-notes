@@ -34,3 +34,12 @@ The B tree is in memory, if system crashes we need to rebuild the B tree. This c
 
 `Latches` (lightweight locks) is used to protect the page from modified by concurrent thread/processes.
 
+### Improvements
+
+- Using locks to protect the critical data being modified by multiple threads/processes could be improved.
+  - A modifed page could be written to a different location
+  - A new version of its parent page is created and point to the new location
+
+- Key could be stored as abbreviation to save spaces
+- Try to lay out the B-Tree, so that nearby keys could be stored nearby on disk
+- Add sibling pointers between different leaves page to improve lookup without jumping back to parent page
