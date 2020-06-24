@@ -19,4 +19,4 @@
 
 - LSM Tree might cause high write throughput due to compaction
 
-- LSM Tree might have multiple copies of a key in different segments, B-Tree has each key exists exactly in one place 
+- LSM Tree might have multiple copies of a key in different segments, B-Tree has each key exists exactly in one place
