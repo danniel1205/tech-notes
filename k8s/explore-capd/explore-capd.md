@@ -2,42 +2,59 @@
 tags: cluster-api
 ---
 # Explore cluster API for docker infrastructure
+
 ## Official page
-https://cluster-api.sigs.k8s.io/user/quick-start.html
+
+<https://cluster-api.sigs.k8s.io/user/quick-start.html>
 
 ## Steps
+
 ### Clone clusterAPI github repo
-https://github.com/kubernetes-sigs/cluster-api
+
+<https://github.com/kubernetes-sigs/cluster-api>
 
 ### Install kubectl
-https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
+<https://kubernetes.io/docs/tasks/tools/install-kubectl/>
 
 ### Install kind
-https://github.com/kubernetes-sigs/kind
+
+<https://github.com/kubernetes-sigs/kind>
 
 ### Install clusterctl
-https://cluster-api.sigs.k8s.io/user/quick-start.html#install-clusterctl
+
+<https://cluster-api.sigs.k8s.io/user/quick-start.html#install-clusterctl>
+
+### Install kustomize
+
+<https://kubernetes-sigs.github.io/kustomize/installation/>
 
 ### Generate the infrastructure components yaml
-```
+
+``` bash
 kustomize build ~/go/src/github.com/cluster-apitest/infrastructure/docker/config > ~/tech-explore/capd/infrastructure-docker/infrastructore-components.yaml
 ```
 
 ### Create images and manifests in order to use the docker provider
-https://cluster-api.sigs.k8s.io/clusterctl/developers.html#additional-steps-in-order-to-use-the-docker-provider
-```
+
+<https://cluster-api.sigs.k8s.io/clusterctl/developers.html#additional-steps-in-order-to-use-the-docker-provider>
+
+``` bash
 cd ~/go/src/github.com/cluster-api
 ```
-```
+
+``` bash
 make -C test/infrastructure/docker docker-build REGISTRY=danielguo/k8s-
 staging-capi-docker
 ```
-```
+
+``` bash
 make -C test/infrastructure/docker generate-manifests REGISTRY=danielguo/k8s-staging-capi-docker
 ```
 
 ### Create kind cluster
-```
+
+``` bash
 cat > kind-cluster-with-extramounts.yaml <<EOF
 kind: Cluster
 apiVersion: kind.sigs.k8s.io/v1alpha3
@@ -54,10 +71,12 @@ kind load docker-image danielguo/k8s-staging-capi-docker/capd-manager-amd64:dev
 ```
 
 ### Additional steps in order to use the docker provider
-```
+
+``` bash
 cd ~/go/src/github.com/cluster-api
 ```
-```
+
+``` bash
 # https://cluster-api.sigs.k8s.io/clusterctl/developers.html#create-a-clusterctl-settingsjson-file
 cat > cluster-settings.json << EOF
 {
@@ -66,9 +85,10 @@ cat > cluster-settings.json << EOF
 }
 EOF
 ```
-```
+
+``` bash
 #https://cluster-api.sigs.k8s.io/clusterctl/developers.html#available-providers
-cat ./test/infrastructure/docker/cluster-settings.json << EOF
+cat > ./test/infrastructure/docker/cluster-settings.json << EOF
 {
   "name": "infrastructure-docker",
   "config": {
@@ -78,7 +98,8 @@ cat ./test/infrastructure/docker/cluster-settings.json << EOF
 }
 EOF
 ```
-```
+
+``` bash
 #https://cluster-api.sigs.k8s.io/clusterctl/developers.html#run-the-local-overrides-hack
 cmd/clusterctl/hack/local-overrides.py
 
@@ -91,7 +112,8 @@ in order to use them, please run:
 ```
 
 ### Initialize the management cluster
-```
+
+``` bash
 clusterctl init -i docker -v10
 Fetching providers
 Installing cert-manager
@@ -107,8 +129,10 @@ You can now create your first workload cluster by running the following:
 
   clusterctl config cluster [name] --kubernetes-version [version] | kubectl apply -f -
 ```
+
 Now you should have all the cluster API components up and running
-```
+
+``` bash
 kubectl get pods -A
 NAMESPACE                           NAME                                                             READY   STATUS    RESTARTS   AGE
 capd-system                         capd-controller-manager-b765fdf4b-qbmpp                          2/2     Running   0          42s
@@ -131,15 +155,18 @@ kube-system                         kube-proxy-fnld8                            
 kube-system                         kube-scheduler-kind-control-plane                                1/1     Running   0          22h
 local-path-storage                  local-path-provisioner-7745554f7f-lbzwz                          1/1     Running   0          22h
 ```
+
 And your single controle plane management cluster is running
-```
+
+``` bash
 kubectl get nodes
 NAME                 STATUS   ROLES    AGE   VERSION
 kind-control-plane   Ready    master   22h   v1.17.0
 ```
 
 ### Create a workload cluster
-https://cluster-api.sigs.k8s.io/user/quick-start.html#create-your-first-workload-cluster
+
+<https://cluster-api.sigs.k8s.io/user/quick-start.html#create-your-first-workload-cluster>
 > The clusterctl config cluster command by default uses cluster templates which are provided by the infrastructure providers.
 
 However, I could not find any `cluster-template.yaml` available under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`. The `cluterctl config cluster <cluster_name>` command will fail with error complaining about the missing `cluster-template.yaml` file
@@ -147,7 +174,8 @@ However, I could not find any `cluster-template.yaml` available under `.cluster-
 For now, I just copied the sample from https://github.com/vmware-tanzu/tgik/blob/master/episodes/110/capd-v3/infrastructure-docker/v0.3.2/cluster-template.yaml and put it under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`
 
 Then run:
-```
+
+``` bash
 clusterctl config cluster test > capi-test.yaml
 # Modify the capi-test.yaml if necessary, e.g. the machineDeployment replica. It is 0 by default
 
@@ -155,7 +183,8 @@ kubectl apply -f capi-test.yaml
 ```
 
 After apply the yaml, you should be able to see the following output
-```
+
+``` bash
 ~/tech-explore/capd  kubectl get cluster --all-namespaces
 
 NAMESPACE   NAME   PHASE
@@ -175,7 +204,8 @@ bd6eaef3f13c        kindest/node:v1.17.0           "/usr/local/bin/entr…"   10
 ```
 
 (Optional) Just in case you want to scale your workload cluster machine deployment, you could do the following:
-```
+
+``` bash
 ~/tech-explore/capd  kubectl get machinedeployments -A
 NAMESPACE   NAME        PHASE     REPLICAS   AVAILABLE   READY
 default     test-md-0   Running
@@ -188,17 +218,22 @@ default     test-md-0-db7cb7668-8mdbz   docker:////test-test-md-0-db7cb7668-8mdb
 default     test-md-0-db7cb7668-dlrvg   docker:////test-test-md-0-db7cb7668-dlrvg   Running
 default     test-md-0-db7cb7668-nlt4f   docker:////test-test-md-0-db7cb7668-nlt4f   Running
 ```
+
 You might have notices that the kubeadmcontrolplane is not ready. That is because you have to deploy CNI. https://cluster-api.sigs.k8s.io/user/quick-start.html#deploy-a-cni-solution
 
 ### Get access to a workload cluster
-https://cluster-api.sigs.k8s.io/clusterctl/developers.html#connecting-to-a-workload-cluster-on-docker
-```
+
+<https://cluster-api.sigs.k8s.io/clusterctl/developers.html#connecting-to-a-workload-cluster-on-docker>
+
+``` bash
 kubectl --namespace=default get secret/test-kubeconfig -o jsonpath={.data.value} \
   | base64 --decode \
   > ./test.kubeconfig
 ```
+
 (Optional) If you are using Mac, the following steps are required.
-```
+
+``` bash
 # Point the kubeconfig to the exposed port of the load balancer, rather than the inaccessible container IP.
 sed -i -e "s/server:.*/server: https:\/\/$(docker port test-lb 6443/tcp | sed "s/0.0.0.0/127.0.0.1/")/g" ./test.kubeconfig
 
@@ -208,10 +243,12 @@ sed -i -e "s/certificate-authority-data:.*/insecure-skip-tls-verify: true/g" ./t
 ```
 
 ### Deploy CNI
-https://cluster-api.sigs.k8s.io/clusterctl/developers.html#connecting-to-a-workload-cluster-on-docker
 
-### You are all set !!!
-```
+<https://cluster-api.sigs.k8s.io/clusterctl/developers.html#connecting-to-a-workload-cluster-on-docker>
+
+### You are all set
+
+``` bash
  ~/tech-explore/capd  kubectl --kubeconfig=./test.kubeconfig get pods -A
 NAMESPACE     NAME                                      READY   STATUS    RESTARTS   AGE
 kube-system   calico-kube-controllers-77c4b7448-dfpv2   1/1     Running   0          7m26s
