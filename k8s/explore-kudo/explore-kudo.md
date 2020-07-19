@@ -6,6 +6,9 @@
 
 ![architecture](./kudo-architecture.jpg)
 
+<https://www.youtube.com/watch?v=j2A8vl0m2hs>
+<https://www.youtube.com/watch?v=XNi8uO0PwPo>
+
 ## Try out KUDO
 
 <https://kudo.dev/docs/developing-operators/getting-started.html#getting-started>
