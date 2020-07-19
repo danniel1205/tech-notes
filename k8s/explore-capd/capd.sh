@@ -18,6 +18,7 @@ USAGE="$(
 usage: ${0} [FLAGS]
   Create a management cluster + workload cluster environment using Kind
   and the Cluster API providre for Docker (CAPD).
+  WARNING: If $HOME/.cluster-api/ exists, the content will be replaced.
 
 FLAGS
   -h    show this help and exit
@@ -37,15 +38,34 @@ function kubectl_mgmt_cluster() { kubectl --context "kind-${MGMT_CLUSTER_NAME}" 
 function base64d() { base64 -D 2>/dev/null || base64 -d; }
 
 function healthCheck() {
-  if [[ -d $HOME/.cluster-api ]]; then
-    echo "$HOME/.cluster-api/ exists, the content will be replaced. Press [y] to continue, any other keys to terminate."
-    while read -r -n1 key; do
-      if [[ ${key} == "y" ]]; then
-        break
-      else
-        exit 1
-      fi
-    done
+  if ! go version; then
+    echo "go is required"
+    exit 1
+  fi
+
+  if [[ -d $GOPATH ]]; then
+    echo "GOPATH is not set"
+    exit 1
+  fi
+
+  if ! kind version; then
+    echo "kind is not installed"
+    exit 1
+  fi
+
+  if ! kubectl version --client; then
+    echo "kubectl is required"
+    exit 1
+  fi
+
+  if ! kustomize version; then
+    echo "kustomize is required"
+    exit 1
+  fi
+
+  if ! python --version 2>&1 =~ 2\.7; then
+    echo "python2 is required"
+    exit 1
   fi
 }
 
@@ -95,13 +115,13 @@ EOF
   fi
 
   # build images
-  make -C ${CAPI_REPO}/test/infrastructure/docker docker-build REGISTRY="$IMG_REGISTRY"
-  make -C ${CAPI_REPO}/test/infrastructure/docker generate-manifests REGISTRY="$IMG_REGISTRY"
+  make -C "${CAPI_REPO}"/test/infrastructure/docker docker-build REGISTRY="$IMG_REGISTRY"
+  make -C "${CAPI_REPO}"/test/infrastructure/docker generate-manifests REGISTRY="$IMG_REGISTRY"
 
   # run local overlap hack
-  ${CAPI_REPO}/cmd/clusterctl/hack/local-overrides.py
+  "${CAPI_REPO}"/cmd/clusterctl/hack/local-overrides.py
 
-  cat > $HOME/.cluster-api/clusterctl.yaml << EOF
+  cat > "$HOME"/.cluster-api/clusterctl.yaml << EOF
 providers:
   - name: docker
     url: $HOME/.cluster-api/overrides/infrastructure-docker/${INFRA_DOCKER_VERSION}/infrastructure-components.yaml
@@ -192,7 +212,7 @@ while getopts ":hud" opt; do
       echo "${USAGE}" && exit 1
       ;;
     u)
-#      healthCheck
+      healthCheck
       deleteAllClusters
       prepare
       create_mgmt_cluster
