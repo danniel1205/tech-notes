@@ -43,7 +43,7 @@ function healthCheck() {
     exit 1
   fi
 
-  if [[ -d $GOPATH ]]; then
+  if [[ ! -d $GOPATH ]]; then
     echo "GOPATH is not set"
     exit 1
   fi
