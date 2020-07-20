@@ -1,51 +1,11 @@
----
-tags: distributed-system
----
+# Raft distributed consensus
 
-# Distributed system
-
-<https://en.wikipedia.org/wiki/Distributed_computing>
-A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal. Three significant characteristics of distributed systems are: concurrency of components, lack of a global clock, and independent failure of components.
-
-## Properties of distributed system
-
-- Concurrency: Each computer executes events independently at the same time.
-- Lack of a global clock: There is no single global clock that determines the sequence of events happening across all computers in the network.
-- Independent failure of components: It’s impossible to have a system free of faults.
-  - Crash-fail: The component stops working without warning (e.g., the computer crashes).
-  - Omission: The component sends a message but it is not received by the other nodes (e.g., the message was dropped).
-  - Byzantine: The component behaves arbitrarily.
-- Message passing
-  - Sync
-  - Async
-
-## Distributed consensus
-
-Symmetric, leader-less:
-
-- All servers have equal roles
-- Client can contact any server
-
-Asymmetric, leader-based:
-
-- Leader
-- Follower
-- Candidate: Candidate of a leader
-- At any given time, one server is in charget, others accept its decision.
-- Client communites with leader
-
-### Paxos
-
-<https://en.wikipedia.org/wiki/Paxos_%28computer_science%29>
-
-### Raft
-
-#### Faults it handles
+## Faults it handles
 
 - crash fault: stop working, or resume working after restart
 - network fault: communication interrupted, delayed, partitioned
 
-#### Leader election
+## Leader election
 
 Term: Election + Normal operation under a single leader
 
@@ -82,7 +42,7 @@ Election liveness: Some candidate must eventually becomes a leader
 
 - Each server choose `electionTimeout` randomly between [t, 2t]
 
-#### Normal operation
+## Normal operation
 
 Log structure:
 
@@ -102,7 +62,7 @@ Workflow:
   - Followers pass commited commands to their state machines(programs)
 - If followers crashed or slow to response the `AppendEntries` RPC, leader will keep retrying (*If major servers within the cluster have moved to next term, leader will try to send `AppendEntries` RPC to those followers who are behind*)
 
-#### When leader changes
+## When leader changes
 
 When leader changes, logs among servers might not be identical. Leader's log is the only truth, and eventually leader makes followers log identical to its log.
 
@@ -150,7 +110,7 @@ For a leader to decide an entry is committed:
 ![new-commitment-rule](./new-commitment-rules.png)
 If entry 4 is committed, then S5 cannot be elected as leader at term 5.
 
-#### How to make log entries identical after leader changes
+## How to make log entries identical after leader changes
 
 - Leader deletes extraneous entries of followers
 - Leader fills in missing entries of followers
@@ -163,15 +123,15 @@ If entry 4 is committed, then S5 cannot be elected as leader at term 5.
 - For extraneous entries, follower overwrites inconsistent entry and deletes all subsequent entries(inconsistent)
 ```
 
-#### When old leader gets reconnected
+## When old leader gets reconnected
 
 Old leader holds an old term, so the RPC calls from old leader will be rejected if receivers hold newer term, then old leader steps down to be a follower
 
-#### If client request times out
+## If client request times out
 
 If client just simply reissues the command, it would result in the command gets executed twice. So we ask client to embed a unique id with each command, leader could use it to check if the command has been logged in the log entry. If yes, then just return the response from previously executed command
 
-#### Configuration changes
+## Configuration changes
 
 ![config-change](./config-change.png)
 If we had 3 servers at the beginning, and now want to add 2 more servers at the same time. There are several factors we need to consider:
@@ -192,15 +152,14 @@ The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/diss
 - Once C[new] log entries are committed, old config becomes irrelevant, cluster is under new config now
 
 ---
-Above solution works, but Raft is now using a simpler solution described in 4.2 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) 
+Above solution works, but Raft is now using a simpler solution described in 4.2 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf)
 
-TBA
+See [deep-dive-config-change](./deep-dive-config-change.md) for more details.
 
-#### Reading materials
+## Reading materials
 
 - <https://raft.github.io/#implementations>
 - <https://eli.thegreenplace.net/2020/implementing-raft-part-0-introduction/>
 - <https://www.micahlerner.com/2020/05/08/understanding-raft-consensus.html>
 - <https://github.com/etcd-io/etcd/tree/master/raft>
 - <https://github.com/ongardie/dissertation/blob/master/stanford.pdf>
-- 
