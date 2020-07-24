@@ -2,7 +2,7 @@
 tags: distributed-system
 ---
 
-# Distributed system
+# Distributed consensus
 
 <https://en.wikipedia.org/wiki/Distributed_computing>
 A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal. Three significant characteristics of distributed systems are: concurrency of components, lack of a global clock, and independent failure of components.
@@ -38,3 +38,17 @@ Asymmetric, leader-based:
 
 - Paxos: [wiki](<https://en.wikipedia.org/wiki/Paxos_%28computer_science%29>)
 - Raft: [notes](./raft-distributed-consensus.md)
+
+### Byzantine fault tolerant
+
+Both Paxos and Raft are not Byzantine fault-tolerant. The paper [Byzantine General’s Problem](https://people.eecs.berkeley.edu/~luca/cs174/byzantine.pdf) by Leslie Lamport, Robert Shostak, and Marshall Pease provided the first proof to solve the Byzantine General’s problem: it showed that a system with `x` Byzantine nodes must have at least `3x + 1` total nodes in order to reach consensus `(Only works in synchronous environment)`.
+
+We’re going to take a look at two algorithms (DLS and PBFT) that brought us closer than ever before to breaking the Byzantine + asynchronous barrier.
+
+- [DLS algorithm](https://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf)
+- [PBFT algorithm](http://pmg.csail.mit.edu/papers/osdi99.pdf)
+- Nakamoto Consensus: Instead of every node agreeing on a value, f(x) works such that all of the nodes agree on the probability of the value being correct. Rather than electing a leader and then coordinating with all nodes, consensus is decided based on which node can solve the computation puzzle the fastest.
+
+## References
+
+- <https://www.preethikasireddy.com/post/lets-take-a-crack-at-understanding-distributed-consensus>
