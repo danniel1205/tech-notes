@@ -4,6 +4,8 @@ tags: distributed-system
 
 # Distributed consensus
 
+## Distributed system
+
 <https://en.wikipedia.org/wiki/Distributed_computing>
 A distributed system is a system whose components are located on different networked computers, which communicate and coordinate their actions by passing messages to one another. The components interact with one another in order to achieve a common goal. Three significant characteristics of distributed systems are: concurrency of components, lack of a global clock, and independent failure of components.
 
@@ -19,7 +21,7 @@ A distributed system is a system whose components are located on different netwo
   - Sync
   - Async
 
-## Distributed consensus
+## Details of distributed consensus
 
 Symmetric, leader-less:
 
