@@ -162,7 +162,7 @@ EOF
 }
 
 function create_workload_cluster() {
-  cat ${WORKSPACE}/simple-cluster.yaml | sed -e 's~CLUSTER_NAME~'"${WORKLOAD_CLUSTER_NAME}"'~g' | kubectl_mgmt_cluster apply -f -
+  cat ${WORKSPACE}/simple-cluster-with-md.yaml | sed -e 's~CLUSTER_NAME~'"${WORKLOAD_CLUSTER_NAME}"'~g' | kubectl_mgmt_cluster apply -f -
 
   while ! kubectl_mgmt_cluster get secret "$WORKLOAD_CLUSTER_NAME"-kubeconfig; do
     sleep 5
