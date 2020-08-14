@@ -20,7 +20,7 @@ For example:
 }
 ```
 
-![json-binary-encoding](./json-binary-encoding.png)
+![json-binary-encoding](./resources/json-binary-encoding.png)
 
 ### Thrift and Protocal Buffers
 
@@ -36,8 +36,8 @@ struct Person {
 }
 ```
 
-![thrift](./thrift.png)
-![thrift-compact](./thrift-compact.png)
+![thrift](./resources/thrift.png)
+![thrift-compact](./resources/thrift-compact.png)
 
 ``` protobuf
 message Person {
@@ -47,7 +47,7 @@ message Person {
 }
 ```
 
-![protobuf](./protobuf.png)
+![protobuf](./resources/protobuf.png)
 
 #### New code has a new field added
 
@@ -82,5 +82,32 @@ New code can read the record that is written in old code by simply ignore the ta
 This operation might cause the value to lose prcision or get truncated.
 
 ### Avro
+
+Avro is another binary encoding format that is differnt from Protobuf and Thrift. It also uses schema to specify the data structure of data being encoded.
+
+``` Avro
+record Person {
+    string userName ;
+    union { null , long } favoriteNumber = null ;
+    array < string > interests ; }
+```
+
+- No tag numbers in schema. The encoding simply consists of values concatenated together
+- No `optional` or `requried` markers, it has `union` types and default values instead
+
+![avro](./resources/avro.png)
+
+If we do not have the tag number to identify each fields, the binary data can only be decoded in the correct order only if the code reads the data uses exactly the same schema. **However Avro does not require the schema to be the same, only requries they are compatible.**
+
+![avro-schema-revolution](./resources/avro-schema-revolution.png)
+
+- Avoro lib resolves the diffs by comparing the writer's schema and reader's schema side by side, and translate the data from writer's schema to reader's schema
+- Reader looks for the field from writer's schema, if it does not exist then set the default value
+- Writer's field which does not exsit in reader's schema, it will be ignored
+- In order to guarantee the forward and backward compatibility, only fields with default values could be added or removed
+
+### How does reader know the writer's schema
+
+
 
 ### Merits of Schemas
