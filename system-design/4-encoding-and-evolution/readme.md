@@ -108,6 +108,84 @@ If we do not have the tag number to identify each fields, the binary data can on
 
 ### How does reader know the writer's schema
 
+#### Thrift and Protobuf
 
+**Writer**: Using protobuf as the example, writer has to define the schema in a `.proto` file which look like as below:
+
+``` protobuf
+syntax = "proto3";
+package tutorial;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/danniel1205/explore-protobuf/tutorialpb";
+
+// [START messages]
+message Person {
+  string user_name = 1;
+  int64 favorite_number = 2;  // Unique ID number for this person.
+  repeated string interests = 3;
+  google.protobuf.Timestamp last_updated = 4;
+}
+// [END messages]
+```
+
+**Reader**: Reader has to use the same schema or compatible schema in order to unmarshal the binary data properly.
+
+#### Avro
+
+- Include writer's schema once at the beginning of the file, like storing a large file with millions of records in Hadoop.
+- For database, include a version number with the encoded record. The version number is the reference of a list of schema versions in database.
+- For sending data over network, negotiate the schema version on connection setup and then use it for the lifetime of the connection.
+
+Above might apply to `thrift` and `protobuf` as well.
+
+### Dynamic generated schemas
+
+We have a relational database, and want to dump its contents into file or transfer over network, using binary format is a better way. Generate a `Avro` schema from database schema is easier than `thrift` and `protobuf` which has tag numbers in their schema. The reasons are:
+
+- Easily map columns into `Avro` schema
+- Schema revolution is easier to be handled
+  - `Avro` does not have to care about the tag numbers
+  - `Thrift` and `Protobuf` need to generate the tag numbers manually and handle it carefully if a new column is added in a database table
 
 ### Merits of Schemas
+
+`Protobuf`, `Thrift` and `Avro` all use schema to describe a binary encoding format.
+
+- Can be more compat, can omit field name from the encoded data
+- Having a database of schemas allow you to check forward and backward compatibility of schema changes before anything is deployed
+- The generated code from a schema is useful. Like `Protobuf` generats code from `.proto` file
+
+### Modes of dataflow
+
+#### Dataflow through databases
+
+The process that writes to the database encodes the data. The process that reads from the database decodes the data.
+
+Usually there are multiple processes accessing the database, some of them could have the new version of schema, while others have the old version. The most important **rule** is to keep the field that does not belong to current version of schema intact!
+
+See the following diagram for more details. We SHOULD NOT remove the `photoURL` after writing the data back.
+![dataflow-database-compatibilty](./resources/dataflow-database-compatibility.png)
+
+#### Dataflow through service calls
+
+- Servers and clients of a service or mutiple microservices have multiple versions. So we need to make sure the schemas are compatible across versions.
+- A network request is unpredictable. `package lost`, `request timeout`, `network latency`. We need to handle this carefully, simply `retry` might cause the action to be performed multiple times.
+- Data types of parameters need to be translated between different programming languages.
+- Handle the upgrade of the service in prior to clients, which means the schamas need to be backward and forward compatible.
+
+#### Dataflow through asynchronous message passing
+
+The asynchronous messaage passing system uses a `message broker` to receive and deliver messages. The messages are usually one way, the sender usually does not expect to receive a reply on the message sent. (RPC is a request/response dataflow)
+
+There are several advantages using `message broker`:
+
+- messages could be buffered
+- auto redeliver the message.
+- sender does not need to know the IP address of receiver
+- one message could be sent to multiple receivers
+
+### Additional refs
+
+- <https://developers.google.com/protocol-buffers/docs/gotutorial>
