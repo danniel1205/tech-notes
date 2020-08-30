@@ -67,6 +67,7 @@ Data could be inconsistent between leader and followers due to the replication l
 #### Read your own write issue
 
 ![read-you-own-write](./resources/read-your-own-write.png)
+
 **If we DO NOT have cache solution. When writing Facebook comments, the user might not see the comment right after his write. When user update his Facebook profile, the user might not see the update right after his write.**
 
 We could somehow redirect such read requests to leader:
@@ -84,6 +85,7 @@ The user sends several read requests, like refresh page, the requests could be s
 #### Consistent prefix reads
 
 There could be a big problem to solve in chatting service, e.g. iMessager, Snapchat. In a group chat, the observer might see the messages in an unexpected order.
+
 ![consistent-prefix-read](./resources/consistent-prefix-read.png)
 
 One possible solution is to make sure that any related writes are written to the same partition.
@@ -167,10 +169,12 @@ Those requests might arrive different nodes in different order. We could not sim
 - If server sees a version number which is less than current version number, it means there are concurrent writes happen
 - If server sees a version number which is larger than current version number, which means there are previous write requests have not arrived.
 
-**Concurrent Shopping Cart**
+##### Concurrent Shopping Cart
+
 ![concurrent-shopping-cart](./resources/concurrent-shopping-cart.png)
 
-**Happens Before Writes**
+##### Happens Before Writes
+
 ![happens-before-writes](./resource/../resources/happens-before-writes.png)
 
 #### Last write wins solution
