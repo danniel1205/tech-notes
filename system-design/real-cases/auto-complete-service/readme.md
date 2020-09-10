@@ -22,13 +22,15 @@ Current time complexity:
 
 - O(L) to find the prefix, L is the length of a prefix
 - O(N) to get all candidates, N is the number of word nodes starting from current prefix
-- O(K) to sort the candidates based on scores and return top K result.
+- O(KLogK) to sort the candidates based on scores and return top K result.
 
 From above solution, the O(N) could be the bottle neck if we have a large number of sub nodes to be processed. And this could be true since we want to generate the completions based on all users' input as one of the requirements.
 
 ---
 A improvement from above is to store the list of completions as part of each node. This is called pre-computation.
+
 ![pre-computation-trie-tree](./resources/pre-computation-trie-tree.png)
+
 This speeds up the read performance, but brings in some issues as well:
 
 - Increases the space usage since each node has to store extra data
@@ -45,7 +47,7 @@ If we really want to improve on storing extra data, we could:
 Current time complexity:
 
 - O(L) to find the prefix, L is the length of a prefix
-- O(K) to sort the candidates based on scores and return top K result
+- O(KLogK) to sort the candidates based on scores and return top K result
 
 If we limited the `L` and `K`, the time complexity is constant.
 
@@ -53,7 +55,9 @@ If we limited the `L` and `K`, the time complexity is constant.
 Now we need to persist the data model into database, because we do not want to lose the prefix tree we have generated in the case of system rebooting. If using relational database, we need to have ORM(Object-Relation-Mapping) to map the data structure into schemas which might increase the overhead of encoding and decoding and have an impact on performance. With NoSQL databases, things will be easier because a tree structure could be stored as a Document(MongoDB) or a nested JSON. Updating the tree structure would be also easier, and also distribute the persistent data.
 
 We could use Prefix Hash Tree to store our prefixes and completions, because it could map the prefix to a hash key and the completions to the hash value, so it could be very easily implemented in NoSQL database.
+
 ![prefix-hash-tree](./resources/prefix-hash-tree.png)
+
 The disadvantage will be the space. It does not share the prefix of each key in the map. But we could accept the tradeoff.
 
 ---
@@ -66,6 +70,10 @@ And We have the following operations need to consider:
 - Add a new word and delete a word out of `K`. If a new word is added, a new entry in the completions list is added. If the size of completions list has reached `K`, we need to eliminate the lowest score element and then add the new word. We could set the score of the new word to be the `current lowest score + 1`. In this case, we could avoid the new word to be eliminated immediately once another new word is added. Adding a new word needs to process all its parent keys as well like what we do for update the score of existing word.
 
 The database processing is time consuming, we could have a background process to do the job instead of doing it synchronously.
+
+#### How to store tree in data store
+
+[how to store tree in data store](https://github.com/danniel1205/tech-notes/blob/master/system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
 
 ### Cache
 
