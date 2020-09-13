@@ -161,3 +161,4 @@ kubectl apply -f $GOPATH/src/github.com/danniel1205/sample-webhook-server/deploy
 
 - Why validating admission is after mutating admission ?
     The reason is whatever request object a validating webhook sees needs to be the final version that would be persisted to `etcd`
+- If we have two webhooks are applied to the same resource, in which order the request will be validated ? The request will be validated against the webhooks specified in the `ValidatingWebhookConfiguration.webhooks` one by one. Which means if the first succeeded, the request will be sent to the second one.
