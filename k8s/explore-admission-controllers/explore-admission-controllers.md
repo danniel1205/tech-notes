@@ -92,7 +92,7 @@ kind load docker-image sample-webhook-server:v1
 ``` bash
 cd $GOPATH/src/github.com/danniel1205/sample-webhook-server/
 mkdir -p keys
-.hacks/genkeys.sh keys
+./hacks/genkeys.sh keys
 
 tree keys
 keys
