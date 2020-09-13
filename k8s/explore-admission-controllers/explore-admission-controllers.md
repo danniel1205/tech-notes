@@ -144,7 +144,7 @@ kubectl apply -f $GOPATH/src/github.com/danniel1205/sample-webhook-server/deploy
 ## Try to create the test pod
 
 ``` bash
-kubectl apply -f $GOPATH/src/github.com/danniel1205/sample-webhook-server/deploy/test-pod.yaml
+kubectl apply -f $GOPATH/src/github.com/danniel1205/sample-webhook-server/deploy/test-validating-pod.yaml
 
 Error from server: error when creating "deploy/test-pod.yaml": admission webhook "sample-webhook-server.example.com" denied the request: the namespace must be specified to create pod
 ```
