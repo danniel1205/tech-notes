@@ -190,7 +190,13 @@ function create_workload_cluster() {
   ${workload_cluster_kubectl} apply -f https://docs.projectcalico.org/v3.15/manifests/calico.yaml
 
   # wait for node to be ready
+  until ${workload_cluster_kubectl} get nodes -o jsonpath='{.items[].metadata.name}' &> /dev/null
+  do
+    echo "Wait the nodes information to be readable from kubectl..."
+    sleep 1
+  done
   # TODO: Might need to add a timeout here
+  echo "Wait the nodes condition to be ready..."
   for node in $(${workload_cluster_kubectl} get nodes -o jsonpath='{.items[].metadata.name}'); do
     ${workload_cluster_kubectl} wait --for=condition=Ready --timeout=300s node/"${node}"
   done
