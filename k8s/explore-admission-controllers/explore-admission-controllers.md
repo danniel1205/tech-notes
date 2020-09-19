@@ -50,7 +50,7 @@ Ref: [k8s-blog](https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admi
         metadata:
         name: config
         apiServer:
-        extraArgs:
+          extraArgs:
             "enable-admission-plugins": "NamespaceLifecycle,LimitRanger,ServiceAccount,TaintNodesByCondition,Priority,DefaultTolerationSeconds,DefaultStorageClass,PersistentVolumeClaimResize,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
     nodes:
     - role: control-plane
