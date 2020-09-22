@@ -42,12 +42,16 @@ type ServerDataModel {
 
 Above is what Google Doc uses for its collaborative editing. It requires the `ACK` to be received by client before sending next operation.
 
-**Alice type in "Hello"**
+### Alice type in "Hello"
+
 ![alice-type-hello](./resources/workflow-1.png)
 
-**Alice type in "World" and Bob type in "!"**
+### Alice type in "World" and Bob type in "!"
+
 ![concurrent-edit-from-client](./resources/workflow-2.png)
+
 The change from Alice will be pending, because she does not receive the `ACK` from server on previous `Operation`. The change from Bob does not have to wait for the `ACK`, because it is the very first change from that client. If the broadcast from Alice's change delivers to Bob before sending out his change to server. The follow is what would happen. However it is also possible Bob sends out his changes before receiving the broadcast from server, the OT function on Bob side should calculate out the same result. Since we treat server as the source of truth.
+
 ![ack-and-broadcast-from-alice](./resources/workflow-3.png)
 
 On next step, both Alice and Bob will flush their pending changes to server. Server will process the first one gets delivered and response with `ACK` and broadcast to another client. The slower client will perform the operational transformation on its local.
