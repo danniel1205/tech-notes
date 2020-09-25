@@ -1,31 +1,68 @@
-# How collaborative editing work
+# Collaborative editing
 
 ## Data model
 
 ``` golang
-type Operation {
-    Kind string  // Insert, Delete
-    Data string  // "Hello"
+type Document struct {
+    DocID int       // The identifier to indicate which doc the operation would be performed against
+    Revision int    // 2
+    Content string  // Hello World
 }
 
-type ClientDataModel {
-    lastSyncedRevision int  // 1
-    pendingOperations Operation  // Insert(5, " World")
-    sentOperation Operation  // Insert(0, "Hello")
-    doc string  // the final doc. e.g. "Hello World"
+type Operation struct {
+    Kind string      // Insert, Delete
+    Data string      // "Hello"
+    Position int     // @1, where to insert or delete
+    ClientID string  // User: Alice
+    DocID int        // The identifier to indicate which doc the operation would be performed against
+    Revision int     // 2
 }
 
-type ServerDataModel {
-    pendingChanges []struct {
+type ClientDataModel struct {
+    LastSyncedRevision int         // 1
+    PendingOperations []Operation  // Insert(5, " World")
+    SentOperation Operation        // Insert(0, "Hello")
+}
+
+type ServerDataModel struct {
+    PendingOperations []Operation  // the pending changes have not been processed
+    ChangeHistory []struct {
         Revision int
-        Op Operation
-        ClientID string
-    }  // the pending changes have not been processed
-    changeHistory []struct {
-        Revision int
-        Op Operation
-        doc string // the doc
+        ProcessedOperation Operation
     }  // for history tracking
+}
+```
+
+## Algorithm
+
+**Transformation functions**:
+
+``` python
+Tii(Ins[p1, c1], Ins[p2, c2]) {
+  if (p1 < p2) || ((p1 == p2) && (order() == -1))  // order() – order calculation
+    return Ins[p1, c1]; // Tii(Ins[3, ‘a’], Ins[4, ‘b’]) = Ins[3, ‘a’]
+  else
+    return Ins[p1 + 1, c1]; // Tii(Ins[3, ‘a’], Ins[1, ‘b’]) = Ins[4, ‘a’]
+}
+
+Tid(Ins[p1, c1], Del[p2]) {
+  if (p1 <= p2)
+    return Ins[p1, c1]; // Tid(Ins[3, ‘a’], Del[4]) = Ins[3, ‘a’]
+  else
+    return Ins[p1 – 1, c1]; // Tid(Ins[3, ‘a’], Del[1]) = Ins[2, ‘a’]
+}
+
+Tdi(Del[p1], Ins[p2, c1]) {
+  // Exercise
+}
+
+Tdd(Del[p1], Del[p2]) {
+  if (p1 < p2)
+    return Del[p1]; // Tdd(Del[3], Del[4]) = Del[3]
+  else
+    if (p1 > p2) return Del[p1 – 1]; // Tdd(Del[3], Del[1]) = Del[2]
+  else
+    return Id; // Id – identity operator
 }
 ```
 
@@ -62,40 +99,13 @@ The pending change on server side from Bob is out of data. Server expects to see
 
 Now all clients and server have the identical docs.
 
-**Transformation functions**:
+## Data persisitent
 
-``` python
-Tii(Ins[p1, c1], Ins[p2, c2]) {
-  if (p1 < p2) || ((p1 == p2) && (order() == -1))  // order() – order calculation
-    return Ins[p1, c1]; // Tii(Ins[3, ‘a’], Ins[4, ‘b’]) = Ins[3, ‘a’]
-  else
-    return Ins[p1 + 1, c1]; // Tii(Ins[3, ‘a’], Ins[1, ‘b’]) = Ins[4, ‘a’]
-}
+If client crashes or user closes the app/browser, we should be able to restore the latest change when user opens the application again. So that server needs to persist the doc content on disk. When user comes online, it will read from server with latest changes and display.
 
-Tid(Ins[p1, c1], Del[p2]) {
-  if (p1 <= p2)
-    return Ins[p1, c1]; // Tid(Ins[3, ‘a’], Del[4]) = Ins[3, ‘a’]
-  else
-    return Ins[p1 – 1, c1]; // Tid(Ins[3, ‘a’], Del[1]) = Ins[2, ‘a’]
-}
+## Data replication
 
-Tdi(Del[p1], Ins[p2, c1]) {
-  // Exercise
-}
-
-Tdd(Del[p1], Del[p2]) {
-  if (p1 < p2)
-    return Del[p1]; // Tdd(Del[3], Del[4]) = Del[3]
-  else
-    if (p1 > p2) return Del[p1 – 1]; // Tdd(Del[3], Del[1]) = Del[2]
-  else
-    return Id; // Id – identity operator
-}
-```
-
-## Data persisitency
-
-If client crashes or user closes the app/browser, we should be able to restore the latest change when user opens the application again. So that server needs to persist the (docID, revision, docContent) on disk. When user comes online, it will read from server with latest changes and display.
+## Data partition
 
 ## References
 
