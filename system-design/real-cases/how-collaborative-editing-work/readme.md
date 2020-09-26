@@ -1,5 +1,13 @@
 # Collaborative editing
 
+## System architecture
+
+There are two possible architectures: peer-to-peer or client-server.
+
+If using peer-to-peer pattern, the challenge is how to make sure the document among all peers are identical. If peer A makes a change and broadcast to other peers, due to the network delay the broadcast to peer C is not delivered, but is delivered to peer B. At the same time, peer B is making changes and broadcast to other peers. Peer C receives the broadcast from peer B and merge the changes. Now you could see not all peers have the same document.
+
+If using client-server pattern, we could let the server to keep the single of truth and all clients need to be align with it. Client expects to receive a ACK from server before sending next request. That is because a) if no ACK, we could not garantee server received the change, so the data could loss due to network issue. b) ACK means server processed the request and transform to a new state.
+
 ## Data model
 
 ``` golang
