@@ -134,7 +134,8 @@ The leader based replication is based on the concept that all write requests are
 
 ### How does it work
 
-Client sends write reqeusts to several replicas(could be all replicas). Or the coordinator node will redirect write requests to all replicas. Read requests are also sent to several nodes in parallel.
+- Client sends write reqeusts to several replicas(could be all replicas). Or the coordinator node will redirect write requests to all replicas. If the replicas are globally distributed in different data center, the write requests would be broadcasted to all replicas globally.
+- Client sends requests to all regional nodes or sends to one node, the one as a coordinator to redirect requests to all other regional nodes. The correct answer is decided by quorum. e.g. `n/2 + 1` response with `A`, the minorities response with `B`, we return `A` to client, and do a stale data repair.
 
 ### Handle stale data
 
