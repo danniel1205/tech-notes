@@ -145,10 +145,82 @@ If using `ZooKeeper`, it will track the cluster metadata. When a partition chang
 
 ![zookeeper-service-discovery](./resources/zookeeper-service-discovery.png)
 
+For redis, above three ways are equivalent to the following: 
+
+- Client side partitioning means that the clients directly select the right node where to write or read a given key. Many Redis clients implement client side partitioning.
+
+- Proxy assisted partitioning means that our clients send requests to a proxy that is able to speak the Redis protocol, instead of sending requests directly to the right Redis instance. The proxy will make sure to forward our request to the right Redis instance according to the configured partitioning schema, and will send the replies back to the client. The Redis and Memcached proxy [Twemproxy](https://github.com/twitter/twemproxy) implements proxy assisted partitioning.
+
+- Query routing means that you can send your query to a random instance, and the instance will make sure to forward your query to the right node. Redis Cluster implements an hybrid form of query routing, with the help of the client (the request is not directly forwarded from a Redis instance to another, but the client gets redirected to the right node).
+
+## Disadvantages of partitioning
+
+- The operations include multiple keys need to deal with multiple partitions. If that is atomic operation, it would increase the complex from implementation perspective. For redis, operations involving multiple keys are usually not supported. For instance you can't perform the intersection between two sets if they are stored in keys that are mapped to different Redis instances (actually there are ways to do this, but not directly). And Redis transactions involving multiple keys can not be used.
+
 ## How consistent hash work
 
-TBA
+- <https://www.toptal.com/big-data/consistent-hashing>
+- <https://medium.com/@dgryski/consistent-hashing-algorithmic-tradeoffs-ef6b8e2fcae8>
+
+To add the list of nodes to the ring hash, each one is hashed m.replicas times with slightly different names ( 0 node1, 1 node1, 2 node1, …). The hash values are added to the m.nodes slice and the mapping from hash value back to node is stored in m.hashMap. Finally the m.nodes slice is sorted so we can use a binary search during lookup.
+
+``` golang
+func (m *Map) Add(nodes ...string) {
+    for _, n := range nodes {
+        for i := 0; i < m.replicas; i++ {
+            hash := int(m.hash([]byte(strconv.Itoa(i) + " " + n)))
+            m.nodes = append(m.nodes, hash)
+            m.hashMap[hash] = n
+        }
+    }
+    sort.Ints(m.nodes)
+}
+```
+
+To see which node a given key is stored on, it’s hashed into an integer. The sorted nodes slice is searched to see find the smallest node hash value larger than the key hash (with a special case if we need to wrap around to the start of the circle). That node hash is then looked up in the map to determine the node it came from.
+
+``` golang
+func (m *Map) Get(key string) string {
+    hash := int(m.hash([]byte(key)))
+    idx := sort.Search(len(m.keys),
+        func(i int) bool { return m.keys[i] >= hash }
+    )
+    if idx == len(m.keys) {
+        idx = 0
+    }
+    return m.hashMap[m.keys[idx]]
+}
+```
+
+### Downside of consistent hasing
+
+First, the load distribution across the nodes can still be uneven. With 100 replicas (“vnodes”) per server, the standard deviation of load is about 10%. The 99% confidence interval for bucket sizes is 0.76 to 1.28 of the average load (i.e., total keys / number of servers). This sort of variability makes capacity planning tricky. Increasing the number of replicas to 1000 points per server reduces the standard deviation to ~3.2%, and a much smaller 99% confidence interval of 0.92 to 1.09.
+This comes with significant memory cost. For 1000 nodes, this is 4MB of data, with O(log n) searches (for n=1e6) all of which are processor cache misses even with nothing else competing for the cache.
+
+### Improve on consistent hashing
+
+- [Jump Hash](https://arxiv.org/pdf/1406.2294.pdf)
+
+Jump Hash addresses the two disadvantages of ring hashes: it has no memory overhead and virtually perfect key distribution. (The standard deviation of buckets is 0.000000764%, giving a 99% confidence interval of 0.99999998 to1.00000002).
+Jump Hash is also fast. The loop executes O(ln n) times, faster by a constant amount than the O(log n) binary search for Ring Hash, and made faster even still by the fact that the computation is done entirely in a few registers and doesn’t pay the overhead of cache misses.
+
+- [Multi-probe consistent hashing](https://arxiv.org/pdf/1505.00062.pdf)
+
+The basic idea is that instead of hashing the nodes multiple times and bloating the memory usage, the nodes are hashed only once but the key is hashed k times on lookup and the closest node over all queries is returned. The value of k is determined by the desired variance. For a peak-to-mean-ratio of 1.05 (meaning that the most heavily loaded node is at most 5% higher than the average), k is 21. With a tricky data structure you can get the total lookup cost from O(k log n) down to just O(k). My implementation uses the tricky data structure.
+
+- [Rendezvous Hashing](https://www.eecs.umich.edu/techreports/cse/96/CSE-TR-316-96.pdf)
+
+The idea is that you hash the node and the key together and use the node that provides the highest hash value. The downside is that it’s hard to avoid the O(n) lookup cost of iterating over all the nodes.
+
+- [Maglev Hashing](https://research.google/pubs/pub44824/) and [alt link](https://blog.acolyer.org/2016/03/21/maglev-a-fast-and-reliable-software-network-load-balancer/)
+
+One of the primary goals was lookup speed and low memory usage as compared with ring hashing or rendezvous hashing. The algorithm effectively produces a lookup table that allows finding a node in constant time. The two downsides is that generating a new table on node failure is slow (the paper assumes backend failure is rare), and this also effectively limits the maximum number of backend nodes. Maglev hashing also aims for “minimal disruption” when nodes are added and removed, rather than optimal. For maglev’s use case as a software load balancer, this is sufficient.
+The table is effectively a random permutation of the nodes. A lookup hashes the key and checks the entry at that location. This is O(1) with a small constant (just the time to hash the key).
 
 ## How to partition a tree or graph data
 
 TBA
+
+## References
+
+- <https://redis.io/topics/partitioning>
