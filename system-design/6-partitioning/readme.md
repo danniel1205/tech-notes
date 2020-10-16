@@ -217,10 +217,46 @@ The idea is that you hash the node and the key together and use the node that pr
 One of the primary goals was lookup speed and low memory usage as compared with ring hashing or rendezvous hashing. The algorithm effectively produces a lookup table that allows finding a node in constant time. The two downsides is that generating a new table on node failure is slow (the paper assumes backend failure is rare), and this also effectively limits the maximum number of backend nodes. Maglev hashing also aims for “minimal disruption” when nodes are added and removed, rather than optimal. For maglev’s use case as a software load balancer, this is sufficient.
 The table is effectively a random permutation of the nodes. A lookup hashes the key and checks the entry at that location. This is O(1) with a small constant (just the time to hash the key).
 
-## How to partition a tree or graph data
+## How to partition a tree or graph dataset
+
+### How to partition a graph dataset
+
+[How to partition billion nodes graph(pdf)](./resources/how-to-partition-billion-node-graph.pdf)
+
+There are two ways mentioned in the paper above:
+
+- Graph coarsening (vertical partition)
+  - Coarsen, group multiple nodes
+  - The nodes within the same group go to one partition
+- Label propagation (vertical partition)
+  - Update the label of current node to be the same as majority of adjacent nodes. And repeat until the label of nodes won't change
+  - The nodes with same label belong to the same partition
+- Combined of above two (MULTI-LEVEL LABEL PROPAGATION)
+  - Given a graph G, the algorithm divides G into k balanced
+partitions stored in k machines. Initially, each vertex is assigned a
+unique label, which indicates the partition it belongs to. In the end,
+the entire graph will have k labels, and each label has the same
+number of vertices. The algorithm has three steps. The first step is iterative coarsening. In each iteration, we find densely connected substructures
+through label propagation (LP). We collapse each connected structure into a single vertex to produce a “coarsened” graph. Then we
+repeat the process until the graph is small enough. The rationale for
+iterative coarsening is that a single round is not enough to reduce
+the number of labels to an acceptable level. The coarsening step is
+controlled by 3 user specified parameters: We keep coarsening the
+graph until there are no more than α labels (partitions); The label
+propagation takes at most β iterations to avoid wasteful iterations;
+The size of each label (partition) is controlled by γ ≥ 1 – each
+label (partition) has an upper-limit size of |V |
+kγ . In the second step,
+we partition the coarsened graph using an off-the-shelf algorithm,
+such as KL or METIS. In the last step we project the partitioning
+on the coarsened graph to the original graph.
+
+### How to partition a tree
 
 TBA
 
 ## References
 
 - <https://redis.io/topics/partitioning>
+- <https://docs.microsoft.com/en-us/azure/cosmos-db/graph-partitioning>
+- <https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data>
