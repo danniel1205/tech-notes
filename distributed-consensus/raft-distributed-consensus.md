@@ -46,7 +46,7 @@ Election liveness: Some candidate must eventually becomes a leader
 
 Log structure:
 
-![img](./log-structure.png)
+![img](./resources/log-structure.png)
 
 Each server has its own copy of log and persistent on disk
 
@@ -66,7 +66,7 @@ Workflow:
 
 When leader changes, logs among servers might not be identical. Leader's log is the only truth, and eventually leader makes followers log identical to its log.
 
-![log-consistency](./log-consistency.png)
+![log-consistency](./resources/log-consistency.png)
 
 If there is network partition at term 3 (S1 - S3 is one group, S4 - S5 is one group) and leader at term 3 is S2. The committed entry `5` needs to be present in the logs of all future leaders, otherwise `5` might be missing if leader becomes S5 at term 4 onward.
 
@@ -89,7 +89,7 @@ Safety requirement:
 
 Pick the best leader:
 
-![pick-best-leader](./hard-to-tell-if-entry-is-committed.png)
+![pick-best-leader](./resources/hard-to-tell-if-entry-is-committed.png)
 (Term2, Index5) are committed entries. But if S3 becomes unavailable, new leader needs to be picked from S1 and S2. If new leader is S2 which does not have (Term2, Index5), there will be a problem that the committed entries will be lost. So, leader election needs to pick the server which has "most complete" log.
 
 Voters deny the vote if:
@@ -97,17 +97,17 @@ Voters deny the vote if:
 
 This guarantees S4 and S5 will be elected as the new leader from the following:
 
-![pick-best-leader](./pick-best-leader-1.png)
+![pick-best-leader](./resources/pick-best-leader-1.png)
 
 However, the following case will still mess things up, since S5 could still be elected as leader at Term5. Entry 3 is not safely committed. So we have to adjust the committed rules.
-![pick-best-leader](./pick-best-leader-2.png)
+![pick-best-leader](./resources/pick-best-leader-2.png)
 
 For a leader to decide an entry is committed:
 
 - Must be stored on majority of servers
 - At least one new entry from leader's term must also be stored on majority of servers
 
-![new-commitment-rule](./new-commitment-rules.png)
+![new-commitment-rule](./resources/new-commitment-rules.png)
 If entry 4 is committed, then S5 cannot be elected as leader at term 5.
 
 ## How to make log entries identical after leader changes
@@ -133,7 +133,7 @@ If client just simply reissues the command, it would result in the command gets 
 
 ## Configuration changes
 
-![config-change](./config-change.png)
+![config-change](./resources/config-change.png)
 If we had 3 servers at the beginning, and now want to add 2 more servers at the same time. There are several factors we need to consider:
 
 - Config changes(e.g adding two new servers, the number of serves become from 3 to 5) are not applied to all servers at the same time
@@ -141,7 +141,7 @@ If we had 3 servers at the beginning, and now want to add 2 more servers at the 
 
 The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) which uses two phases.
 
-![joint-consensus](./joint-consensus.png)
+![joint-consensus](./resources/joint-consensus.png)
 
 - Client sends a config change request to leader
 - Leader enters the joint consensus phase
@@ -154,7 +154,7 @@ The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/diss
 ---
 Above solution works, but Raft is now using a simpler solution described in 4.2 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf)
 
-See [deep-dive-config-change](./deep-dive-config-change.md) for more details.
+See [deep-dive-config-change](./resources/deep-dive-config-change.md) for more details.
 
 ## Reading materials
 

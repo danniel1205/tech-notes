@@ -2,12 +2,12 @@
 
 ## Safety
 
-![config-change](./config-change.png)
+![config-change](./resources/config-change.png)
 From above diagram, it is possible S1 and S2 form the majority of C-old, and S3, S4, S5 form the majority of C-new. We need to avoid two leaders from both C-old and C-new to be elected within the same term.
 
 ### Add or remove one server at a time
 
-![change-one-member-at-a-time](./change-one-member-at-a-time.png)
+![change-one-member-at-a-time](./resources/change-one-member-at-a-time.png)
 If add or remove one server at a time, this prevents cluster from splitting into two independent majorities. Which means it is not possible to have two leaders within the same term.
 
 #### Workflow
@@ -26,7 +26,7 @@ This has been covered in [distributed-system](./distributed-system.md). I just c
 
 The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) which uses two phases.
 
-![joint-consensus](./joint-consensus.png)
+![joint-consensus](./resources/joint-consensus.png)
 
 - Client sends a config change request to leader
 - Leader enters the joint consensus phase
@@ -66,5 +66,5 @@ Leader needs to wait until C-new is committed to step down. In two servers clust
 
 ## Reading materials
 
-- [raft paper](./consensus-raft.pdf)
+- [raft paper](./resources/consensus-raft.pdf)
 - etcd learner design: <https://etcd.io/docs/v3.4.0/learning/design-learner/>
