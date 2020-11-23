@@ -145,9 +145,33 @@ Most of the IM systems are using push model for 1:1 messaging and pull model for
 
 ## How messages are persisted
 
+### What are the requirements
+
+- Heavy on read (Reading messages are much more than writing)
+  - We want each nodes to could split the reads
+- Concurrent writes (Huge amount of writes, and network delay could result in concurrent writes to DB)
+  - We need the DB can handle the concurrent write well
+  - We want data on all nodes are consistent
+
+### Options
+
+Debates between `Leader based` or `Leaderless`. Amazon Chime uses DynamoDB which is leader based. And Slack uses MySQL cluster which is active-active with strong consistency. Alibaba Dingding uses Table Store which is also a leader based system. Using Cassandra(leaderless) should also be fine which has good performance but needs some mechanism to conordinate the message consistency on all nodes and the ordering (which could be easily handled in leader based).
+
+### What other companies are using
+
+- Dynamo DB (Amazon Chime)
+- Table Store (Alibaba Dingding)
+- MySQL cluster + Vitess (Slack)
+
 ## Overall architecture
 
+![design-architecture](./resources/design-architecture.png)
+
+### Dingding's architecture
+
 ![Conventional architecture](./resources/conventional-architecture.png)
+
+### Slack's architecture
 
 ![How slack works](./resources/how-slack-works.png)
 
@@ -157,9 +181,12 @@ Most of the IM systems are using push model for 1:1 messaging and pull model for
   - network partition makes the data persistent process delays. we might want to have a on-disk `msg sync queue` with a relatively larger size to temporarily persist the data on local disk, then the data persistent process could periodically back up the snapshot of the local on-disk `msg sync queue`.
   - or make the in-memory `mgs sync queue` larger ?
 - A new group member is added to the group, do we allow him/her to see the full history ?
-- How to deal with high peak of re-connection ? Flannel
+- How to deal with high peak of re-connection ? Flannel(Slack)
+- Why we need `Gateway server` layer ?
+  - Close to end users
+  - Improve performance by caching
 
-## Others
+## Miscellaneous
 
 - Slack is using:
   - `Redis` as the job queue
@@ -179,3 +206,4 @@ Most of the IM systems are using push model for 1:1 messaging and pull model for
 - [Slack: Flannel, Application level edge cache](https://slack.engineering/flannel-an-application-level-edge-cache-to-make-slack-scale/)
 - [SimpleIM.java](https://github.com/aliyun/tablestore-timeline/blob/master/src/test/java/examples/v1/SimpleIM.java)
 - [Slack on AWS case study](https://aws.amazon.com/solutions/case-studies/slack/)
+- [Alibaba Table Store](https://www.alibabacloud.com/blog/how-table-store-implements-high-reliability-and-high-availability_594658?spm=a2c41.12741423.0.0)
