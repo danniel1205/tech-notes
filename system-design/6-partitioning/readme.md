@@ -228,7 +228,7 @@ There are two ways mentioned in the paper above:
 - Graph coarsening (vertical partition)
   - Coarsen, group multiple nodes
   - The nodes within the same group go to one partition
-- Label propagation (vertical partition)
+- Label propagation (horizontal partition)
   - Update the label of current node to be the same as majority of adjacent nodes. And repeat until the label of nodes won't change
   - The nodes with same label belong to the same partition
 - Combined of above two (MULTI-LEVEL LABEL PROPAGATION)
