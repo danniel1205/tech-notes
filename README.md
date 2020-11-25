@@ -19,12 +19,12 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
 
 - System design
   - Design data intensive application notes
-    - [data models and query languages](./system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
-    - [storage and retrieval](./system-design/3-storage-and-retrieval/readme.md)
-    - [encoding and evolution](./system-design/4-encoding-and-evolution/readme.md)
-    - [replication](./system-design/5-replication/readme.md)
+    - [2 data models and query languages](./system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
+    - [3 storage and retrieval](./system-design/3-storage-and-retrieval/readme.md)
+    - [4 encoding and evolution](./system-design/4-encoding-and-evolution/readme.md)
+    - [5 replication](./system-design/5-replication/readme.md)
       - [how to handle concurent write](./system-design/5-replication/how-to-handle-concurrent-write.md)
-    - [partitioning](./system-design/6-partitioning/readme.md)
+    - [6 partitioning](./system-design/6-partitioning/readme.md)
   
   - Design cases
     - [design auto complete service](./system-design/real-cases/auto-complete-service/readme.md)
