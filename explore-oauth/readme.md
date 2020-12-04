@@ -20,7 +20,7 @@ OAuth is a industry-standard protocol for authorization. It is for authorization
 
 #### Request to get auth token
 
-``` HTTP
+``` text
 GET {Authorization Endpoint}
   ?response_type=code             // - Required
   &client_id={Client ID}          // - Required
@@ -35,7 +35,7 @@ HOST: {Authorization Server}
 
 #### Response with auth token
 
-``` HTTP
+``` text
 HTTP/1.1 302 Found
 Location: {Redirect URI}
   ?code={Authorization Code}  // - Always included
@@ -45,7 +45,7 @@ Location: {Redirect URI}
 
 #### Request to get access token using auth token
 
-``` HTTP
+``` text
 POST {Token Endpoint} HTTP/1.1
 Host: {Authorization Server}
 Content-Type: application/x-www-form-urlencoded
@@ -60,7 +60,7 @@ grant_type=authorization_code  // - Required
 
 #### Response with access token
 
-``` HTTP
+``` text
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Cache-Control: no-store
@@ -82,7 +82,7 @@ Pragma: no-cache
 
 #### Request to get access token
 
-``` HTTP
+``` text
 GET {Authorization Endpoint}
   ?response_type=token          // - Required
   &client_id={Client ID}        // - Required
@@ -95,7 +95,7 @@ HOST: {Authorization Server}
 
 #### Response with access token
 
-``` HTTP
+``` text
 HTTP/1.1 302 Found
 Location: {Redirect URI}
   #access_token={Access Token}       // - Always included
@@ -114,7 +114,7 @@ Location: {Redirect URI}
 
 #### Request to get access token
 
-``` HTTP
+``` text
 POST {Token Endpoint} HTTP/1.1
 Host: {Authorization Server}
 Content-Type: application/x-www-form-urlecoded
@@ -126,7 +126,7 @@ grant_type=password    // - Required
 
 #### Response with access token
 
-``` HTTP
+``` text
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Cache-Control: no-store
@@ -148,7 +148,7 @@ Pragma: no-cache
 
 #### Request to get access token
 
-``` HTTP
+``` text
 POST {Token Endpoint} HTTP/1.1
 Host: {Authorization Server}
 Authorization: Basic {Client Credentials}
@@ -159,7 +159,7 @@ grant_type=client_credentials  // - Required
 
 #### Response with access token
 
-``` HTTP
+``` text
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Cache-Control: no-store
@@ -180,7 +180,7 @@ Pragma: no-cache
 
 #### Request to get the new access token
 
-``` HTTP
+``` text
 POST {Token Endpoint} HTTP/1.1
 Host: {Authorization Server}
 Content-Type: application/x-www-form-urlecoded
@@ -191,7 +191,7 @@ grant_type=refresh_token        // - Required
 
 #### Response with new access token
 
-``` HTTP
+``` text
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Cache-Control: no-store
