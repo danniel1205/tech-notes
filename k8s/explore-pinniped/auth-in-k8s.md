@@ -95,3 +95,4 @@ We could delegate the normal users authentication to a remote authn service via 
 
 - -<https://www.magalix.com/blog/kubernetes-authentication>
 - <https://learnk8s.io/kubernetes-custom-authentication#using-the-webhook-token-authentication-plugin>
+- [example of webhook for token authn](https://github.com/learnk8s/authentication/blob/master/authn.go)
