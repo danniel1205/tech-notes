@@ -35,3 +35,4 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
   - Miscellaneous
     - [distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
     - [caching](./system-design/caching/readme.md)
+    - [real-time-interactions-on-live-video](./system-design/real-time-interactions-on-live-video/readme.md)
