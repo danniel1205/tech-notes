@@ -1,0 +1,48 @@
+#@ load("@ytt:data", "data")
+
+#@ app_name = data.values.app_name if hasattr(data.values, "app_name") else "cowsay"
+#@ image = data.values.image if hasattr(data.values, "image") else "danielguo/cowsay-web-app"
+#@ service_port = data.values.service_port if hasattr(data.values, "service_port") else 1323
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: #@ app_name
+  name: #@ app_name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: #@ app_name
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: #@ app_name
+    spec:
+      containers:
+        - image: #@ image
+          imagePullPolicy: IfNotPresent
+          name: #@ app_name + "-web-app"
+          resources: {}
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: #@ app_name
+  name: #@ app_name
+spec:
+  ports:
+    - port: #@ service_port
+  selector:
+    app: #@ app_name
+status:
+  loadBalancer: {}

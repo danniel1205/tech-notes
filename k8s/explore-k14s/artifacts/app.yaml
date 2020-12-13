@@ -1,0 +1,21 @@
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: cow-say-app
+  namespace: default
+spec:
+  serviceAccountName: default-ns-sa
+  fetch:
+    - image:
+        url: danielguo/cow-say-template:v1
+  template:
+    - ytt:
+        ignoreUnknownComments: true
+        paths:
+          - templates
+        inline:
+          pathsFrom:
+            - secretRef:
+                name: cow-say-value
+  deploy:
+    - kapp: {}

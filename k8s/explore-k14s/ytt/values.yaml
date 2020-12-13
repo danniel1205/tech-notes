@@ -1,0 +1,5 @@
+#@data/values
+---
+app_name: "cow-say"
+image: "danielguo/cowsay-web-app"
+service_port: 1323
