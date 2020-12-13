@@ -1,3 +1,3 @@
 # Explore pinniped
 
-TBA
+![pinniped-workflow](./resources/pinniped-workflow.png)
