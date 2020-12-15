@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    kapp.k14s.io/change-group: "cow-say/pre-app"
+  name: pre-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: debian
+        image: debian
+        command: ["sleep",  "10"]
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    kapp.k14s.io/change-group: "cow-say/post-app"
+    # insert the cow-say/app after the cow-say/app, this enables a post deployment job
+    kapp.k14s.io/change-rule: "upsert after upserting cow-say/app"
+  name: post-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: debian
+        image: debian
+        command: ["sleep",  "20"]
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kapp.k14s.io/change-group: "cow-say/app"
+    # insert the cow-say/app after the cow-say/pre-app
+    kapp.k14s.io/change-rule: "upsert after upserting cow-say/pre-app"
+  labels:
+    app: cow-say
+  name: cow-say
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cow-say
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: cow-say
+    spec:
+      containers:
+        - image: danielguo/cowsay-web-app
+          imagePullPolicy: IfNotPresent
+          name: cow-say-web-app
+          resources: {}
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kapp.k14s.io/change-group: "cow-say/app"
+  labels:
+    app: cow-say
+  name: cow-say
+spec:
+  ports:
+    - port: 1323
+  selector:
+    app: cow-say
+status:
+  loadBalancer: {}

@@ -6,7 +6,7 @@ k14s has been renamed to Carvel.
 
 [Carvel tool official website](https://carvel.dev/)
 
-## Lab
+## Lab 1
 
 - Install Carvel tool
 - Define the ytt template & values for [cow say app](https://github.com/danniel1205/sample-cowsay-web-app)
@@ -24,8 +24,9 @@ brew install ytt kbld kapp imgpkg kwt vendir
 
 ### Create the ytt template and values
 
-[Templates](./ytt/templates)
-[Values](./ytt/values.yaml)
+[Templates](./lab-1/ytt/templates)
+
+[Values](./lab-1/ytt/values.yaml)
 
 ### Build the ytt template by using docker
 
@@ -38,12 +39,13 @@ docker push danielguo/cow-say-template:v1
 
 - Switch to root dir of this project
 - Install kapp-controller: `kubectl apply -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml`
-- Create RBAC for kapp-controller. [Link to the Yaml](./artifacts/rbac.yaml)
+- Create RBAC for kapp-controller. [Link to the Yaml](./lab-1/artifacts/rbac.yaml)
 - Create Secret which contains the cow say ytt template values.
   `kubectl create secret generic cow-say-value --from-file=values.yaml=./ytt/values.yaml`
-- Create App CR for cow-say app [Link to the Yaml](./artifacts/app.yaml)
+- Create App CR for cow-say app [Link to the Yaml](./lab-1/artifacts/app.yaml)
 - Double check the deployed app
-  ```
+  
+  ``` bash
     kapp list
     Target cluster 'https://127.0.0.1:32776' (nodes: kind-control-plane)
     
@@ -59,8 +61,11 @@ docker push danielguo/cow-say-template:v1
     
     Succeeded
   ```
+
 - Enable port forwarding and access the app `kubectl port-forward service/cow-say 8081:1323`
-- ``` bash
+- Curl to the app endpoint
+  
+  ``` bash
     curl localhost:8081
      _______
     < Hello >
@@ -71,6 +76,14 @@ docker push danielguo/cow-say-template:v1
                     ||----w |
                     ||     ||%
    ```
+
+## Lab 2
+
+Explore the apply order from kapp: <https://github.com/vmware-tanzu/carvel-kapp/blob/develop/docs/apply-ordering.md>
+
+- Install kapp-controller
+  `kubectl apply -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml`
+- Deploy the app in order(the order is specified by the annotation from workload-bundle.yaml) `kapp deploy -a cow-say -f ./lab-2/artifacts/workload-bundle.yaml`
 
 ## References
 
