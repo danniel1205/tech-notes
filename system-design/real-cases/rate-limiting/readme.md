@@ -5,12 +5,32 @@
 - Fail close system: A system is set to shut down and prevent further operation when failure conditions are detected.
 - Fail open system: A system set to fail open does not shut down when failure conditions are present. Instead, the system remains “open” and operations continue as if the system were not even in place.
 
+For rate limiting system, it should be `Fail Open` system.
+
 ## Why rate limiting is needed
 
 - Protect shared services from **excessive use** or prevent **resource starvation**(from malicious or non-malicious DoS)
 - Managing policies and quotas. When the capacity of a service is shared among many users or consumers, it can apply rate limiting per user to provide fair and reasonable use, without affecting other users.
 - Controlling flow. For example, you can distribute work more evenly between workers by limiting the flow into each worker, preventing a single worker from accumulating a queue of unprocessed items while other workers are idle.
 - Avoiding excess costs. You can use rate limiting to control costs⁠ in the service which has traffic based auto-scaling feature.
+
+## Requirements clarification
+
+- Could we leverage software's horizontal scaling feature to handle the high load, e.g. K8S auto scaling ?
+  - The auto scaling does not happen immediately
+- Why not limit the max connections in LB and max threads count on service endpoint ?
+  - LB has no knowledge about the request priorities, we might want to limit some high cost requests but allow low cost requests to pass through.
+
+### Functional requirement
+
+- API returns `bool` to indicate whether a request is allowed
+
+### Non-functional requirement
+
+- Low latency on decision making
+- Accurate on throttle calculation
+- Scalable on arbitrarily large number of hosts
+- `Fail Open`, if rate limiting fails we still want our service to be available
 
 ## Strategies
 
@@ -44,6 +64,29 @@ When under the high traffic responding to the caller's request is also a challen
 If the backend service does not provide the rate-limiting, the client could apply self-imposed throttling.
 
 - Apply exponential backoff with random offset(jitter) on retries.
+
+## Architecture
+
+### Local rate limiting
+
+![local-rate-limiting](./resources/local-rate-limiting-no-scale.png)
+
+- Admin could configure the rules via the config service, e.g. client A could have 100 QPS
+- Rate limiting service pulls the configurations and store in the cache for quick access
+- When requests come to backend service, the backend service checkes with rate limiting service to see if the requests are allowed
+- Rate limit engine calculates the throttle and return back to the backend service if requests are allowed or rejected
+
+#### Why not letting the rate limiting service to be the gateway ?
+
+- In that case, the rate limiting service needs to handle the service discovery for all downstream services which is a big pain
+
+#### What if the in-memory requests cache crashes ?
+
+- All requests counts are lost, which could cause the peak traffic to backend service. So we need to make the `requests counts` persistent in a distributed way
+
+### Distributed rate limiting
+
+![distributed-rate-limiting-with-scale](./resources/distributed-rate-limiting-with-scale.png)
 
 ## How to implement rate limiting | Techniques for enforcing rate limit
 
@@ -100,7 +143,77 @@ This is similar to token bucket, if no tokens are available, we could put the re
 
 ### Sliding log
 
+- Each request has a timestamp
+- Store a window of logs and sorted by timestamp (this could be done by using treeMap in java or other data structure implement the red-back tree)
+- When a new request comes, we calculate the sum of requests in the range of (currTime - windowSize, currTime). (logn to query)
+- If the amount of requests have exceeded the limit, then discard the request, otherwise accept it
+
+#### Pros
+
+- No boundary burst
+- Accurate
+
+#### Cons
+
+- Costy on request count calculation
+- Costy on storing the logs
+
 ### Sliding window
+
+![sliding-window](./resources/sliding-window.png)
+
+- Has two states, `preState` and `currState`
+- Lets say we have the following facts:
+  - The window size is 60mins
+  - `currTime` - `floor(currTime)` is 15mins
+  - `preState.count` = 84
+  - `currState.count` = 36
+- We calculate the total amount of requests from `12:15` - `1:15`
+  - `84 * (60 - 15) / 60 + 36`
+- If the result from above exceeds the limit, then we discard the request, otherwise accept it
+- If `currTime - floor(currTime)` >= `windowSize`, `preState = currState`. So that the window moves forward
+
+#### Pros
+
+- Overcome the query and storage issue from sliding log solution
+- No bundary burst
+- Approximately value is acceptable
+
+#### Cons
+
+- It is possible that all requests happen in [12:15 - 1:00], so the calculation will have some inaccuracy
+
+## Rate limiting in distributed system
+
+### Global rate limiting vs Local rate limiting
+
+![distributed-rate-limiting](./resources/rate-limiting-in-distributed-system.png)
+
+If we have **global rate limiting** set to be 2 qps, and we track the counts from local nodes. Now all nodes are serving 2 requests at this point. It is possible that next request which is supposed to be served by `node2` got redirected to `node1`, it causes the `node1` exceeds the limit.
+
+#### Potential solution 1
+
+- Using sticky session to stick the reqeuts to a particular node. 
+
+##### Challenges
+
+This is not scalable when node is overloaded. And not fault tolerant when node has some failures.
+
+#### Potential solution 2
+
+![global-rate-limiting-solution-2](./resources/global-rate-limiting-solution-2.png)
+
+- Use a centralized data store to hold the rate limiting counts for a particular window and node. If using Redis, `key` could be `nodeId`, `value` could be `list`(https://redis.io/topics/data-types#lists)
+- When a new request comes, it get the available node from the centralized data store, increment the count. Then the LB knows whether that node is available to handle requests
+- For every new request, it evict the out of window boundary record first. OR we could use circular queue just to overwrite.
+
+##### Challenges
+
+- Latency caused by accessing centralized data store, e.g. redis
+  - If the redis cluster is not local, we could use periodical resync mechanism to push data to redis, and using local memory for condition checks. This could potentially reduce the latency between nodes and redis cluster
+- Race condition: `get-then-set` from/to data store under high concurent requests would cause problem. If one request is in between of `get` and `set`, there is another request comes to `get`.
+  - Adding a lock could be one solution, but would be the performance bottle neck
+  - Using [incr](https://redis.io/commands/incr) to fulfill the `set-then-get` pattern
 
 ## Rate limiting in K8S
 
@@ -110,5 +223,7 @@ This is similar to token bucket, if no tokens are available, we could put the re
 - <https://konghq.com/blog/how-to-design-a-scalable-rate-limiting-algorithm/>
 - <https://medium.com/nlgn/design-a-scalable-rate-limiting-algorithm-system-design-nlogn-895abba44b77>
 - <https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/>
+- <https://stripe.com/blog/rate-limiters>
+- <https://www.codementor.io/@arpitbhayani/system-design-sliding-window-based-rate-limiter-157x7sburi>
 - [Youtube: Leaky Bucket vs Token Bucket](https://www.youtube.com/watch?v=bL0I54Vac9Q&ab_channel=AvinashKokare-CS-ITTutorials)
 - [Private repo: Golang rate limiter implementation](https://github.com/danniel1205/rate-limiter)
