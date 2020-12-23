@@ -12,13 +12,13 @@ For rate limiting system, it should be `Fail Open` system.
 - Protect shared services from **excessive use** or prevent **resource starvation**(from malicious or non-malicious DoS)
 - Managing policies and quotas. When the capacity of a service is shared among many users or consumers, it can apply rate limiting per user to provide fair and reasonable use, without affecting other users.
 - Controlling flow. For example, you can distribute work more evenly between workers by limiting the flow into each worker, preventing a single worker from accumulating a queue of unprocessed items while other workers are idle.
-- Avoiding excess costs. You can use rate limiting to control costs⁠ in the service which has traffic based auto-scaling feature.
+- Avoiding excess costs. You can use rate limiting to control costs in the service which has traffic based auto-scaling feature.
 
 ## Requirements clarification
 
 - Could we leverage software's horizontal scaling feature to handle the high load, e.g. K8S auto scaling ?
   - The auto scaling does not happen immediately
-- Why not limit the max connections in LB and max threads count on service endpoint ?
+- Why not limit the max connections in LB and max threads count on a service endpoint ?
   - LB has no knowledge about the request priorities, we might want to limit some high cost requests but allow low cost requests to pass through.
 
 ### Functional requirement
@@ -189,33 +189,60 @@ This is similar to token bucket, if no tokens are available, we could put the re
 
 ![distributed-rate-limiting](./resources/rate-limiting-in-distributed-system.png)
 
-If we have **global rate limiting** set to be 2 qps, and we track the counts from local nodes. Now all nodes are serving 2 requests at this point. It is possible that next request which is supposed to be served by `node2` got redirected to `node1`, it causes the `node1` exceeds the limit.
+If we have **global rate limiting** set to be 4 QPS, each of the service needs to have the same QPS configurations. **It is NOT 4 / 2 QPS for each service**. It worst case, all requests have been redirected to one of the service, but 0 requests are directed to others. We should not allow new requests even there is one service has available slots.
 
-#### Potential solution 1
+In above case, tracking the count locally as local rate limiting is not feasible. We need to know what is the total number of requests have been received, so that to decide if we reach the limit.
 
-- Using sticky session to stick the reqeuts to a particular node. 
+Using the following formular to calculate if we have reached the limit
 
-##### Challenges
+- Service A-1's remaining capacity - rest of service's used capacity = 0 - 0(service A-2)
+- Service A-2's remaining capacity - rest of service's capacity = 4 - 4(service A-1)
 
-This is not scalable when node is overloaded. And not fault tolerant when node has some failures.
+How could we get `the rest of service's used capacity` ?
 
-#### Potential solution 2
+#### Solution 1
+
+Broadcasting to all other services about current service's status. E.g. Service A-1 broadcast its status to service A-2. This is also called full mesh.
+
+Challenges:
+
+This solution does not scale when there are large number of services in one mesh.
+
+#### Solution 2
+
+Gossip protocol, one service picks another service randomly and tells its status. Yahoo is using this solution.
+
+#### Solution 3
 
 ![global-rate-limiting-solution-2](./resources/global-rate-limiting-solution-2.png)
 
-- Use a centralized data store to hold the rate limiting counts for a particular window and node. If using Redis, `key` could be `nodeId`, `value` could be `list`(https://redis.io/topics/data-types#lists)
-- When a new request comes, it get the available node from the centralized data store, increment the count. Then the LB knows whether that node is available to handle requests
-- For every new request, it evict the out of window boundary record first. OR we could use circular queue just to overwrite.
+- Using a centralized data store to hold the rate limiting counts for a particular time unit and service. If using Redis, `key` could be `serviceID`, `value` could be `list` of time unit in sorted order (<https://redis.io/topics/data-types#lists>)
+- When a new request comes, we could get the count from redis to decide if allow or reject the request
+- For every new request, it evict the out of window boundary record first. OR we could use a circular queue just to overwrite.
 
-##### Challenges
+Challenges:
 
 - Latency caused by accessing centralized data store, e.g. redis
   - If the redis cluster is not local, we could use periodical resync mechanism to push data to redis, and using local memory for condition checks. This could potentially reduce the latency between nodes and redis cluster
-- Race condition: `get-then-set` from/to data store under high concurent requests would cause problem. If one request is in between of `get` and `set`, there is another request comes to `get`.
+- Race condition: `get-then-set` from/to data store under high concurrent requests would cause problem. If one request is in between of `get` and `set`, there is another request comes to `get`.
   - Adding a lock could be one solution, but would be the performance bottle neck
   - Using [incr](https://redis.io/commands/incr) to fulfill the `set-then-get` pattern
 
 ## Rate limiting in K8S
+
+### K8S apiserver
+
+The [implementation](https://github.com/kubernetes/apiserver/blob/master/pkg/server/filters/maxinflight.go#L139-L208) 
+of apiserver has a flag called `maxInflightLimit` which is used to declare a buffered channel. Each time when a new 
+request comes, it tries to add one element(`bool`) into the channel, the server invokes `handler.ServeHTTP(w, r)` and 
+then poll one element out from the channel. If the buffer is full, 429 will be returned.
+
+### client-go rate limiting
+
+K8S controller runtime uses the client-go [default rate limiter](https://github.com/kubernetes/client-go/blob/master/util/workqueue/default_rate_limiters.go#L39-L45) 
+if no custom rate limiters are provided by controller options. The client-go default controller rate limiter applies 
+`ItemExponentialFailureRateLimiter` and `BucketRateLimiter`, returns the worst case response back. `BucketRateLimiter` 
+uses the golang built-in [implementation](https://github.com/golang/time/blob/master/rate/rate.go#L310).
 
 ## References
 
@@ -225,5 +252,6 @@ This is not scalable when node is overloaded. And not fault tolerant when node h
 - <https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/>
 - <https://stripe.com/blog/rate-limiters>
 - <https://www.codementor.io/@arpitbhayani/system-design-sliding-window-based-rate-limiter-157x7sburi>
+- [Youtube: Design rate limiting](https://www.youtube.com/watch?v=FU4WlwfS3G0&ab_channel=SystemDesignInterview)
 - [Youtube: Leaky Bucket vs Token Bucket](https://www.youtube.com/watch?v=bL0I54Vac9Q&ab_channel=AvinashKokare-CS-ITTutorials)
 - [Private repo: Golang rate limiter implementation](https://github.com/danniel1205/rate-limiter)
