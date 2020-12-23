@@ -252,6 +252,7 @@ uses the golang built-in [implementation](https://github.com/golang/time/blob/ma
 - <https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/>
 - <https://stripe.com/blog/rate-limiters>
 - <https://www.codementor.io/@arpitbhayani/system-design-sliding-window-based-rate-limiter-157x7sburi>
+- <https://github.com/alibaba/Sentinel>
 - [Youtube: Design rate limiting](https://www.youtube.com/watch?v=FU4WlwfS3G0&ab_channel=SystemDesignInterview)
 - [Youtube: Leaky Bucket vs Token Bucket](https://www.youtube.com/watch?v=bL0I54Vac9Q&ab_channel=AvinashKokare-CS-ITTutorials)
 - [Private repo: Golang rate limiter implementation](https://github.com/danniel1205/rate-limiter)
