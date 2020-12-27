@@ -244,6 +244,17 @@ if no custom rate limiters are provided by controller options. The client-go def
 `ItemExponentialFailureRateLimiter` and `BucketRateLimiter`, returns the worst case response back. `BucketRateLimiter` 
 uses the golang built-in [implementation](https://github.com/golang/time/blob/master/rate/rate.go#L310).
 
+### envoyproxy rate limiting
+
+This is invented by lyft which backed by redis:
+
+- Using redis' `INCRBY` to increase the key count
+- Using redis' `EXPIRE` to set the key expiration. The key will expire automatically, so that the key does not over the limit 
+  if that key does not exist
+- Using the concept of set-then-get to check the count with limit
+
+See [implementations](https://github.com/envoyproxy/ratelimit/blob/master/src/redis/fixed_cache_impl.go) for more details.
+
 ## References
 
 - <https://cloud.google.com/solutions/rate-limiting-strategies-techniques>
