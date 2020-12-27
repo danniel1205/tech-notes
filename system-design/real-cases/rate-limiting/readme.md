@@ -264,6 +264,7 @@ See [implementations](https://github.com/envoyproxy/ratelimit/blob/master/src/re
 - <https://stripe.com/blog/rate-limiters>
 - <https://www.codementor.io/@arpitbhayani/system-design-sliding-window-based-rate-limiter-157x7sburi>
 - <https://github.com/alibaba/Sentinel>
+- <https://www.alibabacloud.com/blog/detailed-explanation-of-guava-ratelimiters-throttling-mechanism_594820?spm=a2c41.12912026.0.0>
 - [Youtube: Design rate limiting](https://www.youtube.com/watch?v=FU4WlwfS3G0&ab_channel=SystemDesignInterview)
 - [Youtube: Leaky Bucket vs Token Bucket](https://www.youtube.com/watch?v=bL0I54Vac9Q&ab_channel=AvinashKokare-CS-ITTutorials)
 - [Private repo: Golang rate limiter implementation](https://github.com/danniel1205/rate-limiter)
