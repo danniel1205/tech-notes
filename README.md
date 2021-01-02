@@ -32,6 +32,7 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
     - [design shopping cart] - TBA
     - [design instant messaging](./system-design/real-cases/instant-messaging-system/readme.md)
     - [design rate limiting](./system-design/real-cases/rate-limiting/readme.md)
+    - [design news feeds](./system-design/real-cases/news-feeds/readme.md)
 
   - Miscellaneous
     - [distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
