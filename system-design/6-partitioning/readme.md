@@ -251,9 +251,23 @@ we partition the coarsened graph using an off-the-shelf algorithm,
 such as KL or METIS. In the last step we project the partitioning
 on the coarsened graph to the original graph.
 
-### How to partition a tree
+## How industry handles data sharding
 
-TBA
+### Redis cluster
+
+<https://redis.io/topics/cluster-tutorial#redis-cluster-data-sharding>
+
+<https://redis.io/topics/cluster-spec#keys-distribution-model>
+
+- Fixed hash slots in entire cluster: 16384
+- Slot = CRC16(key) % 16384
+- Keys are automatically sharded across multiple nodes
+  - If we have three master nodes in a cluster:
+    - Node A contains hash slots from 0 to 5500
+    - Node B contains hash slots from 5501 to 11000
+    - Node C contains hash slots from 11001 to 16383
+- Redis does not provide auto rebalancing if an new node is added or an existing node is deleted
+- Redis does not provide auto rebalancing an existing node is deleted. Slots must be moved prior to node deletion, otherwise redis will reject the node deletion
 
 ## References
 
