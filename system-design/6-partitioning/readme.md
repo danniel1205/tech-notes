@@ -259,6 +259,8 @@ on the coarsened graph to the original graph.
 
 <https://redis.io/topics/cluster-spec#keys-distribution-model>
 
+<https://developpaper.com/complete-steps-for-adding-and-deleting-redis-cluster/>
+
 - Fixed hash slots in entire cluster: 16384
 - Slot = CRC16(key) % 16384
 - Keys are automatically sharded across multiple nodes
