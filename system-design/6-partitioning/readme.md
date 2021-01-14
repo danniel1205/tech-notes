@@ -274,5 +274,6 @@ on the coarsened graph to the original graph.
 ## References
 
 - <https://redis.io/topics/partitioning>
+- <https://redis.io/topics/cluster-tutorial#redis-cluster-data-sharding>
 - <https://docs.microsoft.com/en-us/azure/cosmos-db/graph-partitioning>
 - <https://docs.microsoft.com/en-us/azure/cosmos-db/partition-data>
