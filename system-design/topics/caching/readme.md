@@ -20,7 +20,7 @@ There are different levels of caching:
 
 ### Look-aside
 
-![look-aside-cache](./resources/look-aside-cache.png)
+![look-aside-cache](resources/look-aside-cache.png)
 
 #### On read
 
@@ -59,7 +59,7 @@ Cons:
 
 #### On read
 
-![look-through-cache](./resources/look-through-cache.png)
+![look-through-cache](resources/look-through-cache.png)
 
 - client first checks the cache
 - if cache-hit, cache returns the result
@@ -79,7 +79,7 @@ Cons:
 
 ##### Sync writes
 
-![look-through-cache-sync-write](./resources/look-through-cache-sync-write.png)
+![look-through-cache-sync-write](resources/look-through-cache-sync-write.png)
 
 - client writes to cache
 - cache writes to storage in sync
@@ -99,7 +99,7 @@ Cons:
 
 ##### Async writes
 
-![look-through-cache-async-write](./resources/look-through-cache-asyc-write.png)
+![look-through-cache-async-write](resources/look-through-cache-asyc-write.png)
 
 ---
 Pros:
@@ -154,7 +154,7 @@ TBA
 
 [How custom controller works](https://app.gitbook.com/@daniel-guo/s/notebook/k8s-related/extend-k8s/crds/custom-controllers)
 
-![client-go-controller-interaction](./resources/client-go-controller-interaction.png)
+![client-go-controller-interaction](resources/client-go-controller-interaction.png)
 
 There could be multiple controllers reconcile a same set of resources, it would be a huge load if all controllers talk to api server to ask for the state of resources. So caching is really important.
 
@@ -176,4 +176,4 @@ More details could be found from the links below in references section.
 - [Redis vs Memcached (by AWS)](https://aws.amazon.com/elasticache/redis-vs-memcached/)
 - [Redis vs Memcached (by Alibaba Cloud)](https://alibaba-cloud.medium.com/redis-vs-memcached-in-memory-data-storage-systems-3395279b0941)
 - [Cache Consistency: Memcached at Facebook (MIT Lecture)](https://www.youtube.com/watch?v=Myp8z0ybdzM&ab_channel=MIT6.824%3ADistributedSystems)
-- [Paper: Scaling memcache at Facebook](./resources/memcache-fb.pdf)
+- [Paper: Scaling memcache at Facebook](resources/memcache-fb.pdf)
