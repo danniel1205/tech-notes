@@ -116,16 +116,25 @@ Cons:
 Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.html#cache-mode)
 
 - [Write-through Cache](https://www.youtube.com/watch?v=ptFn7f_SgSM&ab_channel=ASmallBug)
+  - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data “through” to the backend storage 
 
 - [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug), the same idea of [look-aside](#look-aside) mentioned above.
+  - Write does not touch cache
+  - Read from cache first
+    - if cache hits then return the value to client
+    - if cache misses then read from the db. Return the data back to client, update cache simultaneously
 
-- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug)
+- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug) (risky of data loss)
+  - The cache engine writes the data first to the cache storage and acknowledges to the application that the write is 
+    completed before the data is written to the backend storage
+  - The data is written back to DB when the key is evicted in cache
 
 - [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
 
 ## Granularity of caching key
 
-We know that the caching usually is a key-value store, and what data to be stored in cache is case by case. Usually there are two types I could think of:
+We know that the caching usually is a key-value store, and what data to be stored in cache is case by case. Usually 
+there are two types I could think of:
 
 - **Hash of the queries as the caching key**: The value could be a result of complicated query with filters
   - Pros:
