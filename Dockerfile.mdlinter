@@ -1,0 +1,7 @@
+FROM ruby:slim
+
+WORKDIR /workdir
+
+RUN gem install mdl
+
+CMD ["mdl", "."]
