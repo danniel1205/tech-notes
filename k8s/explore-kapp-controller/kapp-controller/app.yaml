@@ -1,0 +1,18 @@
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: simple-app
+spec:
+  serviceAccountName: default-ns-sa
+  fetch:
+    - image:
+        url: danielguo/test-app-template
+  template:
+    - ytt:
+        ignoreUnknownComments: true
+        inline:
+          pathsFrom:
+            - secretRef:
+                name: test-app-values-secret
+  deploy:
+    - kapp: {}

@@ -1,0 +1,12 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:data", "data")
+
+#@overlay/match by=overlay.subset({"metadata":{"name":"nginx-deployment"}})
+---
+spec:
+  replicas: #@ data.values.nginx.replicas
+
+#@overlay/match by=overlay.subset({"metadata":{"name":"my-new-cron-object"}})
+---
+spec:
+  cronSpec: #@ data.values.cronTab.cronSpec

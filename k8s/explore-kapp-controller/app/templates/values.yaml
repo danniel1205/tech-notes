@@ -1,0 +1,6 @@
+#@data/values
+---
+nginx:
+  replicas: 2
+cronTab:
+  cronSpec: "* * * * */2"
