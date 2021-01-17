@@ -62,7 +62,7 @@ type Feed struct {
 
 ``` golang
 type Comment struct {
-    FeedID   string 
+    FeedID   string
     UserID   string // who writes the comment
     Text     string
     ...
@@ -97,12 +97,16 @@ type Media struct {
 
 We need to persist the data models to fit the requirements of data persistent.
 
-There are tons of the video out there talking about the diffs betwen sql and nosql databases, like [this one](https://towardsdatascience.com/databases-101-sql-vs-nosql-which-fits-your-data-better-45e744981351).
+There are tons of the video out there talking about the diffs betwen sql and nosql databases,
+like [this one](https://towardsdatascience.com/databases-101-sql-vs-nosql-which-fits-your-data-better-45e744981351).
 
 We would consider the following when making the decisions:
 
-- Flexibility: In our case, some of the data models could be unchanged for a very long time, e.g. `UserProfile`. But others could be extended from time to time, e.g. `Feed`, facebook does not have `likes` feature at the very begining. So we could use SQL database for `UserProfile`, use NoSQL for `Feed`, `Media` and `UserRelations`.
-- Scalability: NoSQL database is natually designed for distributed system. If using SQL database like `mysql cluster`, we might need to have another layer(`Vitess`) to manage its scalability.
+- Flexibility: In our case, some of the data models could be unchanged for a very long time, e.g. `UserProfile`.
+  But others could be extended from time to time, e.g. `Feed`, facebook does not have `likes` feature at the very beginning.
+  So we could use SQL database for `UserProfile`, use NoSQL for `Feed`, `Media` and `UserRelations`.
+- Scalability: NoSQL database is natually designed for distributed system. If using SQL database like `mysql cluster`,
+  we might need to have another layer(`Vitess`) to manage its scalability.
 - Feeds are read heavy, so we want a database service with a relatively good performance on reads and queries.
 
 ### To persist media
@@ -113,13 +117,16 @@ Click here to know more on [differences between file storage, block storage, obj
 
 ### MessageQueue/Kafka to support Push/Pull model
 
-In order to stream the feeds to consumers, the post requests could be sent to the message queue waiting to be processed, and then dispatched to Kafka to buffer the feeds for online consumers. This definitely could help to reduce the database access frequencies.
+In order to stream the feeds to consumers, the post requests could be sent to the message queue waiting to be processed,
+and then dispatched to Kafka to buffer the feeds for online consumers. This definitely could help to reduce the database
+access frequencies.
 
 ## Architecture
 
 ![architecture](resources/architecture.png)
 
-Above is the very brief high level architecture based on push model. The service does not necessarily to be `push based`. The blue lines are the workflow of posting a news feed, and the green lines are the workflow of getting a news feed.
+Above is the very brief high level architecture based on push model. The service does not necessarily to be `push based`.
+The blue lines are the workflow of posting a news feed, and the green lines are the workflow of getting a news feed.
 
 ## Components design
 
@@ -161,8 +168,11 @@ More details could be found [here](../real-time-interactions-on-live-video/readm
 
 ### Add comments
 
-Counting likes could be done in a batch, because it does not have to be real time. However adding comments needs to be handled as quickly as possible.
-A user could send an request with `{'feedId': 'xxxx', 'userId':'bob123', 'text': 'this is awsome'}` to server for processing. The idea is similar as messaging that server side has a message queue handles the requests and using worker threads to process the requests. The order of comments are based on the order when the requests are inserted into database.
+Counting likes could be done in a batch, because it does not have to be real time. However adding comments needs to be
+handled as quickly as possible.
+A user could send an request with `{'feedId': 'xxxx', 'userId':'bob123', 'text': 'this is awsome'}` to server for processing.
+The idea is similar as messaging that server side has a message queue handles the requests and using worker threads to
+process the requests. The order of comments are based on the order when the requests are inserted into database.
 
 ## Scaling
 

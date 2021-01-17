@@ -2,6 +2,8 @@ FROM ruby:slim
 
 WORKDIR /workdir
 
+COPY ./md_style.rb /workdir
+
 RUN gem install mdl
 
-CMD ["mdl", "."]
+CMD ["mdl", "--style=md_style.rb", "."]

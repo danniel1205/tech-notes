@@ -1,6 +1,6 @@
 # Design instant messaging system
 
-This is the notes for designing a facebook messager, Tencent wechat, Whatsapp, Slack, Alibaba Dingding like instant messager system.
+This is the notes for designing a facebook messager, Tencent wechat, Whatsapp, Slack, Alibaba Dingding like instant messaging system.
 
 ## User stories
 
@@ -53,7 +53,9 @@ This is the notes for designing a facebook messager, Tencent wechat, Whatsapp, S
 
 ``` golang
     type Message struct {
-        sequenceID string  // channelID:timestamp to make it global unique, channelID could be mapped from sourceID and targetID if 1:1 messaging, or channelID could be the targetID if group messaging
+        // channelID:timestamp to make it global unique, channelID could be mapped from sourceID and targetID if 1:1
+        // messaging, or channelID could be the targetID if group messaging
+        sequenceID string
         text       string  // text content of the message
         mediaURL   string  // the URL
     }
@@ -119,10 +121,13 @@ Analysis:
 
 ![pull-model](./resources/pull-model.png)
 
-- Each individule sender maintains an message queue (overall it is a `MessageQueues`), every time when a sender wants to send data no matter target is online or offline, it sends to its own message queue. E.g. `B` has a session with `A`, `B` sends data into the `A-B` queue.
+- Each individule sender maintains an message queue (overall it is a `MessageQueues`), every time when a sender wants
+  to send data no matter target is online or offline, it sends to its own message queue. E.g. `B` has a session with
+  `A`, `B` sends data into the `A-B` queue.
 - Every time when receiver wants to read messages, it `pull`s from each message queue.
 
-For example, I was chatting with 10 of my friends, there will be 10 message queues between my friends and I. Each time I open the app, it loops on all message queues to pull the messages.
+For example, I was chatting with 10 of my friends, there will be 10 message queues between my friends and I.
+Each time I open the app, it loops on all message queues to pull the messages.
 
 The cons of this approach are:
 
@@ -132,12 +137,14 @@ The cons of this approach are:
 
 ![push-model](./resources/push-model.png)
 
-- The receiver maintains a big message queue, all senders send new messages to this queue for message sync. It combines all messages from all senders.
+- The receiver maintains a big message queue, all senders send new messages to this queue for message sync.
+  It combines all messages from all senders.
 - When receiver wants to read, it just read from the queue.
 
 The cons of this approach are:
 
-- If user has several big groups with 1000 members, there could be lots of write(write heavy). Using this model will cause high latency on 1:1 messaging, because there could be tons of group messages in the queue.
+- If user has several big groups with 1000 members, there could be lots of write(write heavy). Using this model will
+  cause high latency on 1:1 messaging, because there could be tons of group messages in the queue.
 
 ### Conclusion
 
@@ -155,7 +162,10 @@ Most of the IM systems are using push model for 1:1 messaging and pull model for
 
 ### Options
 
-Debates between `Leader based` or `Leaderless`. Amazon Chime uses DynamoDB which is leader based. And Slack uses MySQL cluster which is active-active with strong consistency. Alibaba Dingding uses Table Store which is also a leader based system. Using Cassandra(leaderless) should also be fine which has good performance but needs some mechanism to conordinate the message consistency on all nodes and the ordering (which could be easily handled in leader based).
+Debates between `Leader based` or `Leaderless`. Amazon Chime uses DynamoDB which is leader based. And Slack uses MySQL
+cluster which is active-active with strong consistency. Alibaba Dingding uses Table Store which is also a leader based
+system. Using Cassandra(leaderless) should also be fine which has good performance but needs some mechanism to
+coordinate the message consistency on all nodes and the ordering (which could be easily handled in leader based).
 
 ### What other companies are using
 
@@ -178,7 +188,9 @@ Debates between `Leader based` or `Leaderless`. Amazon Chime uses DynamoDB which
 ## Questions
 
 - what happens if we could add msg to `msg sync queue` but not in `msg persistent queue` ?
-  - network partition makes the data persistent process delays. we might want to have a on-disk `msg sync queue` with a relatively larger size to temporarily persist the data on local disk, then the data persistent process could periodically back up the snapshot of the local on-disk `msg sync queue`.
+  - network partition makes the data persistent process delays. we might want to have a on-disk `msg sync queue` with
+    a relatively larger size to temporarily persist the data on local disk, then the data persistent process could
+    periodically back up the snapshot of the local on-disk `msg sync queue`.
   - or make the in-memory `mgs sync queue` larger ?
 - A new group member is added to the group, do we allow him/her to see the full history ?
 - How to deal with high peak of re-connection ? Flannel(Slack)

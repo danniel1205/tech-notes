@@ -1,6 +1,7 @@
 # Real time interactions on live video
 
-This note is based on a InfoQ talk about [Streaming a Million Likes/Second: Real-Time Interactions on Live Video](https://www.youtube.com/watch?v=yqc3PPmHvrA&ab_channel=InfoQ) from Linkedin.
+This note is based on a InfoQ talk about [Streaming a Million Likes/Second: Real-Time Interactions on Live
+Video](https://www.youtube.com/watch?v=yqc3PPmHvrA&ab_channel=InfoQ) from Linkedin.
 
 ![workflow-1](resources/workflow-1.png)
 ![workflow-2](resources/workflow-2.png)
@@ -47,7 +48,9 @@ Add an abstraction between clients and backend, known as `frontend server`
 
 ### Dispatcher is the bottleneck
 
-How to handle the 1000 likes persecond? We could have multiple dispatcher nodes, and allow a balanced number of clients to be connected to dispatcher nodes. All `likes` could be sent to any dispatcher nodes and render to clients. But this requires to pull out the `in-memory` mapping table out to its own key-value store.
+How to handle the 1000 likes persecond? We could have multiple dispatcher nodes, and allow a balanced number of clients
+to be connected to dispatcher nodes. All `likes` could be sent to any dispatcher nodes and render to clients. But this
+requires to pull out the `in-memory` mapping table out to its own key-value store.
 
 ![dispatcher-bottleneck-1](resources/dispatcher-bottleneck-1.png)
 
