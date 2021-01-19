@@ -2,7 +2,9 @@
 
 ## B-Tree
 
-The most widely used indexing structure. Instead of having the log indexing on variable size segements, B tree uses `fixed-size` pages, and read or write one page at a time. The B tree is holding **in memory**, the leaf contains the ref(disk address) to the actual data.
+The most widely used indexing structure. Instead of having the log indexing on variable size segements, B tree uses
+`fixed-size` pages, and read or write one page at a time. The B tree is holding **in memory**, the leaf contains the
+ref(disk address) to the actual data.
 
 Log indexing
 ![log-indexing](./resources/log-indexing.jpg)
