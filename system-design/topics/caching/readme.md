@@ -18,6 +18,28 @@ There are different levels of caching:
 - Database caching: used to increase the data retrieval performance
 - Caching layer between client and datastore: in-memory key-value store like `Redis` and `Memcached`
 
+## Cache write policies
+
+Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.html#cache-mode)
+
+- [Write-through Cache](https://www.youtube.com/watch?v=ptFn7f_SgSM&ab_channel=ASmallBug)
+  - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data
+    “through” to the backend storage
+
+- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
+  the same idea of [look-aside](#look-aside) mentioned above.
+  - Write does not touch cache
+  - Read from cache first
+    - if cache hits then return the value to client
+    - if cache misses then read from the db. Return the data back to client, update cache simultaneously
+
+- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug) (risky of data loss)
+  - The cache engine writes the data first to the cache storage and acknowledges to the application that the write is
+    completed before the data is written to the backend storage
+  - The data is written back to DB when the key is evicted in cache
+
+- [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
+
 ## Types of cache architecture
 
 ### Look-aside
@@ -28,7 +50,7 @@ There are different levels of caching:
 
 - client first checks the cache
 - if cache-hit, cache returns the result
-- if cache-misse, client gets the value from storage, then updates cache
+- if cache-miss, client gets the value from storage, then updates cache(Write-around)
 
 ---
 Pros:
@@ -48,7 +70,7 @@ Cons:
 #### Look-aside On write
 
 - client writes to storage
-- client deletes the entry in cache
+- client deletes the entry in cache(Write-invalidate)
 
 ---
 Pros:
@@ -115,28 +137,6 @@ Cons:
 - not all writes need to be stored in cache (not the hot key)
 - way too complicated !!!
 
-## Cache write policies
-
-Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.html#cache-mode)
-
-- [Write-through Cache](https://www.youtube.com/watch?v=ptFn7f_SgSM&ab_channel=ASmallBug)
-  - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data
-    “through” to the backend storage
-
-- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
-  the same idea of [look-aside](#look-aside) mentioned above.
-  - Write does not touch cache
-  - Read from cache first
-    - if cache hits then return the value to client
-    - if cache misses then read from the db. Return the data back to client, update cache simultaneously
-
-- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug) (risky of data loss)
-  - The cache engine writes the data first to the cache storage and acknowledges to the application that the write is
-    completed before the data is written to the backend storage
-  - The data is written back to DB when the key is evicted in cache
-
-- [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
-
 ## Granularity of caching key
 
 We know that the caching usually is a key-value store, and what data to be stored in cache is case by case. Usually
@@ -167,7 +167,50 @@ there are two types I could think of:
 
 ### How distributed caching(hash table) works
 
-TBA
+Having the local cache cluster within each region. And have it replicated to all other regions.
+
+#### Netflix EVCache Reading
+
+![reading](./resources/distributed-cache-netflix-reading.png)
+
+- Read from the local cache first, if cache-miss then read from another cluster in different region
+
+#### Netflix EVCache writing
+
+![writing](./resources/distributed-cache-netflix-writing.png)
+
+- Write to all regions
+
+#### Facebook Memcache Reading
+
+![reading](./resources/distributed-cache-fb-read.png)
+
+- There is one region is master region which holds the master databases for both reads and writes. Replica regions are
+  read only
+- If read from replicate region and cache miss
+  - If `isUpToDate==true`, then read from local database. Because it means that local database has
+  replicated the latest data from master region
+  - If `isUpToDate==false`, then redirect the reads to master region to read from the cache first. If still cache miss
+  then read from the database in master region
+
+#### Facebook Memcache Writing
+
+##### Write from master region
+
+- Write to the database
+- Invalidate the key in all cache replicas by using `mcsquel`. We want the data to be replicated then invalidate the cache
+  in non-master region. Because that if we invalidate the cache first while the data has not yet been available, any
+  subsequent queries will cache-miss and read the stale data from local database then update the cache.(It causes data 
+  inconsistency)
+  
+
+![mcsquel-pipeline](./resources/mcsqueal-pipeline.png)
+
+##### Write from non-master region
+
+- Invalidate cache in local cluster
+- Write data to master database
+- Let the `mcsquel` to handle the cache invalidation broadcast 
 
 ### How distributed cache replica cross region
 
@@ -203,3 +246,4 @@ More details could be found from the links below in references section.
 - [Redis vs Memcached (by Alibaba Cloud)](https://alibaba-cloud.medium.com/redis-vs-memcached-in-memory-data-storage-systems-3395279b0941)
 - [Cache Consistency: Memcached at Facebook (MIT Lecture)](https://www.youtube.com/watch?v=Myp8z0ybdzM&ab_channel=MIT6.824%3ADistributedSystems)
 - [Paper: Scaling memcache at Facebook](resources/memcache-fb.pdf)
+- [Youtube: Caching at Netflix](https://www.youtube.com/watch?v=Rzdxgx3RC0Q&ab_channel=StrangeLoop)
