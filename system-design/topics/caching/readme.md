@@ -40,7 +40,9 @@ Cons:
 
 - Performance on cache-miss is low, three trips are involved
 - Adding new cache server will cause surge traffic to backend
-  - [Cold start solution from "memcached at Facebook" paper](https://youtu.be/Myp8z0ybdzM?t=3239)
+  - [Cold start solution from "memcached at Facebook" paper](https://youtu.be/Myp8z0ybdzM?t=3239). The idea is to have a
+    flag to mark the new cache server/clusters as cold, so that reads will be redirected to some warm cache/clusters to
+    get the data instead of going to db directly. Once the cold cache gets the data, it will update as well.
   - Routing tier does not route request to it until it catches up
 
 #### Look-aside On write
