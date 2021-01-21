@@ -171,19 +171,19 @@ Having the local cache cluster within each region. And have it replicated to all
 
 #### Netflix EVCache Reading
 
-![reading](./resources/distributed-cache-netflix-reading.png)
+![reading](resources/distributed-cache-netflix-reading.png)
 
 - Read from the local cache first, if cache-miss then read from another cluster in different region
 
 #### Netflix EVCache writing
 
-![writing](./resources/distributed-cache-netflix-writing.png)
+![writing](resources/distributed-cache-netflix-writing.png)
 
 - Write to all regions
 
 #### Facebook Memcache Reading
 
-![reading](./resources/distributed-cache-fb-read.png)
+![reading](resources/distributed-cache-fb-read.png)
 
 - There is one region is master region which holds the master databases for both reads and writes. Replica regions are
   read only
@@ -204,7 +204,7 @@ Having the local cache cluster within each region. And have it replicated to all
   inconsistency)
   
 
-![mcsquel-pipeline](./resources/mcsqueal-pipeline.png)
+![mcsquel-pipeline](resources/mcsqueal-pipeline.png)
 
 ##### Write from non-master region
 
@@ -214,7 +214,34 @@ Having the local cache cluster within each region. And have it replicated to all
 
 ### How distributed cache replica cross region
 
-TBA
+#### Netflix cross region replication
+
+![](resources/cross-region-replication-netflix.png)
+
+- Application mutate the cache data
+- Application will send the mutation metadata to `Kafka` as producer
+- An agent called replication relay poll the message from `Kafka` or get the data from cache directly
+- The agent sends the data to remote replication proxy via `https`
+- The remote replication proxy in turns mutate the cache
+
+### How to scale cache
+
+#### To have more shards
+
+Not all keys reside in a single node of cache cluster, keys are sharded into multiple nodes and each of the node holds
+a subset of keys. Redis has 16384 hash slots, it uses `CRC16 of the key modulo 16384` to find the location of a key. When
+a new shard is added with empty, we need to transfer keys from other nodes to the new nodes. Once the new shard catches
+up we could clean up them from original nodes. Redis has to run `resharding` cmd manually to move keys, we could also use
+consistent hash ring to minimize the data move.
+
+#### To have more replicas of a particular shard
+
+Adding a new replica of a shard is easy, we just need to copy data to it from the main/master shard. Once it catches up
+we could allow that node to do consensus voting.
+
+#### To put some cold data on SSD
+
+![use-ssd-for-cache](resources/use-ssd-for-cache-netflix.png)
 
 ## How K8S client-go caching works
 
@@ -225,8 +252,8 @@ TBA
 There could be multiple controllers reconcile a same set of resources, it would be a huge load if all controllers talk
 to api server to ask for the state of resources. So caching is really important.
 
-The `Thread Safe Store` is the cache where
-[informer](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/controller.go#L371)
+The [`Thread Safe Store`](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/thread_safe_store.go)
+is the cache where [informer](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/controller.go#L371)
 will add the object.
 
 ## Comparision between Redis and Memcached
