@@ -14,7 +14,7 @@ https://etcd.io/
 - Get the version from http path (e.g. v1 or v1beta1)
 - Create the empty object using Scheme in the right version
 - JSON or protobuf decoder converts the payload into object
-- Write requests are all applied to ectd leader node
+- Write requests are all applied to ETCD leader node
 
 ![flow](resources/kubectl-apply-flow.png)
 
