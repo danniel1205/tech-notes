@@ -8,7 +8,6 @@ https://etcd.io/
 
 ## Stacked etcd vs External etcd
 
-
 ## Readings materials
 
 ### TGIK
