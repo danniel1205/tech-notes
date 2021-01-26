@@ -12,6 +12,9 @@
 
 ### Non-functional requirements
 
+- HA: If one of the CDN node down, user could still watch the video. If a backend server crashes, user could still login
+  and search videos
+
 ## Assumptions
 
 - DAU
@@ -20,11 +23,13 @@
 
 ### How admin upload video to Netflix or users upload video to Youtube
 
-### How to upload large video files to thousands of CDN server
+### How to upload large video files to thousands of CDN servers
 
-### How to build personalized home page
+### How to build personalized home page per user profile
 
 ### How to auto switch between different resolutions while streaming
+
+<https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming>
 
 ### How to remember last played time
 
@@ -37,3 +42,4 @@ Spark
 ## References
 
 - [Recommendation system for Netflix](https://beta.vu.nl/nl/Images/werkstuk-fernandez_tcm235-874624.pdf)
+- [Youtube: Netflix system design](https://www.youtube.com/watch?v=psQzyFfsUGU&ab_channel=TechDummiesNarendraL)
