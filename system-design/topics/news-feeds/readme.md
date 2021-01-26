@@ -176,7 +176,7 @@ process the requests. The order of comments are based on the order when the requ
 
 ## Scaling
 
-TBA
+<https://www.youtube.com/watch?v=hnpzNAPiC0E&ab_channel=InfoQ>
 
 ## Tools to use
 

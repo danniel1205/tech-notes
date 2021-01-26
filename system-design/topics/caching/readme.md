@@ -18,6 +18,28 @@ There are different levels of caching:
 - Database caching: used to increase the data retrieval performance
 - Caching layer between client and datastore: in-memory key-value store like `Redis` and `Memcached`
 
+## Cache write policies
+
+Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.html#cache-mode)
+
+- [Write-through Cache](https://www.youtube.com/watch?v=ptFn7f_SgSM&ab_channel=ASmallBug)
+  - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data
+    “through” to the backend storage
+
+- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
+  the same idea of [look-aside](#look-aside) mentioned above.
+  - Write does not touch cache
+  - Read from cache first
+    - if cache hits then return the value to client
+    - if cache misses then read from the db. Return the data back to client, update cache simultaneously
+
+- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug) (risky of data loss)
+  - The cache engine writes the data first to the cache storage and acknowledges to the application that the write is
+    completed before the data is written to the backend storage
+  - The data is written back to DB when the key is evicted in cache
+
+- [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
+
 ## Types of cache architecture
 
 ### Look-aside
@@ -28,7 +50,7 @@ There are different levels of caching:
 
 - client first checks the cache
 - if cache-hit, cache returns the result
-- if cache-misse, client gets the value from storage, then updates cache
+- if cache-miss, client gets the value from storage, then updates cache(Write-around)
 
 ---
 Pros:
@@ -40,13 +62,15 @@ Cons:
 
 - Performance on cache-miss is low, three trips are involved
 - Adding new cache server will cause surge traffic to backend
-  - [Cold start solution from "memcached at Facebook" paper](https://youtu.be/Myp8z0ybdzM?t=3239)
+  - [Cold start solution from "memcached at Facebook" paper](https://youtu.be/Myp8z0ybdzM?t=3239). The idea is to have a
+    flag to mark the new cache server/clusters as cold, so that reads will be redirected to some warm cache/clusters to
+    get the data instead of going to db directly. Once the cold cache gets the data, it will update as well.
   - Routing tier does not route request to it until it catches up
 
 #### Look-aside On write
 
 - client writes to storage
-- client deletes the entry in cache
+- client deletes the entry in cache(Write-invalidate)
 
 ---
 Pros:
@@ -113,28 +137,6 @@ Cons:
 - not all writes need to be stored in cache (not the hot key)
 - way too complicated !!!
 
-## Cache write policies
-
-Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.html#cache-mode)
-
-- [Write-through Cache](https://www.youtube.com/watch?v=ptFn7f_SgSM&ab_channel=ASmallBug)
-  - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data
-    “through” to the backend storage
-
-- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
-  the same idea of [look-aside](#look-aside) mentioned above.
-  - Write does not touch cache
-  - Read from cache first
-    - if cache hits then return the value to client
-    - if cache misses then read from the db. Return the data back to client, update cache simultaneously
-
-- [Write-back Cache](https://www.youtube.com/watch?v=-ucqTc1eDuI&ab_channel=ASmallBug) (risky of data loss)
-  - The cache engine writes the data first to the cache storage and acknowledges to the application that the write is
-    completed before the data is written to the backend storage
-  - The data is written back to DB when the key is evicted in cache
-
-- [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
-
 ## Granularity of caching key
 
 We know that the caching usually is a key-value store, and what data to be stored in cache is case by case. Usually
@@ -165,11 +167,81 @@ there are two types I could think of:
 
 ### How distributed caching(hash table) works
 
-TBA
+Having the local cache cluster within each region. And have it replicated to all other regions.
+
+#### Netflix EVCache Reading
+
+![reading](resources/distributed-cache-netflix-reading.png)
+
+- Read from the local cache first, if cache-miss then read from another cluster in different region
+
+#### Netflix EVCache writing
+
+![writing](resources/distributed-cache-netflix-writing.png)
+
+- Write to all regions
+
+#### Facebook Memcache Reading
+
+![reading](resources/distributed-cache-fb-read.png)
+
+- There is one region is master region which holds the master databases for both reads and writes. Replica regions are
+  read only
+- If read from replicate region and cache miss
+  - If `isUpToDate==true`, then read from local database. Because it means that local database has
+  replicated the latest data from master region
+  - If `isUpToDate==false`, then redirect the reads to master region to read from the cache first. If still cache miss
+  then read from the database in master region
+
+#### Facebook Memcache Writing
+
+##### Write from master region
+
+- Write to the database
+- Invalidate the key in all cache replicas by using `mcsquel`. We want the data to be replicated then invalidate the cache
+  in non-master region. Because that if we invalidate the cache first while the data has not yet been available, any
+  subsequent queries will cache-miss and read the stale data from local database then update the cache.(It causes data 
+  inconsistency)
+  
+
+![mcsquel-pipeline](resources/mcsqueal-pipeline.png)
+
+##### Write from non-master region
+
+- Invalidate cache in local cluster
+- Write data to master database
+- Let the `mcsquel` to handle the cache invalidation broadcast 
 
 ### How distributed cache replica cross region
 
-TBA
+#### Netflix cross region replication
+
+![](resources/cross-region-replication-netflix.png)
+
+- Application mutate the cache data
+- Application will send the mutation metadata to `Kafka` as producer
+- An agent called replication relay poll the message from `Kafka` or get the data from cache directly
+- The agent sends the data to remote replication proxy via `https`
+- The remote replication proxy in turns mutate the cache
+
+### How to scale cache
+
+#### To have more shards
+
+Not all keys reside in a single node of cache cluster, keys are sharded into multiple nodes and each of the node holds
+a subset of keys. Redis has 16384 hash slots, it uses `CRC16 of the key modulo 16384` to find the location of a key. When
+a new shard is added with empty, we need to transfer keys from other nodes to the new nodes. Once the new shard catches
+up we could clean up them from original nodes. Redis has to run `resharding` cmd manually to move keys, we could also use
+consistent hash ring to minimize the data move.
+
+#### To have more replicas of a particular shard
+
+Adding a new replica of a shard is easy, we just need to copy data to it from the main/master shard. Once it catches up
+we could allow that node to do consensus voting.
+
+#### To put some cold data on SSD
+
+![use-ssd-for-cache](resources/use-ssd-for-cache-netflix.png)
 
 ## How K8S client-go caching works
 
@@ -180,8 +252,8 @@ TBA
 There could be multiple controllers reconcile a same set of resources, it would be a huge load if all controllers talk
 to api server to ask for the state of resources. So caching is really important.
 
-The `Thread Safe Store` is the cache where
-[informer](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/controller.go#L371)
+The [`Thread Safe Store`](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/thread_safe_store.go)
+is the cache where [informer](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/controller.go#L371)
 will add the object.
 
 ## Comparision between Redis and Memcached
@@ -201,3 +273,4 @@ More details could be found from the links below in references section.
 - [Redis vs Memcached (by Alibaba Cloud)](https://alibaba-cloud.medium.com/redis-vs-memcached-in-memory-data-storage-systems-3395279b0941)
 - [Cache Consistency: Memcached at Facebook (MIT Lecture)](https://www.youtube.com/watch?v=Myp8z0ybdzM&ab_channel=MIT6.824%3ADistributedSystems)
 - [Paper: Scaling memcache at Facebook](resources/memcache-fb.pdf)
+- [Youtube: Caching at Netflix](https://www.youtube.com/watch?v=Rzdxgx3RC0Q&ab_channel=StrangeLoop)
