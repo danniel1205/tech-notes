@@ -216,7 +216,7 @@ Having the local cache cluster within each region. And have it replicated to all
 
 #### Netflix cross region replication
 
-![](resources/cross-region-replication-netflix.png)
+![cross-region-replication-netflix](resources/cross-region-replication-netflix.png)
 
 - Application mutate the cache data
 - Application will send the mutation metadata to `Kafka` as producer
