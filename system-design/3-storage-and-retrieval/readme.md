@@ -4,16 +4,16 @@ There are two families of storage engine: `log-structured storage engine` and `p
 
 ## Data structures that power the database
 
-[Log structured storage](./log-structured-storage.md)
+[Log structured storage](log-structured-storage.md)
 
-[Page oriented storage](./page-oriented-storage.md)
+[Page oriented storage](page-oriented-storage.md)
 
-[Compare bewteen B-Tree and LSM Tree](./compare-b-tree-vs-lsm-tree.md)
+[Compare bewteen B-Tree and LSM Tree](compare-b-tree-vs-lsm-tree.md)
 
-[Other indexing structures](./other-indexing-structures.md)
+[Other indexing structures](other-indexing-structures.md)
 
 ## Transaction processing or Analytics
 
-[OLTP vs OLAP](./oltp-vs-olap.md)
+[OLTP vs OLAP](oltp-vs-olap.md)
 
-[Column oriented storage](./column-oriented-storage.md)
+[Column oriented storage](column-oriented-storage.md)
