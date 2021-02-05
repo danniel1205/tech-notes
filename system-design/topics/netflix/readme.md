@@ -183,6 +183,41 @@ could be a good choice to store media files, and it also has REST API support.
 
 ## How admin upload video to Netflix or users upload video to Youtube
 
+Usually a movie is shot in 8K and could be several hundreds GBs or maybe using TB to measure it. A Youtube video could
+have several GBs as well. So there are few challenges here:
+
+- Client/Server could not load the entire file into memory
+- Network partition could happen any time, we do not want to re-upload everything once the network is back
+- On server side, should we store the inbound data into a temp file first then move it to persistent storage ? Or we could
+  write into persistent storage directly
+
+The evolution of the architecture to support the Big File Upload functionality can be summarized as follows ( this is
+ranging from early multi-tier web-applications to modern-day architecture).
+
+- Read the file in memory and commit to a local or remote file-store. This works well for small files , but for larger
+  files this might require large amounts of memory.
+- Read the inbound file and write to a local temporary storage space. When upload operation is complete, the file can be
+  saved to a persistent file storage.(asynchronous commit).This needs some support for asynchronous processing & will
+  need a lot of ephemeral storage to handle incoming files.
+- Read the inbound file and synchronously write to a persistent storage device/service (this is also referred to as the
+  tunnel-mode). This will require a significant amount of compute capability on the server. Some implementations also
+  create a dedicated backend infrastructure to support the file upload operation — this can get expensive.
+- Provide temporary credentials to the client and let them directly upload the data to a persistent storage-service.
+  The application can then stores a reference/pointer to the file stored on the storage-service. We have to implement
+  some kind of identity federation, but this approach will free up the application’s backend infrastructure from
+  inbound/upload data processing.
+  
+When uploading a large file, the client side will usually do the following(more details could be found
+[here](https://zhuanlan.zhihu.com/p/68271019)):
+
+- Split the large file into smaller slices, so that each slice could be uploaded in parallel
+  - Add an incremental ID to each slice, this is to make sure the order
+  - Add context metadata, this is to make sure the slice belongs to a particular file
+  - When all slices are uploaded, send a signal to server. This is to notify the server to combine file if necessary
+- In order to resume the upload, we need to store the info on which slices are uploaded
+  - Store at local
+  - Store at server side
+
 ## How to upload large video files to thousands of CDN servers
 
 ## How to build personalized home page per user profile
