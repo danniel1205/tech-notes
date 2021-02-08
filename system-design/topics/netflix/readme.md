@@ -84,7 +84,7 @@ type ViewHistorys struct {
 
 ## Storage 
 
-Netflix uses mySQL cluster and Cassandra
+Netflix uses MySQL cluster and Cassandra
 
 ### Member Viewing History
 
@@ -184,7 +184,7 @@ could be a good choice to store media files, and it also has REST API support.
 ## How admin upload video to Netflix or users upload video to Youtube
 
 Usually a movie is shot in 8K and could be several hundreds GBs or maybe using TB to measure it. A Youtube video could
-have several GBs as well. So there are few challenges here:
+have several GBs as well. So there are few **challenges** here:
 
 - Client/Server could not load the entire file into memory
 - Network partition could happen any time, we do not want to re-upload everything once the network is back
