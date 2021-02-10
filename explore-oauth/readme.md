@@ -235,6 +235,10 @@ It is possible that a malicious process from the client side intercept the autho
 
 There are a lot of web app uses this feature, like `medium.com` which allows user to login via Github. The idea is behind the scene is that `medium.com` wants to get the user profile, so it does the `OAuth` to the user profile provider. Since user will be redirected to the profile provider to login first, so from user point of view it is login via Github.
 
+## What flow should I use
+
+![what-flow-should-i-use](resources/what-flow-should-i-use.png)
+
 ## References
 
 - <https://www.youtube.com/watch?v=3pZ3Nh8tgTE&ab_channel=JavaBrains>
