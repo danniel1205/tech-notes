@@ -218,7 +218,37 @@ When uploading a large file, the client side will usually do the following(more 
   - Store at local
   - Store at server side
 
+For using S3, individual Amazon S3 objects can range in size from a minimum of 0 bytes to a maximum of 5 terabytes. A 4K
+movie is 100 GB on average, so it is feasible using S3 object storage.([Reference](https://aws.amazon.com/s3/faqs/#:~:text=The%20total%20volume%20of%20data,single%20PUT%20is%205%20gigabytes.))
+
+For large files, user could use multipart upload from S3([Reference](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html))
+
 ## How to upload large video files to thousands of CDN servers
+
+![cdn](resources/cdn.png)
+
+- Have a control plane which could provide two kinds of information: what videos to be pushed and where the videos are
+  - What videos to be pushed: This could be calculated based on popularity
+  - Where the videos are: This could be a list of locations sorted by costs
+- Service runs in CDN cluster could periodically call control plane to get the videos list (with their locations) (PULL)
+- OR service in control plane proactively talk to CDN cluster with the videos list (with their locations) (PUSH)
+- Within CDN cluster, there is a master server who is responsible for communicating with control plane
+- The CDN master server get the videos list, calculate the diff to see if the videos are present within its own cluster
+- The CND master server transfer the videos in the following order:
+  - Peer fill: Available peers within the same cluster or the same subnet
+  - Tier fill: Available peers outside the same cluster configuration, but in the same logical group
+  - Cache fill: Direct download from S3
+  
+When transfer the video, the same idea as large file upload could be used. (split into chunks and transfer in parallel)
+
+The following two blogs describes how Netflix fills their videos to CDN servers:
+
+- [Netflix and fill](https://netflixtechblog.com/netflix-and-fill-c43a32b490c0)
+- [Distributing content to Open Connect](https://netflixtechblog.com/distributing-content-to-open-connect-3e3e391d4dc9)
+
+## How to stream/download large video files from CND servers
+
+<https://docs.microsoft.com/en-us/azure/cdn/cdn-large-file-optimization>
 
 ## How to build personalized home page per user profile
 
@@ -247,3 +277,5 @@ Spark, collaborative filtering and content based filtering
 - <https://netflixtechblog.com/to-be-continued-helping-you-find-shows-to-continue-watching-on-7c0d8ee4dab6>
 - <https://netflixtechblog.com/netflixs-viewing-data-how-we-know-where-you-are-in-house-of-cards-608dd61077da>
 - <https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming>
+- [Distributing content to Open Connect](https://netflixtechblog.com/distributing-content-to-open-connect-3e3e391d4dc9)
+- [Netflix and Fill](https://netflixtechblog.com/netflix-and-fill-c43a32b490c0)
