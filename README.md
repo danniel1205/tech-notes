@@ -37,7 +37,7 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
     - [design instant messaging](system-design/topics/instant-messaging-system/readme.md)
     - [design rate limiting](system-design/topics/rate-limiting/readme.md)
     - [design news feeds](system-design/topics/news-feeds/readme.md)
-    - [design netflix] - TBA
+    - [design netflix](system-design/topics/netflix/readme.md)
 
   - Miscellaneous
     - [distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
