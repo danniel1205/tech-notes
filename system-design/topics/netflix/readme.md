@@ -77,7 +77,9 @@ type ViewHistorys struct {
 	Email string // the unique id of account
 	History [] struct {
 		Video Video
-		Data string
+		Date string
+		WatchTime string
+		...
 	}
 }
 ```
@@ -261,6 +263,24 @@ The following two blogs describes how Netflix fills their videos to CDN servers:
 
 - <https://netflixtechblog.com/netflixs-viewing-data-how-we-know-where-you-are-in-house-of-cards-608dd61077da>
 - <https://netflixtechblog.com/to-be-continued-helping-you-find-shows-to-continue-watching-on-7c0d8ee4dab6>
+
+### Solution 1
+
+- Client app captures the events of web tab closing or the app closing.
+- Client app periodically checks the current watch time.
+- Client sends the signal to backend service on above events. The following is an example from Youtube video watch. The
+  `docid=bR6O-9a_AHI` is the video ID, `st=85.758&et=85.758` is the start time and end time.
+``` text
+https://www.youtube.com/api/stats/watchtime?ns=yt&el=detailpage&cpn=bZfoq7D_wSN4WyjJ&docid=bR6O-9a_AHI&ver=2&referrer=
+https%3A%2F%2Fwww.youtube.com%2Ffeed%2Fhistory&cmt=85.758&ei=3oQkYPfTEs7Ckga847b4Bw&fmt=247&fs=0&rt=549.002&of=I-NSJmZOT
+sX1XOqICS4wDA&euri&lact=6623&cl=356349566&state=paused&vm=CAEQARgEKiBEcTlDVDF2MFduMWVVVTdORmRrS0g5dFhoZE9vZmpBcToyQU9HdF
+9PTHJpbjNZWGlraFNZOW9OZkZXT1VsSUdDTmZQVW1tX2xKWmRMMXIxWV90a2c&volume=95&cbrand=apple&cbr=Chrome&cbrver=88.0.4324.96&c=WE
+B&cver=2.20210209.07.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform=DESKTOP&hl=en_US&cr=US&uga=m32&len=747.
+101&afmt=251&idpj=-6&ldpj=-20&rti=549&muted=0&st=85.758&et=85.758
+```
+- The backend service receives the signal it will store the watch time alongside with the viewing history.
+- In order to provide a better performance on viewing the history, we could also add the viewing history into cache by
+  using the `write-through` or `write-around` method.
 
 ## How user search the video
 
