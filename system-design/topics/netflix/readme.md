@@ -248,7 +248,8 @@ The following two blogs describes how Netflix fills their videos to CDN servers:
 
 ## How to stream/download large video files from CND servers
 
-<https://docs.microsoft.com/en-us/azure/cdn/cdn-large-file-optimization>
+- <https://docs.microsoft.com/en-us/azure/cdn/cdn-large-file-optimization>
+- <https://netflixtechblog.com/serving-100-gbps-from-an-open-connect-appliance-cdb51dda3b99>
 
 ## How to build personalized home page per user profile
 
@@ -258,8 +259,8 @@ The following two blogs describes how Netflix fills their videos to CDN servers:
 
 ## How to remember last played time
 
-<https://netflixtechblog.com/netflixs-viewing-data-how-we-know-where-you-are-in-house-of-cards-608dd61077da>
-<https://netflixtechblog.com/to-be-continued-helping-you-find-shows-to-continue-watching-on-7c0d8ee4dab6>
+- <https://netflixtechblog.com/netflixs-viewing-data-how-we-know-where-you-are-in-house-of-cards-608dd61077da>
+- <https://netflixtechblog.com/to-be-continued-helping-you-find-shows-to-continue-watching-on-7c0d8ee4dab6>
 
 ## How user search the video
 
