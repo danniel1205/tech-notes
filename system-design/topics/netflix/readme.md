@@ -288,6 +288,49 @@ B&cver=2.20210209.07.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform
 
 Spark, collaborative filtering and content based filtering
 
+![recommendation](resources/recommendation.png)
+
+<https://netflixtechblog.com/system-architectures-for-personalization-and-recommendation-e081aa94b5d8>
+
+- online computation
+  - response to data in real time
+  - smaller amount of data to be processed
+  - if fails to meet SLA, fallback to precomputed result
+- offline computation
+  - bigger amount of data to be processed in batch manner
+  - could be stale since latest data has not been processed yet
+- nearline computation
+  - compromise between online and offline modes
+  - results could be stored as soon as they are computed (online mode needs to return the results in real time)
+
+### Offline jobs
+
+![offline-jobs](resources/offline-jobs.png)
+
+Model training and batch computation of intermediate or final results could be processed in the offline mode. The result
+will be used at a later time either for subsequent online processing or direct presentation to the user.
+
+- Hadoop is used to query the massive amount of data via Hive and Pig job.
+- Hermes (pub-sub) system is used to notify the query results are ready.
+- The computed result could be rendered to end user or store in data store (Cassandra, EVCache, MySQL) for future use.
+
+### Event and Data distribution
+
+![event-and-data-distribution](resources/event-and-data-distribution.png)
+
+Netflix wants to collect as many user inputs as possible. Those events can be aggregated to be the base data for ML
+algorithms. 
+
+- Manhattan is used to manage the near-real-time event flow. Manhattan is a distributed computation system that is central
+  to our algorithmic architecture for recommendation.
+- The data flow is managed mostly through logging through Chukwa to Hadoop for the initial steps of the process.
+
+### Recommendation results
+
+![recommendation-results](resources/recommendation-results.png)
+
+The recommendation computed results are stored in database or cache depends on the requirements.
+
 ## References
 
 - [Recommendation system for Netflix](https://beta.vu.nl/nl/Images/werkstuk-fernandez_tcm235-874624.pdf)
