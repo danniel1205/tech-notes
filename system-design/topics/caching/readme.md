@@ -276,3 +276,4 @@ More details could be found from the links below in references section.
 - [Cache Consistency: Memcached at Facebook (MIT Lecture)](https://www.youtube.com/watch?v=Myp8z0ybdzM&ab_channel=MIT6.824%3ADistributedSystems)
 - [Paper: Scaling memcache at Facebook](resources/memcache-fb.pdf)
 - [Youtube: Caching at Netflix](https://www.youtube.com/watch?v=Rzdxgx3RC0Q&ab_channel=StrangeLoop)
+- [Medium Netflix blog](https://netflixtechblog.com/ephemeral-volatile-caching-in-the-cloud-8eba7b124589)
