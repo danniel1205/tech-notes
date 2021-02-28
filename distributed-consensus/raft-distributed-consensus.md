@@ -159,6 +159,7 @@ See [deep-dive-config-change](./resources/deep-dive-config-change.md) for more d
 ## Reading materials
 
 - <https://www.youtube.com/watch?v=YbZ3zDzDnrw&t=1043s&ab_channel=DiegoOngaro>
+- <https://www.youtube.com/watch?v=LAqyTyNUYSY&feature=youtu.be&ab_channel=LinkedInEngineering>
 - <https://raft.github.io/#implementations>
 - <https://eli.thegreenplace.net/2020/implementing-raft-part-0-introduction/>
 - <https://www.micahlerner.com/2020/05/08/understanding-raft-consensus.html>
