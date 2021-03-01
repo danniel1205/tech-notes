@@ -202,9 +202,8 @@ Having the local cache cluster within each region. And have it replicated to all
 - Write to the database
 - Invalidate the key in all cache replicas by using `mcsquel`. We want the data to be replicated then invalidate the cache
   in non-master region. Because that if we invalidate the cache first while the data has not yet been available, any
-  subsequent queries will cache-miss and read the stale data from local database then update the cache.(It causes data 
+  subsequent queries will cache-miss and read the stale data from local database then update the cache.(It causes data
   inconsistency)
-  
 
 ![mcsquel-pipeline](resources/mcsqueal-pipeline.png)
 
@@ -212,7 +211,7 @@ Having the local cache cluster within each region. And have it replicated to all
 
 - Invalidate cache in local cluster
 - Write data to master database
-- Let the `mcsquel` to handle the cache invalidation broadcast 
+- Let the `mcsquel` to handle the cache invalidation broadcast
 
 ### How distributed cache replica cross region
 

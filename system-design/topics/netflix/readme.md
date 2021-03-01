@@ -27,28 +27,28 @@
 
 ```go
 type Account struct {
-	CustomerID string // unique identifier for the account 
-	Email string
-	Password string // hashed string which stores the user logging password 
-	Name string
-	PlanID string // indicates which plan the account is subscribed to 
-	Locale string // indicates the language used for i18n 
-	...
+  CustomerID string // unique identifier for the account
+  Email string
+  Password string // hashed string which stores the user logging password
+  Name string
+  PlanID string // indicates which plan the account is subscribed to
+  Locale string // indicates the language used for i18n
+  ...
 }
 
 type PaymentMethod struct {
-	FullName string
-	BillingAddress string
-	CardNumber string // unique identifier of a payment method
-	CVS string
-	CustomerID string // linked to the account
+  FullName string
+  BillingAddress string
+  CardNumber string // unique identifier of a payment method
+  CVS string
+  CustomerID string // linked to the account
 }
 
 type Billing struct {
-	CustomerID string // which account the billing applies to
-	Date Date // when the bill is filed
-	Amount float32 // the amount has been charged 
-	CardNumber string // which card used of the payment
+  CustomerID string // which account the billing applies to
+  Date Date // when the bill is filed
+  Amount float32 // the amount has been charged
+  CardNumber string // which card used of the payment
 }
 ```
 
@@ -56,35 +56,35 @@ type Billing struct {
 
 ```go
 type Video struct {
-	VideoID string // unique identifier of a video
-	Title string
-	Subtitle string
-	Description string
-	SeriesName string // only applies to series
-	Episode int // only applies to series
-	Likes int
-	MediaURL string // the endpoint to access the media ?
-	...
+  VideoID string // unique identifier of a video
+  Title string
+  Subtitle string
+  Description string
+  SeriesName string // only applies to series
+  Episode int // only applies to series
+  Likes int
+  MediaURL string // the endpoint to access the media ?
+  ...
 }
 
 type Comment struct {
-	CustomerID string // the account who puts the comment 
-	VideoID string // to which video the comment is applied to
-	Content string
+  CustomerID string // the account who puts the comment
+  VideoID string // to which video the comment is applied to
+  Content string
 }
 
 type ViewHistorys struct {
-	Email string // the unique id of account
-	History [] struct {
-		Video Video
-		Date string
-		WatchTime string
-		...
-	}
+  Email string // the unique id of account
+  History [] struct {
+    Video Video
+    Date string
+    WatchTime string
+    ...
+  }
 }
 ```
 
-## Storage 
+## Storage
 
 Netflix uses MySQL cluster and Cassandra
 
@@ -92,12 +92,13 @@ Netflix uses MySQL cluster and Cassandra
 
 Netflix uses Cassandra to store the viewing history.
 
-#### First solution
+#### Member Viewing History - First solution
 
 RowKey: customerID
 Column: each column is the viewing history
 
 ---
+
 - On write: create a new column for each view history
 - On read: read entire row or slice(range query)
 
@@ -110,7 +111,7 @@ Improvements:
 - use EVCache to cache the result
   - customerID as the key
   - compressed viewing history as the value
-  
+
 #### Second solution
 
 Above improvements still have problems when user data is huge, either the Cassandra row data is huge or the large data
@@ -123,18 +124,19 @@ So the idea of LiveVH and CompressedVH is raised.
 - Compressed or Archival Viewing History (CompressedVH): Large number of older viewing records with rare updates.
   The data is compressed to reduce storage footprint. **Compressed viewing history is stored in a single column per row
   key**.
-  
+
 ---
+
 - On write: New view history is written to LiveVH
 - On read:
   - Recent Viewing History: For most cases this results in reading from LiveVH only, which limits the data size
-    resulting in much lower latencies. 
+    resulting in much lower latencies.
   - Full Viewing History: Implemented as parallel reads of LiveVH and CompressedVH. Due to data compression and
     CompressedVH having fewer columns, less data is read thereby significantly speeding up reads.
 - On LiveVH rollup: When the LiveVH hits the limit, the older viewing history is rolling up into the compressedVH. New
   row(rowID: customerID) will be created if there was no such row exists, or viewing history will be merged into existing
   compressedVH row.
-  
+
 ![vh-rollup](resources/second-solution-vh-rollup.png)
 
 Problems:
@@ -165,14 +167,15 @@ for more details.
 
 It might be a good idea to use NoSQL database to store comments as well since we have already been using wide column
 database for viewing history. So it would be easier for dev team to develop and maintain the same tech stack. If using
-wide column, then the `rowKey` could be the `videoID`, the `columnKey` could be `customerID`. 
+wide column, then the `rowKey` could be the `videoID`, the `columnKey` could be `customerID`.
 
-#### First solution
+#### Comments - First solution
 
 RowKey: videoID
 Column: timestamp + customerID
 
 ---
+
 - On write: create a new column for the new comment
 - On read: read entire row or slice(range query)
 
@@ -208,7 +211,7 @@ ranging from early multi-tier web-applications to modern-day architecture).
   The application can then stores a reference/pointer to the file stored on the storage-service. We have to implement
   some kind of identity federation, but this approach will free up the application’s backend infrastructure from
   inbound/upload data processing.
-  
+
 When uploading a large file, the client side will usually do the following(more details could be found
 [here](https://zhuanlan.zhihu.com/p/68271019)):
 
@@ -240,7 +243,7 @@ For large files, user could use multipart upload from S3([Reference](https://doc
   - Peer fill: Available peers within the same cluster or the same subnet
   - Tier fill: Available peers outside the same cluster configuration, but in the same logical group
   - Cache fill: Direct download from S3
-  
+
 When transfer the video, the same idea as large file upload could be used. (split into chunks and transfer in parallel)
 
 The following two blogs describes how Netflix fills their videos to CDN servers:
@@ -278,6 +281,7 @@ sX1XOqICS4wDA&euri&lact=6623&cl=356349566&state=paused&vm=CAEQARgEKiBEcTlDVDF2MF
 B&cver=2.20210209.07.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform=DESKTOP&hl=en_US&cr=US&uga=m32&len=747.
 101&afmt=251&idpj=-6&ldpj=-20&rti=549&muted=0&st=85.758&et=85.758
 ```
+
 - The backend service receives the signal it will store the watch time alongside with the viewing history.
 - In order to provide a better performance on viewing the history, we could also add the viewing history into cache by
   using the `write-through` or `write-around` method.
@@ -319,7 +323,7 @@ will be used at a later time either for subsequent online processing or direct p
 ![event-and-data-distribution](resources/event-and-data-distribution.png)
 
 Netflix wants to collect as many user inputs as possible. Those events can be aggregated to be the base data for ML
-algorithms. 
+algorithms.
 
 - Manhattan is used to manage the near-real-time event flow. Manhattan is a distributed computation system that is central
   to our algorithmic architecture for recommendation.

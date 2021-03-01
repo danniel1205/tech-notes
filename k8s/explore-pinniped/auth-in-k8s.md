@@ -30,7 +30,9 @@ See more details:
 
 ### Bootstrap token
 
-Bootstrap tokens are a simple bearer token that is meant to be used when creating new clusters or joining new nodes to an existing cluster. The `Bootstrap Token` is dynamically managed by K8S for above purposes. See [bootstrap-steps](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/#bootstrap-initialization) for more details on how this token is being used.
+Bootstrap tokens are a simple bearer token that is meant to be used when creating new clusters or joining new nodes to an
+existing cluster. The `Bootstrap Token` is dynamically managed by K8S for above purposes. See [bootstrap-steps](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/#bootstrap-initialization)
+for more details on how this token is being used.
 
 See more details:
 
@@ -40,7 +42,10 @@ See more details:
 
 ### Service account tokens
 
-A service account is an automatically enabled authenticator that uses signed bearer tokens to verify requests. When running a pod or deployment using a service account, the `secret` contains the bearer token will be mounted to the `pod`. The Bearer tokens are mounted into pods at well-known locations, and allow in-cluster processes to talk to the API server. If no service account specified, the default one will be used.
+A service account is an automatically enabled authenticator that uses signed bearer tokens to verify requests. When running
+a pod or deployment using a service account, the `secret` contains the bearer token will be mounted to the `pod`. The Bearer
+tokens are mounted into pods at well-known locations, and allow in-cluster processes to talk to the API server. If no service
+account specified, the default one will be used.
 
 ``` bash
 $ kubectl run -it --rm testpod --restart=Never --image=alpine -- sh
@@ -74,7 +79,8 @@ eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiw
 
 ### Authenticating proxy
 
-We could authenticate normal users by using an authenticating proxy, which sets the request header values, e.g. `X-Remote-User`. API server could be configured to identify users from the header values.
+We could authenticate normal users by using an authenticating proxy, which sets the request header values, e.g. `X-Remote-User`.
+API server could be configured to identify users from the header values.
 
 ``` bash
 // Example flags to api server
@@ -83,11 +89,14 @@ We could authenticate normal users by using an authenticating proxy, which sets 
 --requestheader-extra-headers-prefix=X-Remote-Extra-
 ```
 
-In order to prevent header spoofing, the authenticating proxy is required to present a valid client certificate to the API server for validation against the specified CA before the request headers are checked.
+In order to prevent header spoofing, the authenticating proxy is required to present a valid client certificate to the API
+server for validation against the specified CA before the request headers are checked.
 
 ### Webhook token authentication
 
-We could delegate the normal users authentication to a remote authn service via webhook as show in below. A `TokenReview` is sent to webhook. The webhook process the request and response a `TokenReview` back to indicate if the token is authenticated or not.
+We could delegate the normal users authentication to a remote authn service via webhook as show in below. A `TokenReview`
+is sent to webhook. The webhook process the request and response a `TokenReview` back to indicate if the token is authenticated
+or not.
 
 ![webhook-authn](./resources/webhook-authn.png)
 

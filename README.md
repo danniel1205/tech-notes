@@ -29,7 +29,7 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
     - [5 replication](system-design/5-replication/readme.md)
       - [how to handle concurrent write](system-design/5-replication/how-to-handle-concurrent-write.md)
     - [6 partitioning](system-design/6-partitioning/readme.md)
-  
+
   - Design cases
     - [design auto complete service](system-design/topics/auto-complete-service/readme.md)
     - [design collaborative editing](system-design/topics/how-collaborative-editing-work/readme.md)
