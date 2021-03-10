@@ -39,6 +39,7 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
     - [design news feeds](system-design/topics/news-feeds/readme.md)
     - [design netflix](system-design/topics/netflix/readme.md)
     - [design distributed file system](system-design/topics/distributed-file-system/readme.md)
+    - [design text based search system](system-design/topics/text-based-search/readme.md)
 
   - Miscellaneous
     - [distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
