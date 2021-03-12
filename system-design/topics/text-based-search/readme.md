@@ -148,13 +148,27 @@ The inverted index in memory will be lost in worst case scenario. However, the o
 
 ### What are the bottlenecks and how to improve
 
-TBA
+#### Reduce the size of posting list
+
+- Using local documentID instead of global documentID (size reduced)
+- Compress the posting list (size reduced)
+  - Delta Compression and Bit Packing (size reduced)
+  - Store count instead of positional info in posting list (size reduced)
+  - Positional info is stored in another parallel array for further compression
+  
+<https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/omnisearch-index-formats.html>
+
+#### Reduce the indexing latency and enhancements on original design
+
+There are two major factors could drag down the performance
+
+- When indexing is done, but some slow data processing is still in progress. Like the URL shortening service could slower
+  than the indexing service. When customer does a search, what should we do?
+- Sorting by scores, relevance could be slow
+
+<https://blog.twitter.com/engineering/en_us/topics/infrastructure/2020/reducing-search-indexing-latency-to-one-second.html>
 
 ## Notes of ElasticSearch
-
-TBA
-
-## Notes of EarlyBird(Twitter search)
 
 TBA
 
