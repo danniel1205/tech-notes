@@ -182,6 +182,8 @@ TBA
 - <https://www.elastic.co/blog/found-indexing-for-beginners-part1/>
 - <https://www.elastic.co/blog/found-indexing-for-beginners-part2/>
 - <https://www.elastic.co/blog/found-indexing-for-beginners-part3/>
+- <https://www.elastic.co/blog/performance-considerations-elasticsearch-indexing>
+- <https://www.elastic.co/blog/found-dive-into-elasticsearch-storage>
 - <https://youtu.be/CeGtqouT8eA?t=1455>
 - <http://blog.gaurav.im/2016/12/28/systems-design-twitter-search/>
 - <https://blog.twitter.com/engineering/en_us/a/2011/the-engineering-behind-twitter-s-new-search-experience.html>
