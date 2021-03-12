@@ -140,6 +140,20 @@ to the query service to reduce the network calls.
   - Only the current segment is actively being modified, other segments are read-only.
 - Posting pools and `currReadyTailP` to avoid concurrent reads/writes within the same segment  
 
+### How does document updates work
+
+**Note:** This is my personal thinking
+
+- `docID-1, [i, like]` was the old record. The following inverted index will be generated.
+  - `i:docID-1`
+  - `like:docID-1`
+- `docID-1: [i, hate]` will be sent to indexing service. The following inverted index will be generated.
+  - `i:docID-1`
+  - `hate:docID-1`
+  - `like:docID-1*`
+  
+We have a flag in each posting to indicate if the posting entry should be deleted during the segments merge or if it should
+be skipped during query. This is the similar idea to DB index segments merge.
 
 ### How does index server handle failures(High availability)
 
@@ -168,6 +182,10 @@ There are two major factors could drag down the performance
 
 <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2020/reducing-search-indexing-latency-to-one-second.html>
 
+#### Sending indexing requests in batch instead of  multi http requests
+
+<https://www.elastic.co/blog/found-keeping-elasticsearch-in-sync>
+
 ## Notes of ElasticSearch
 
 TBA
@@ -195,3 +213,4 @@ TBA
 - <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/search-relevance-infrastructure-at-twitter.html>  
 - <https://blog.twitter.com/engineering/en_us/a/2014/building-a-complete-tweet-index.html>  
 - <http://blog.gaurav.im/2016/12/28/systems-design-twitter-search/>
+- <https://www.slideshare.net/ramezf/twitter-search-architecture>
