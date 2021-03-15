@@ -27,7 +27,7 @@ Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.
     “through” to the backend storage
 
 - [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
-  the same idea of [look-aside](#look-aside) mentioned above.
+  the same idea of [look-aside](#look-aside).
   - In Write-Around mode, the client writes data to the cache if and only if that cache line is already mapped into the
     cache and simultaneously writes the same data “through” to the backend storage. If the key does not exist in the cache,
     the writes will only happen to backend storage.
@@ -41,6 +41,8 @@ Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.
   - The data is written back to DB when the key is evicted in cache
 
 - [Write-invalidate Cache](https://open-cas.github.io/cache_configuration.html#write-invalidate)
+  - In Write-Invalidate mode, the cache engine handles write requests by writing data directly to backend storage, and if
+    written cache line is already mapped into the cache, then it becomes invalid.
 
 ## Types of cache architecture
 
