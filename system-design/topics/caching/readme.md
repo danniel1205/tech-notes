@@ -142,7 +142,7 @@ Cons:
 
 ## Granularity of caching key
 
-We know that the caching usually is a key-value store, and what data to be stored in cache is case by case. Usually
+We know that the caching usually is a key-value store, and what data to be stored in the cache is case by case. Usually
 there are two types I could think of:
 
 - **Hash of the queries as the caching key**: The value could be a result of complicated query with filters
@@ -261,7 +261,7 @@ will add the object.
 ## Comparison between Redis and Memcached
 
 - `redis` provides a superset of features comparing to `memcached`
-- To implement `memcached` cluster, client needs to solve traffic rounting, e.g. using consistent caching
+- To implement `memcached` cluster, client needs to solve traffic routing, e.g. using consistent caching
 - They have different implementations on memory management
 
 More details could be found from the links below in references section.
