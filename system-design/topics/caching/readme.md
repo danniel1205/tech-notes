@@ -8,15 +8,15 @@
 - Use in memory cache layer to store subset of data (capacity trade off performance)
 
 When local caches are used, they only benefit the local application consuming the data. In a distributed caching
-environment, the data can span multiple cache servers and be stored in a central location for the benefit of all the
-consumers of that data.
+environment, the data can be replicated to multiple cache servers in order to benefit of all the consumers across multiple
+geolocations.
 
 There are different levels of caching:
 
 - Client side caching: browser cache, OS cache
 - CDN caching: used to cache static files, like images, videos, etc.
 - Database caching: used to increase the data retrieval performance
-- Caching layer between client and datastore: in-memory key-value store like `Redis` and `Memcached`
+- Caching layer between the client and datastore: in-memory key-value store like `Redis` and `Memcached`
 
 ## Cache write policies
 
@@ -26,10 +26,9 @@ Reference: [Open CAS cache mode](https://open-cas.github.io/cache_configuration.
   - In Write-Through mode, the cache engine writes data to the cache storage and simultaneously writes the same data
     “through” to the backend storage
 
-- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug),
-  the same idea of [look-aside](#look-aside).
+- [Write-around Cache](https://www.youtube.com/watch?v=mA5D48POAww&ab_channel=ASmallBug).
   - In Write-Around mode, the client writes data to the cache if and only if that cache line is already mapped into the
-    cache and simultaneously writes the same data “through” to the backend storage. If the key does not exist in the cache,
+    cache and simultaneously writes the same data to the backend storage. If the key does not exist in the cache,
     the writes will only happen to backend storage.
   - Read from cache first
     - if cache hits then return the value to client
@@ -74,16 +73,16 @@ Cons:
 #### Look-aside On write
 
 - client writes to storage
-- client deletes the entry in cache(Write-invalidate)
+- client deletes the entry in the cache(Write-invalidate)
 
 ---
 Pros:
 
-- client deletes the entry in cache could make sure the data consistency
+- client deletes the entry in the cache could make sure the data consistency
 
 Cons:
 
-- Extra step to deletes the entry could cause some performance issue on write
+- The extra step to delete the entry could cause some performance issue on write
 
 ### Look-through
 
@@ -122,9 +121,9 @@ Pros:
 Cons:
 
 - writes in sync has low performance
-- not all writes need to be stored in cache (not the hot key)
+- not all writes need to be stored in the cache (not the hot key)
 - having cache layer to handle the distributed concurrent writes is complicated
-- usually caching layer is deployed seperately in a different cluster, writes to cache increases the latency
+- usually caching layer is deployed separately in a different cluster, writes to cache increases the latency
 - complicated error handling if db writes fail
 
 ##### Async writes
@@ -171,7 +170,7 @@ there are two types I could think of:
 
 ### How distributed caching(hash table) works
 
-Having the local cache cluster within each region. And have it replicated to all other regions.
+Having the local cache cluster within each region, and have it replicated to all other regions.
 
 #### Netflix EVCache Reading
 
@@ -259,7 +258,7 @@ The [`Thread Safe Store`](https://github.com/kubernetes/client-go/blob/fb61a7c88
 is the cache where [informer](https://github.com/kubernetes/client-go/blob/fb61a7c88cb9f599363919a34b7c54a605455ffc/tools/cache/controller.go#L371)
 will add the object.
 
-## Comparision between Redis and Memcached
+## Comparison between Redis and Memcached
 
 - `redis` provides a superset of features comparing to `memcached`
 - To implement `memcached` cluster, client needs to solve traffic rounting, e.g. using consistent caching
@@ -278,3 +277,4 @@ More details could be found from the links below in references section.
 - [Paper: Scaling memcache at Facebook](resources/memcache-fb.pdf)
 - [Youtube: Caching at Netflix](https://www.youtube.com/watch?v=Rzdxgx3RC0Q&ab_channel=StrangeLoop)
 - [Medium Netflix blog](https://netflixtechblog.com/ephemeral-volatile-caching-in-the-cloud-8eba7b124589)
+- [System Design Interview - Distributed Cache](https://www.youtube.com/watch?v=iuqZvajTOyA&ab_channel=SystemDesignInterview)
