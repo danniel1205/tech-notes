@@ -32,7 +32,7 @@ For rate limiting system, it should be `Fail Open` system.
 
 ### Non-functional requirement
 
-- Low latency on decision making
+- Low latency on making decision
 - Accurate on throttle calculation
 - Scalable on arbitrarily large number of hosts
 - `Fail Open`, if rate limiting fails we still want our service to be available
@@ -41,8 +41,8 @@ For rate limiting system, it should be `Fail Open` system.
 
 ### No rate limiting
 
-No rate limiting is the floor that the design needs to consider in worst-case situation. Using timeouts, deadlines,
-circuit-breaking pattern helsp your service to be more robust in the absense of rate limiting.
+No rate limiting is the floor that the design needs to consider in worst case scenario. Using timeouts, deadlines,
+circuit-breaking pattern helps your service to be more robust in the absence of rate limiting.
 
 ### Pass through
 
@@ -54,7 +54,7 @@ the caller.
 
 ### Enforce rate limits
 
-Put the rate limits in place to protect current service or the downstream service.
+Put the rate limits in place to protect the current or downstream service.
 
 To enforce rate limiting, first understand why it is being applied in this case, and then determine which attributes of
 the request are best suited to be used as the limiting key (for example, source IP address, user, API key). After you
@@ -65,15 +65,15 @@ a limiting signal (usually a 429 HTTP response).
 
 When under the high traffic responding to the caller's request is also a challenge.
 
-- The service could response a simple job ID which could be used by caller to poll the request status.
+- The service could respond a simple job ID which could be used by caller to poll the request status.
 - The caller could register a callback, the service will call it once the response is ready.
-- The caller could subscribe to a event channel where the service will send the response into.
+- The caller could subscribe to an event channel where the service will send the response into.
 
 ### Client side strategies
 
 If the backend service does not provide the rate-limiting, the client could apply self-imposed throttling.
 
-- Apply exponential backoff with random offset(jitter) on retries.
+- Apply the exponential backoff with random offset(jitter) on retries.
 
 ## Architecture
 
@@ -83,19 +83,18 @@ If the backend service does not provide the rate-limiting, the client could appl
 
 - Admin could configure the rules via the config service, e.g. client A could have 100 QPS
 - Rate limiting service pulls the configurations and store in the cache for quick access
-- When requests come to backend service, the backend service checkes with rate limiting service to see if the requests
+- When requests come to backend service, the backend service checks with rate limiting service to see if the requests
   are allowed
-- Rate limit engine calculates the throttle and return back to the backend service if requests are allowed or rejected
+- Rate limit engine calculates the throttle and returns the backend service if requests are allowed or rejected
 
-#### Why not letting the rate limiting service to be the gateway
+#### Why not putting the rate limiting service as the gateway
 
-- In that case, the rate limiting service needs to handle the service discovery for all downstream services which is a
-  big pain
+We could have the rate limiter client injected into gateway and calls the rate limiting service.
 
 #### What if the in-memory requests cache crashes
 
-- All requests counts are lost, which could cause the peak traffic to backend service. So we need to make the
-  `requests counts` persistent in a distributed way
+All requests counts are lost, which could cause the peak traffic to backend service. So we need to make the`requests counts`
+persistent in a distributed way. If using Redis as the caching layer it handles the single point failure out of the box. 
 
 ### Distributed rate limiting
 
@@ -116,7 +115,8 @@ If the backend service does not provide the rate-limiting, the client could appl
 ![leaky-bucket](./resources/leaky-bucket.png)
 
 - The requests are consumed with a fixed rate
-- If more requests come, it would queued up (uber implements this by using sleep, rather than discarding the leaking requests)
+- If more requests come, it would be queued up (uber implements this by using sleep, rather than discarding the leaking
+  requests)
 
 This is similar to token bucket, if no tokens are available, we could put the request to sleep until the tokens are
 refilled. Or we could discard the request and return `429 Too Many Requests` back to client.
@@ -193,7 +193,7 @@ refilled. Or we could discard the request and return `429 Too Many Requests` bac
 #### Sliding window Pros
 
 - Overcome the query and storage issue from sliding log solution
-- No bundary burst
+- No boundary burst
 - Approximately value is acceptable
 
 #### Sliding window Cons
