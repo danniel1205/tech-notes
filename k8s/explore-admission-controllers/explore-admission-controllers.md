@@ -9,7 +9,9 @@ tags: k8s-fundamentals
     For example, when a namespace is deleted and subsequently enters the Terminating state, the NamespaceLifecycle admission controller is what prevents any new objects from being created in this namespace.
 - Among the more than 30 admission controllers shipped with Kubernetes, two take a special role because of their nearly limitless flexibility - **`ValidatingAdmissionWebhooks`** and **`MutatingAdmissionWebhooks`**.
     This approach decouples the admission controller logic from the Kubernetes API server, thus allowing users to implement custom logic to be executed whenever resources are created, updated, or deleted in a Kubernetes cluster.
-![admission controller phases](https://i.imgur.com/qlwsvEL.png)
+![admission controller phases](resources/admission-webhook-phrases.png)
+
+![validating-webhook-flow](resources/validating-webhook-flow.png)
 
 Ref: [k8s-blog](https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admission-controllers/)
 
@@ -25,19 +27,18 @@ Ref: [k8s-blog](https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admi
 ### Missions
 
 - Write a validating admission webhook
-  - If Pod has the label `webhook-validate:true`. Do not allow the creation of Pod without namespace or default namespace
+  - If Pod has the label `webhook-validate:true`. Do not allow the creation of Pod in default namespace
 - Write a mutating admission webhook
-  - Add annotation for the pod who has the label `webhook-mutate:true`
-- Try build the webhook using ko
+  - Add some custom annotation for pods who have the label `webhook-mutate:true`
 
 ### Prerequisites
 
-- Getting MacOS set up with k8s 1.18 with kind
+- A running K8S cluster (we will use kind in this experiment)
 
     ``` bash
     brew update
     brew upgrade kind kubectl
-    kind create cluster --config kind.yaml --image kindest/node:v1.18.0
+    kind create cluster --config kind.yaml --image kindest/node:v1.20.2
     ```
 
     ``` yaml
@@ -69,7 +70,8 @@ Ref: [k8s-blog](https://kubernetes.io/blog/2019/03/21/a-guide-to-kubernetes-admi
 
 ### Write a webhook server
 
-The code is modified based on [link](https://github.com/kubernetes/kubernetes/tree/ec8c186fe8181f52670716d8d10aa7663e868491/test/images/agnhost/webhook). And has been check in to [github](https://github.com/danniel1205/sample-webhook-server).
+The code is modified based on [link](https://github.com/kubernetes/kubernetes/tree/ec8c186fe8181f52670716d8d10aa7663e868491/test/images/agnhost/webhook).
+It has been forked in to [github](https://github.com/danniel1205/sample-webhook-server).
 
 - Checkout the code
 - Build the docker image
@@ -87,7 +89,7 @@ kind load docker-image sample-webhook-server:v1
 
 ### Generate certs and keys
 
-**Note**: You have to change the `"/CN=sample-webhook-server.webhook.svc"` in genkeys.sh to be `"/CN=<service-name>.<namespace>.svc"`
+**Note**: You have to change the `"/CN=sample-webhook-server.webhook.svc"` in `genkeys.sh` to be `"/CN=<service-name>.<namespace>.svc"`
 
 ``` bash
 cd $GOPATH/src/github.com/danniel1205/sample-webhook-server/
