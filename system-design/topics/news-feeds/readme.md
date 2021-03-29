@@ -186,3 +186,6 @@ process the requests. The order of comments are based on the order when the requ
 
 - [Youtube: Scaling Instagram Infrastructure](https://www.youtube.com/watch?v=hnpzNAPiC0E&t=12s&ab_channel=InfoQ)
 - [Youtube: System design on counting likes](https://www.youtube.com/watch?v=bUHFg8CZFws&ab_channel=SystemDesignInterview)
+- [Alibaba: Feed Stream System Design: General Principles](https://www.alibabacloud.com/blog/feed-stream-system-design-general-principles_595900)
+- <https://medium.com/@narengowda/system-design-for-twitter-e737284afc95>
+- <https://dingdingsherrywang.medium.com/system-design-instagram-4658eeb0423a>
