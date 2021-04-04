@@ -1,6 +1,8 @@
 # Tech Notes
 
-This repo contains some notes/tutorials from my personal tech explore. Hope it could be helpful to others as well.
+![header-pic](header-pic.png)
+
+This repo contains the notes/tutorials from my personal tech exploration.
 
 ## Table of contents
 
