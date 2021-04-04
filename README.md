@@ -22,6 +22,8 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
 
 - System design
+  - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
+  
   - Design data intensive application notes
     - [2 data models and query languages](system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
     - [3 storage and retrieval](system-design/3-storage-and-retrieval/readme.md)
@@ -31,17 +33,19 @@ This repo contains some notes/tutorials from my personal tech explore. Hope it c
     - [6 partitioning](system-design/6-partitioning/readme.md)
 
   - Design cases
-    - [design auto complete service](system-design/topics/auto-complete-service/readme.md)
-    - [design collaborative editing](system-design/topics/how-collaborative-editing-work/readme.md)
-    - [design shopping cart] - TBA
-    - [design instant messaging](system-design/topics/instant-messaging-system/readme.md)
-    - [design rate limiting](system-design/topics/rate-limiting/readme.md)
-    - [design news feeds](system-design/topics/news-feeds/readme.md)
-    - [design netflix](system-design/topics/netflix/readme.md)
-    - [design distributed file system](system-design/topics/distributed-file-system/readme.md)
-    - [design text based search system](system-design/topics/text-based-search/readme.md)
+    - [Design auto complete service](system-design/topics/auto-complete-service/readme.md)
+    - [Design collaborative editing](system-design/topics/how-collaborative-editing-work/readme.md)
+    - [Design shopping cart] - TBA
+    - [Design instant messaging](system-design/topics/instant-messaging-system/readme.md)
+    - [Design rate limiting](system-design/topics/rate-limiting/readme.md)
+    - [Design news feeds](system-design/topics/news-feeds/readme.md)
+    - [Design netflix](system-design/topics/netflix/readme.md)
+    - [Design distributed file system](system-design/topics/distributed-file-system/readme.md)
+    - [Design text based search system](system-design/topics/text-based-search/readme.md)
+    - [Design distributed delayed job queue](system-design/topics/distributed-delayed-job-queueing-system/readme.md)
+    - [Design distributed caching](system-design/topics/caching/readme.md)
+    - [Design real time interactions on live video](system-design/topics/real-time-interactions-on-live-video/readme.md)
 
-  - Miscellaneous
-    - [distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
-    - [caching](system-design/topics/caching/readme.md)
-    - [real-time-interactions-on-live-video](system-design/topics/real-time-interactions-on-live-video/readme.md)
+- How Facebook xxx series
+  - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
+  - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
