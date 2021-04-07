@@ -18,7 +18,7 @@
 
 ## Assumptions
 
-128 byte/message * 1000 messages/second/producer * 10000 producers = 1280 MB/second
+`128 byte/message * 1000 messages/second/producer * 10000 producers = 1280 MB/second`
 
 - Need more than one node: With the growth of number of producers and messages producers send, we might not be able to
   hold all messages in the memory of a single node.
@@ -28,23 +28,23 @@
 
 ```go
 type Message struct {
-	ID string // the uuid of the message
-	Topic string // used for topic based message routing
-	Labels map[string]string // used for content based message routing
-	Content []byte // the message payload
+  ID string // the uuid of the message
+  Topic string // used for topic based message routing
+  Labels map[string]string // used for content based message routing
+  Content []byte // the message payload
 }
 
 func (Producer p) Publish(messageContent []byte, topic string, labels map[string]string) {
-	p.Send(Message{
-	  ID: xxx,
-	  Topic: topic,
-	  Labels: labels,
-	  Content: messageContent,
-	})
+  p.Send(Message{
+    ID: xxx,
+    Topic: topic,
+    Labels: labels,
+    Content: messageContent,
+  })
 }
 
 func (Consumer c) Consume(topic string, labels) []byte {
-	message := c.Consume(topic, labels)
+  message := c.Consume(topic, labels)
 }
 ```
 
@@ -85,9 +85,9 @@ func (Consumer c) Consume(topic string, labels) []byte {
 ## Data persistence
 
 - RabbitMQ will store the messages in DRAM as long as possible, but once the available DRAM is completely consumed, RabbitMQ
-will start storing messages on disk without having a copy available in DRAM, which will severely impact performance.
+  will start storing messages on disk without having a copy available in DRAM, which will severely impact performance.
 - Kafka's each partition is an ordered write-ahead log(using page cache to improve the performance) of messages that are
-persisted to disk.
+  persisted to disk.
 
 ## Scalability
 
@@ -118,7 +118,7 @@ Producer could have its own retry logic.
 Could have a separate store for message status, so that the producer could check the message status asynchronously. The
 broker could update the message status asynchronously as well(RabbitMQ could update when message is consumed/deleted from
 the queue; Kafka could update the message status in batch when ZooKeeper updates the last consumed offset.)
-  
+
 #### Producer fails after receiving the ack
 
 No need to retry, just resume after the restart.
