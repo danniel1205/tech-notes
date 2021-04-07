@@ -20,7 +20,7 @@
 - hostname on worker vm: worker-x
 
 ### Apply the following configurations to all nodes
-  
+
 Run the following script as root user
 
 ``` bash
@@ -104,7 +104,8 @@ Update the `/etc/hosts` to map the IP address to the hostname
 
 ``` bash
 # kubeadm init
-# By default, Calico uses 192.168.0.0/16 as the Pod network CIDR, though this can be configured in the calico.yaml file. For Calico to work correctly, you need to pass this same CIDR to the kubeadm init command using the
+# By default, Calico uses 192.168.0.0/16 as the Pod network CIDR, though this can be configured in the calico.yaml file.
+# For Calico to work correctly, you need to pass this same CIDR to the kubeadm init command using the
 kubeadm init --pod-network-cidr=192.168.0.0/16 # root user
 ```
 

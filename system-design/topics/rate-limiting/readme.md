@@ -94,7 +94,7 @@ We could have the rate limiter client injected into gateway and calls the rate l
 #### What if the in-memory requests cache crashes
 
 All requests counts are lost, which could cause the peak traffic to backend service. So we need to make the`requests counts`
-persistent in a distributed way. If using Redis as the caching layer it handles the single point failure out of the box. 
+persistent in a distributed way. If using Redis as the caching layer it handles the single point failure out of the box.
 
 ### Distributed rate limiting
 

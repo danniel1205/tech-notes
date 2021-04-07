@@ -29,7 +29,7 @@ kubectl config set-context alice-context --cluster=kubernetes --user=alice
 
 - Create RBAC Roles for default namespace
   - Reader
-  
+
     ``` yaml
     apiVersion: rbac.authorization.k8s.io/v1
     kind: Role

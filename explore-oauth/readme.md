@@ -9,8 +9,10 @@ OAuth is a industry-standard protocol for authorization. It is for authorization
 - Resource: The resources need to be protected. e.g. Photos on Google Drive.
 - Resource Owner: The entity capable of granting access to a protected resource. e.g. You as a user owns the photos on Google Drive.
 - Resource Server: The server which is hosting the resources. e.g. Google Drive.
-- Client: The application wants to access the protected resources on behalf of the resource owner. e.g. The app which wants to access your photos on Google Drive.
-- Authorization server: The component takes care of the authorization, issues the access token to client, usually is implemented by the resouce server side if it supports OAuth.
+- Client: The application wants to access the protected resources on behalf of the resource owner. e.g. The app which
+  wants to access your photos on Google Drive.
+- Authorization server: The component takes care of the authorization, issues the access token to client, usually is
+  implemented by the resouce server side if it supports OAuth.
 
 ## How OAuth works
 
@@ -18,7 +20,7 @@ OAuth is a industry-standard protocol for authorization. It is for authorization
 
 ![authorization-code-flow](./resources/authorization-code-flow.png)
 
-#### Request to get auth token
+#### Authorization code flow Request to get auth token
 
 ``` text
 GET {Authorization Endpoint}
@@ -33,7 +35,7 @@ GET {Authorization Endpoint}
 HOST: {Authorization Server}
 ```
 
-#### Response with auth token
+#### Authorization code flow Response with auth token
 
 ``` text
 HTTP/1.1 302 Found
@@ -43,7 +45,7 @@ Location: {Redirect URI}
                               //   request included 'state'.
 ```
 
-#### Request to get access token using auth token
+#### Authorization code flow Request to get access token using auth token
 
 ``` text
 POST {Token Endpoint} HTTP/1.1
@@ -58,7 +60,7 @@ grant_type=authorization_code  // - Required
                                //   'code_challenge'.
 ```
 
-#### Response with access token
+#### Authorization code flow Response with access token
 
 ``` text
 HTTP/1.1 200 OK
@@ -80,7 +82,7 @@ Pragma: no-cache
 
 ![implicit-flow](./resources/implicit-flow.png)
 
-#### Request to get access token
+#### Implicit flow Request to get access token
 
 ``` text
 GET {Authorization Endpoint}
@@ -93,7 +95,7 @@ GET {Authorization Endpoint}
 HOST: {Authorization Server}
 ```
 
-#### Response with access token
+#### Implicit flow Response with access token
 
 ``` text
 HTTP/1.1 302 Found
@@ -112,7 +114,7 @@ Location: {Redirect URI}
 
 ![resource-owner-password-credentials-flow](./resources/resource-owner-password-credentials-flow.png)
 
-#### Request to get access token
+#### Resource owner password credentials flow Request to get access token
 
 ``` text
 POST {Token Endpoint} HTTP/1.1
@@ -124,7 +126,7 @@ grant_type=password    // - Required
 &scope={Scopes}        // - Optional
 ```
 
-#### Response with access token
+#### Resource owner password credentials flow Response with access token
 
 ``` text
 HTTP/1.1 200 OK
@@ -146,7 +148,7 @@ Pragma: no-cache
 
 ![client-credentials-flow](./resources/client-credentials-flow.png)
 
-#### Request to get access token
+#### Client credentials flow Request to get access token
 
 ``` text
 POST {Token Endpoint} HTTP/1.1
@@ -157,7 +159,7 @@ grant_type=client_credentials  // - Required
 &scope={Scopes}                // - Optional
 ```
 
-#### Response with access token
+#### Client credentials flow Response with access token
 
 ``` text
 HTTP/1.1 200 OK
@@ -178,7 +180,7 @@ Pragma: no-cache
 
 ![refresh-token-flow](./resources/refresh-token-flow.png)
 
-#### Request to get the new access token
+#### Refresh token flow Request to get the new access token
 
 ``` text
 POST {Token Endpoint} HTTP/1.1
@@ -189,7 +191,7 @@ grant_type=refresh_token        // - Required
 &scope={Scopes}                 // - Optional
 ```
 
-#### Response with new access token
+#### Refresh token flow Response with new access token
 
 ``` text
 HTTP/1.1 200 OK
@@ -210,14 +212,18 @@ Pragma: no-cache
 ### Which flow you should choose
 
 - If the app has no human interaction, e.g. a cron job, then using `client credential flow`
-- `Resource owner credentials flow` is not secure, because users do not want to provide the username and password of a service to your app. The app will have the "access to all" previleges.
-- `Authorization code flow` with PKCE is more secure by comparing with `Implicit flow`. `Implicit flow` was originally invented for javascript app. Please read this [link](https://medium.com/oauth-2/why-you-should-stop-using-the-oauth-implicit-grant-2436ced1c926) for more details about why implicit flow is NOT recommended any more.
+- `Resource owner credentials flow` is not secure, because users do not want to provide the username and password of a
+  service to your app. The app will have the "access to all" previleges.
+- `Authorization code flow` with PKCE is more secure by comparing with `Implicit flow`. `Implicit flow` was originally
+  invented for javascript app. Please read this [link](https://medium.com/oauth-2/why-you-should-stop-using-the-oauth-implicit-grant-2436ced1c926)
+  for more details about why implicit flow is NOT recommended any more.
 
 And this [link](https://www.authlete.com/developers/pkce/#2-pkce-authorization-request) describes how `Authorization flow` with PKCE works.
 
 #### What is PKCE
 
-It is possible that a malicious process from the client side intercept the authorization token and use that token to ask for the access token. So that we need to have a mechanism to protect it. We call it PKCE(proof key for code exchange).
+It is possible that a malicious process from the client side intercept the authorization token and use that token to ask
+for the access token. So that we need to have a mechanism to protect it. We call it PKCE(proof key for code exchange).
 
 ![auth-code-interception-attach](./resources/auth-code-interception-attack.png)
 
@@ -233,7 +239,9 @@ It is possible that a malicious process from the client side intercept the autho
 
 ## How login via Google, Github, Twitter, FB works in a third party app
 
-There are a lot of web app uses this feature, like `medium.com` which allows user to login via Github. The idea is behind the scene is that `medium.com` wants to get the user profile, so it does the `OAuth` to the user profile provider. Since user will be redirected to the profile provider to login first, so from user point of view it is login via Github.
+There are a lot of web app uses this feature, like `medium.com` which allows user to login via Github. The idea is behind
+the scene is that `medium.com` wants to get the user profile, so it does the `OAuth` to the user profile provider. Since
+user will be redirected to the profile provider to login first, so from user point of view it is login via Github.
 
 ## What flow should I use
 

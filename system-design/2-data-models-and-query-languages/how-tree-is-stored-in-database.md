@@ -1,4 +1,4 @@
-# How tree is stored in databse
+# How tree is stored in database
 
 A struct(golang), class(java) could be easily stored in NoSQL database as key-value pairs, or row-columns in SQL database.
 How about tree ? How a tree structure could be flattened and stored in database.
@@ -7,7 +7,7 @@ How about tree ? How a tree structure could be flattened and stored in database.
 
 In database, we store the node along with the ref to its parent node or its children node.
 
-### Example of MongoDB
+### Adjacency list Example of MongoDB
 
 ![tree-structure](./resources/tree-structure.png)
 
@@ -33,19 +33,24 @@ db.categories.insertMany( [
 ] )
 ```
 
-### Example of SQL databse
+### Adjacency list Example of SQL database
 
 ![adjacency-list-sql-table](./resources/adjacency-list-sql-table.png)
 
 ---
 
-Using this pattern is good for **write-heavy** application. Because insert a new node or udpate a node is pretty straighforward. But when we want to read the tree, e.g. read the entire tree, it needs some recursive queries from root to leaf. Multiple queries on read is not that efficient.
+Using this pattern is good for **write-heavy** application. Because insert a new node or update a node is pretty
+straightforward. But when we want to read the tree, e.g. read the entire tree, it needs some recursive queries from root
+to leaf. Multiple queries on read is not that efficient.
 
 ## Nested set
 
-The Nested Sets pattern identifies each node in the tree as stops in a round-trip traversal of the tree. The application visits each node in the tree twice; first during the initial trip, and second during the return trip. The Nested Sets pattern stores each tree node in a document; in addition to the tree node, document stores the id of node’s parent, the node’s initial stop in the left field, and its return stop in the right field.
+The Nested Sets pattern identifies each node in the tree as stops in a round-trip traversal of the tree. The application
+visits each node in the tree twice; first during the initial trip, and second during the return trip. The Nested Sets pattern
+stores each tree node in a document; in addition to the tree node, document stores the id of node’s parent, the node’s initial
+stop in the left field, and its return stop in the right field.
 
-### Example of MongoDB
+### Nested set Example of MongoDB
 
 ![nested-set](./resources/nested-set.png)
 
@@ -60,7 +65,7 @@ db.categories.insertMany( [
 ] )
 ```
 
-### Example of SQL database
+### Nested set Example of SQL database
 
 ![nested-set-sql-table](./resources/nested-set-sql-table.png)
 
@@ -77,9 +82,12 @@ However write is expensive, since all the `left` and `right` numbers need to be 
 
 ## Materialized Path
 
-The Materialized Paths pattern stores each tree node in a document; in addition to the tree node, document stores as a string the id(s) of the node’s ancestors or path. Although the Materialized Paths pattern requires additional steps of working with strings and regular expressions, the pattern also provides more flexibility in working with the path, such as finding nodes by partial paths.
+The Materialized Paths pattern stores each tree node in a document; in addition to the tree node, document stores as a
+string the id(s) of the node’s ancestors or path. Although the Materialized Paths pattern requires additional steps of
+working with strings and regular expressions, the pattern also provides more flexibility in working with the path, such
+as finding nodes by partial paths.
 
-### Example of MongoDB
+### Materialized Path Example of MongoDB
 
 ![tree-structure](./resources/tree-structure.png)
 
@@ -94,7 +102,7 @@ db.categories.insertMany( [
 ] )
 ```
 
-### Example of SQL databse
+### Materialized Path Example of SQL database
 
 ![materialized-path-sql-tree](./resources/materialized-path-sql-tree.png)
 
@@ -102,7 +110,8 @@ db.categories.insertMany( [
 
 ---
 
-This pattern is pretty balanced between read and write. If we want to insert a new node, its path would be the parent's path + node's value. If we want to read the entire tree or substree, it is just a `LIKE` query in SQL database
+This pattern is pretty balanced between read and write. If we want to insert a new node, its path would be the parent's
+path + node's value. If we want to read the entire tree or substree, it is just a `LIKE` query in SQL database
 
 ``` SQL
 SELECT * FROM “content_nodemp” WHERE (“content_nodemp”.”path”::text LIKE ‘00010001%’ AND “content_nodemp”.”depth” >= 2

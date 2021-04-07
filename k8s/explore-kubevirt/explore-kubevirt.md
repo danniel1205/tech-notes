@@ -24,7 +24,8 @@ If you want to test it local, I would suggest use minikube. For minikube, please
 ### Deploy KubeVirt Operator
 
 ``` bash
-export KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | grep tag_name | grep -v -- - | sort -V | tail -1 | awk -F':' '{print $2}' | sed 's/,//' | xargs)
+export KUBEVIRT_VERSION=$(curl -s https://api.github.com/repos/kubevirt/kubevirt/releases | grep tag_name | grep -v -- - | \
+  sort -V | tail -1 | awk -F':' '{print $2}' | sed 's/,//' | xargs)
 echo $KUBEVIRT_VERSION
 
 # Apply the kubevirt operator yaml
@@ -89,9 +90,12 @@ NAME                                AGE   RUNNING   VOLUME
 virtualmachine.kubevirt.io/ubuntu   25m   false
 ```
 
-**Note**: When you delete a running VM instance, it will be rescheduled. That means if the VM instance crahsed, KubeVirt should automatically bring the VM instance back.
+**Note**: When you delete a running VM instance, it will be rescheduled. That means if the VM instance crahsed, KubeVirt
+should automatically bring the VM instance back.
 
-**Failed**: I failed to install nginx inside the vm on vSphere, either virt-operator crashes or the worker node becomes NotReady. That is probably because I am running it inside a nested vm on vSphere. My next plan is to try it out in Minikube and see what will happen.
+**Failed**: I failed to install nginx inside the vm on vSphere, either virt-operator crashes or the worker node becomes
+NotReady. That is probably because I am running it inside a nested vm on vSphere. My next plan is to try it out in Minikube
+and see what will happen.
 
 ### Setup everyting on minikube
 
@@ -144,4 +148,6 @@ Commercial support is available at
 </html>
 ```
 
-In theory, if VM instance gets deleted or the VM Pod gets deleted, K8S should bring up a new VM instance and VM Pod. Its IP might have changed, the Endpoints should be updated automatically, so the Service DNS still could route traffic to corresponding VM instance.
+In theory, if VM instance gets deleted or the VM Pod gets deleted, K8S should bring up a new VM instance and VM Pod.
+Its IP might have changed, the Endpoints should be updated automatically, so the Service DNS still could route traffic
+to corresponding VM instance.

@@ -5,12 +5,12 @@
 - On write: Append to log file
 - On read: Serach in log file
 
-### Analysis
+### Solution 1 Analysis
 
 - On write, simply append operation is efficient, but the log file could be huge
 - On read, search in a log file for query is inefficient, especially data is large
 
-### Improve on read
+### Solution 1 Improve on read
 
 **Hash Index**: Maintain a **in-memory** hash table. `Key` is the index key and `Value` is the offset of the value in
 file. So each time we want to read the data, we could get the file offset from hash table and find the starting offset
@@ -21,7 +21,7 @@ On read, get the offset from the hash table then read the data starting from the
 On write, append new record into log file, update the hash table to reflect the latest offset. So there will be two
 operations: update `in-memory` hash table and append to log file
 
-### Improve on write
+### Solution 1 Improve on write
 
 - Append new data into separate log file (log segements)
 - Async compaction and segements merging
@@ -47,7 +47,7 @@ Compaction means throwing away duplicate keys in the log, and keeping only the m
 since compaction often makes segments much smaller (assuming that a key is overwritten several times on average within
 one segment), we can also merge several segments together at the same time as performing the compaction,
 
-### Crash recovery
+### Solution 1 Crash recovery
 
 `in-memory` hash table, it could be either rebuilt on system reboot (takes long time if log file is large) or restoring
 the hash table from snapshot.
@@ -71,9 +71,9 @@ Crash could happend in between of the disk IO. File system crash recovery soluti
   value of a particular key points to the head of sorted segment file address. Two keys in the `in-memory` hash table
   could represent a range, which makes the range query possible
 
-### Analysis
+### Solution 2 Analysis
 
-#### On write
+#### Solution 2 On write
 
 - Have a `in-memory` red-black or AVL tree data structure to hold the new data (the tree is sorted by keys)
 - When hit the threshold of current tree, we write the tree onto disk as the **sorted segement file** (SSTable).
@@ -81,19 +81,19 @@ Crash could happend in between of the disk IO. File system crash recovery soluti
 - Once data is written onto disk, update the `in-memory` hash table. Key and Value point to the first record in the sorted
   segment file
 
-#### On read
+#### Solution 2 On read
 
 - Look for `in-memory` red-black or AVL tree first
 - If red-black or AVL tree does not have the record, we look the most recent sorted segement file
 - For range query, we might need to look into multiple sorted segment files
 
-### Improve on read
+### Solution 2 Improve on read
 
 If the key we are looking for does not exist, we have to check the current `in-memory` red-black tree first and then
 scan the SSTable on disk from most recent to oldest. Storage engines usually use
 **`Bloom filters`** ([wiki](https://en.wikipedia.org/wiki/Bloom_filter)) to improve the performance.
 
-### Crash recovery
+### Solution 2 Crash recovery
 
 It is possible that system crashes before writing `in-memory` red-black or AVL tree onto disk as the SSTable. We could
 have a write ahead logging like journaling file system to track the changes before writing data into the `in-memory`

@@ -80,7 +80,7 @@ if c.qcount < c.dataqsiz {
 ![gopark](./gopark.png)
 
 - Create `sudog` instance with current `goroutine` info and enqueue into `sendq`
-  
+
 ``` golang
 gp := getg()
 mysg := acquireSudog()
@@ -103,7 +103,6 @@ c.sendq.enqueue(mysg)
 ![sudog](./sudog.png)
 
 - Golang calls `gopark` to put current `goroutine` to be `waiting`
-  
 - Dequeue next `goroutine` from `runQ` to process
 
 The `goroutine` is blocked, but no OS thread, so that OS thread can still process other `goroutines`

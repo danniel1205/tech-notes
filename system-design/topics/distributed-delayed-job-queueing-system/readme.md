@@ -5,8 +5,8 @@
 ### Functional requirement
 
 - In a system with the limited resources, we want to put the task which uses intensive compute resource to a job queue for
-later execution. Or we want the system to execute a job based on its execution time configuration(Send email/notification
-at Mar 20th 2021 17:00).
+  later execution. Or we want the system to execute a job based on its execution time configuration(Send email/notification
+  at Mar 20th 2021 17:00).
 - The job needs to be executed at least once with a maximum retry.
 - The job should be able to be unscheduled at any time.
 
@@ -24,18 +24,18 @@ at Mar 20th 2021 17:00).
 
 ```go
 type Task struct {
-	ID string        // globally unique task ID
-	Namespace string // the namespace of a task to provide queue isolation
-	Delay Time       // the delay when task needs to be executed
-	Score int        // the score which could be used to calculate the priority other than time 
-	Payload Payload
+  ID string        // globally unique task ID
+  Namespace string // the namespace of a task to provide queue isolation
+  Delay Time       // the delay when task needs to be executed
+  Score int        // the score which could be used to calculate the priority other than time
+  Payload Payload
 }
 
 type Payload struct {
-	// this should contain the payload of task, e.g., topics, what to be executed
-	Topics string // for consumers to subscribe
-	CallbackFuncName string // for consumers to invoke the callback function
-	Args []string // args pass to the callback function
+  // this should contain the payload of task, e.g., topics, what to be executed
+  Topics string // for consumers to subscribe
+  CallbackFuncName string // for consumers to invoke the callback function
+  Args []string // args pass to the callback function
 }
 ```
 
@@ -117,9 +117,9 @@ The control plane looks like a LB/ingress controller which provides the round-ro
 - PriorityQueue: Hold the objects on a sorted order (sort by expiration time)
 - ReentrantLock: Handle the concurrent read-write problem
 - Multiple producer threads and consumer threads
-- Leader-follower pattern for consumer threads: Improve the performance 
+- Leader-follower pattern for consumer threads: Improve the performances
   ([code inline comments](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/concurrent/DelayQueue.java#L84))
-  
+
 ### How producer adds objects
 
 ```java
@@ -143,7 +143,7 @@ public boolean offer(E e) {
     try {
         q.offer(e);
         if (q.peek() == e) {
-            /* 
+            /*
             if the newly added object becomes the top element:
             - the old leader who is waiting for the second element(now) needs to be reset. we need a new leader to take
               the current top element.
@@ -258,4 +258,4 @@ How multiple consumers check if the top object has expired?
 - <https://juejin.cn/post/6844904150703013901>
 - <https://tech.youzan.com/queuing_delay/>
 - [How Timer wheel works](https://www.fatalerrors.org/a/time-wheel-in-netty.html)
-- <Reinventing timer wheel>(https://lwn.net/Articles/646950/)
+- [Reinventing timer wheel](https://lwn.net/Articles/646950/)

@@ -1,9 +1,9 @@
----
-tags: k8s
----
 # Explore secrets store csi
 
-In K8S as of today, your secret objects are stored in ETCD as base64 encoded. Anyone who get the secret object or access to the ETCD could get the secrets in plain text pretty easy. That is not safe !!! So people want to store their secrets in external secret store which is out of K8S, but still want to access it within the Pod from K8S. That is how secrets store csi and secret store provider could help.
+In K8S as of today, your secret objects are stored in ETCD as base64 encoded. Anyone who get the secret object or access
+to the ETCD could get the secrets in plain text pretty easy. That is not safe !!! So people want to store their secrets
+in external secret store which is out of K8S, but still want to access it within the Pod from K8S. That is how secrets
+store csi and secret store provider could help.
 
 Here are some great links talk about this topic:
 

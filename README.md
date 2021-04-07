@@ -7,7 +7,6 @@ This repo contains the notes/tutorials from my personal tech exploration.
 ## Table of contents
 
 - [CKA related](cka)
-
 - K8S related
   - [admission controllers](k8s/explore-admission-controllers/explore-admission-controllers.md)
   - [antrea](k8s/explore-antrea/explore-antrea.md)
@@ -22,10 +21,8 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [secrets store csi](k8s/explore-secrets-store-csi/explore-secrets-store-csi.md)
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
-
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
-  
   - Design data intensive application notes
     - [2 data models and query languages](system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
     - [3 storage and retrieval](system-design/3-storage-and-retrieval/readme.md)
@@ -33,7 +30,6 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [5 replication](system-design/5-replication/readme.md)
       - [how to handle concurrent write](system-design/5-replication/how-to-handle-concurrent-write.md)
     - [6 partitioning](system-design/6-partitioning/readme.md)
-
   - Design cases
     - [Design auto complete service](system-design/topics/auto-complete-service/readme.md)
     - [Design collaborative editing](system-design/topics/how-collaborative-editing-work/readme.md)
@@ -47,7 +43,6 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design distributed delayed job queue](system-design/topics/distributed-delayed-job-queueing-system/readme.md)
     - [Design distributed caching](system-design/topics/caching/readme.md)
     - [Design real time interactions on live video](system-design/topics/real-time-interactions-on-live-video/readme.md)
-
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)

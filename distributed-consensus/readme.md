@@ -1,7 +1,3 @@
----
-tags: distributed-system
----
-
 # Distributed consensus
 
 ## Distributed system
@@ -48,7 +44,9 @@ Asymmetric, leader-based:
 ### Byzantine fault tolerant
 
 Both Paxos and Raft are not Byzantine fault-tolerant. The paper [Byzantine General’s Problem](https://people.eecs.berkeley.edu/~luca/cs174/byzantine.pdf)
-by Leslie Lamport, Robert Shostak, and Marshall Pease provided the first proof to solve the Byzantine General’s problem: it showed that a system with `x` Byzantine nodes must have at least `3x + 1` total nodes in order to reach consensus `(Only works in synchronous environment)`.
+by Leslie Lamport, Robert Shostak, and Marshall Pease provided the first proof to solve the Byzantine General’s problem:
+it showed that a system with `x` Byzantine nodes must have at least `3x + 1` total nodes in order to reach consensus
+`(Only works in synchronous environment)`.
 
 We’re going to take a look at two algorithms (DLS and PBFT) that brought us closer than ever before to breaking the
 Byzantine + asynchronous barrier.

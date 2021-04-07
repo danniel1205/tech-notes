@@ -31,7 +31,7 @@ Instead of rewriting existing `memecache` based solution, it might be a good ide
 - Object ID: 64bits.
 - `(key -> value)*` is the labels for nodes or edges.
 
-```
+```text
 assoc_add(id1, atype, id2, time, (k→v)*)
 Adds or overwrites the association (id1, atype,id2), and its inverse (id1, inv(atype), id2) if defined.
 
@@ -87,7 +87,7 @@ only edges where time ≥ low.
   - If cache hit, then return to client.
   - If cache miss, the leader shard(s) read data from storage. On the way back to client, the follower shard(s) who take(s)
     the original requests are updated.
-    
+
 ##### Single region write
 
 - Client sends write requests to follower.
@@ -95,7 +95,7 @@ only edges where time ≥ low.
 - Leader writes to storage layer **synchronously**.
 - On a successful write, leader invalidates/refills the follower member who takes the original request **synchronously**.
   Leader invalidates/refills other follower members **asynchronously**. (This guarantees the `read-after-write` consistency).
-  
+
 #### Multi region
 
 ![multi-region](resources/multi-region.png)
@@ -110,7 +110,7 @@ Same as single region, read miss will eventually be redirected into local region
 - Master region writes will be replicated to slave region:
   - Cache invalidation/refill is done via `Facebook wormhole`(shown in step 4.2).
   - DB replication is done by DB layer(shown in step 4.1).
-  
+
 ## How does TAO handle large volume data
 
 - Partition RAM

@@ -123,7 +123,7 @@ Machine failure/maintenance or rolling update might make a task to be redeployed
     - `Scheduler` will consult `Allocator` to allocate a new machine for the affected `Task`.
     - The following steps are the same as the [job deployment](#How is a job deployed)
   - If no: Nothing to be done.
-- `Scheduler` re-enable the service discovery. 
+- `Scheduler` re-enable the service discovery.
 
 ### The redeployment is caused by rolling update
 
@@ -143,11 +143,11 @@ An example is to update the container image of a Job. A new task will be created
 
 ## How does a machine get moved from one entitlement to another
 
-**This is from my personal understanding**
+**Note:**This is from my personal understanding
 
 - A `machine` needs to be drained before the reassignment.
   - `Scheduler` consults `TaskController` to get the acknowledgement. Otherwise, this will be a no-op.
-  - [Optional] `Scheduler` and `Allocator` redeploy the `task`s to different `machine. 
+  - [Optional] `Scheduler` and `Allocator` redeploy the `task`s to different `machine.
   - `Scheduler` stops the service discovery on all `Task`s from that `machine`.
   - `Scheduler` instructs `Agent` to stop all containers.
   - `Scheduler` notifies `Allocator` the `machine` is drained.

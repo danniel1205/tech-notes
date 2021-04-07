@@ -1,14 +1,14 @@
----
-tags: k8s-fundamentals
----
 # Deep dive admission controllers
 
 ## What are admission controllers
 
 - **Gatekeeper** that intercept (authenticated) API requests and may change the request object or deny the request altogether.
-    For example, when a namespace is deleted and subsequently enters the Terminating state, the NamespaceLifecycle admission controller is what prevents any new objects from being created in this namespace.
-- Among the more than 30 admission controllers shipped with Kubernetes, two take a special role because of their nearly limitless flexibility - **`ValidatingAdmissionWebhooks`** and **`MutatingAdmissionWebhooks`**.
-    This approach decouples the admission controller logic from the Kubernetes API server, thus allowing users to implement custom logic to be executed whenever resources are created, updated, or deleted in a Kubernetes cluster.
+  For example, when a namespace is deleted and subsequently enters the Terminating state, the NamespaceLifecycle admission
+  controller is what prevents any new objects from being created in this namespace.
+- Among the more than 30 admission controllers shipped with Kubernetes, two take a special role because of their nearly
+  limitless flexibility - **`ValidatingAdmissionWebhooks`** and **`MutatingAdmissionWebhooks`**.
+  This approach decouples the admission controller logic from the Kubernetes API server, thus allowing users to implement
+  custom logic to be executed whenever resources are created, updated, or deleted in a Kubernetes cluster.
 ![admission controller phases](resources/admission-webhook-phrases.png)
 
 ![validating-webhook-flow](resources/validating-webhook-flow.png)
@@ -163,4 +163,6 @@ kubectl apply -f $GOPATH/src/github.com/danniel1205/sample-webhook-server/deploy
 
 - Why validating admission is after mutating admission ?
     The reason is whatever request object a validating webhook sees needs to be the final version that would be persisted to `etcd`
-- If we have two webhooks are applied to the same resource, in which order the request will be validated ? The request will be validated against the webhooks specified in the `ValidatingWebhookConfiguration.webhooks` one by one. Which means if the first succeeded, the request will be sent to the second one.
+- If we have two webhooks are applied to the same resource, in which order the request will be validated ? The request will
+  be validated against the webhooks specified in the `ValidatingWebhookConfiguration.webhooks` one by one. Which means if the
+  first succeeded, the request will be sent to the second one.
