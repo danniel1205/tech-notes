@@ -22,7 +22,7 @@ Error from server (NotFound): the server could not find the requested resource (
 
   - [Need to make sure if the k8s sig github could be accessible in cka exam]: <https://github.com/kubernetes-sigs/metrics-server>
   - `kubectl apply <components.yaml which is downloaded from above link>`
-  
+
 - Run `kubectl top nodes`
 
 ``` bash

@@ -1,6 +1,3 @@
----
-tags: cluster-api
----
 # Explore cluster API for docker infrastructure
 
 ## Official page
@@ -169,9 +166,11 @@ kind-control-plane   Ready    master   22h   v1.17.0
 <https://cluster-api.sigs.k8s.io/user/quick-start.html#create-your-first-workload-cluster>
 > The clusterctl config cluster command by default uses cluster templates which are provided by the infrastructure providers.
 
-However, I could not find any `cluster-template.yaml` available under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`. The `cluterctl config cluster <cluster_name>` command will fail with error complaining about the missing `cluster-template.yaml` file
+However, I could not find any `cluster-template.yaml` available under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`.
+The `cluterctl config cluster <cluster_name>` command will fail with error complaining about the missing `cluster-template.yaml` file
 
-For now, I just copied the sample from https://github.com/vmware-tanzu/tgik/blob/master/episodes/110/capd-v3/infrastructure-docker/v0.3.2/cluster-template.yaml and put it under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`
+For now, I just copied the sample from <https://github.com/vmware-tanzu/tgik/blob/master/episodes/110/capd-v3/infrastructure-docker/v0.3.2/cluster-template.yaml>
+and put it under `.cluster-api/overrides/infrastructure-docker/v0.3.0/cluster-template.yaml`
 
 Then run:
 
@@ -219,7 +218,8 @@ default     test-md-0-db7cb7668-dlrvg   docker:////test-test-md-0-db7cb7668-dlrv
 default     test-md-0-db7cb7668-nlt4f   docker:////test-test-md-0-db7cb7668-nlt4f   Running
 ```
 
-You might have notices that the kubeadmcontrolplane is not ready. That is because you have to deploy CNI. https://cluster-api.sigs.k8s.io/user/quick-start.html#deploy-a-cni-solution
+You might have notices that the kubeadmcontrolplane is not ready. That is because you have to deploy CNI.
+<https://cluster-api.sigs.k8s.io/user/quick-start.html#deploy-a-cni-solution>
 
 ### Get access to a workload cluster
 

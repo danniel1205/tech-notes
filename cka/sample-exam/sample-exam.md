@@ -5,7 +5,7 @@
 - Use `kubeadm` to craete a cluster. 1 control plane node and 3 worker nodes.
 - Task is complete if `kubectl get nodes` shows all nodes in a `ready` state.
 
-### Solution
+### Create a cluster Solution
 
 - `kubeadm` on control plane node
 
@@ -37,9 +37,10 @@ Nodes will be ready after above step
 ## Create a Pod
 
 - Create a Pod runs the latest version of the alpine image
-- This Pod shuold be configured to sleep 3600 seconds and shuold be created in the mynamespace namespace. Make sure the Pod is automatically restarted if it fails
+- This Pod shuold be configured to sleep 3600 seconds and shuold be created in the mynamespace namespace. Make sure the
+  Pod is automatically restarted if it fails.
 
-### Solution
+### Create a Pod Solution
 
 - Generate Pod yaml
 
@@ -90,7 +91,7 @@ alpine   1/1     Running   0          24s
 - The second container should only be start once this file has been created
 - The second container should run the `sleep 10000` command as its task
 
-### Solution
+### Create a Pod with init container Solution
 
 - Generate Pod yaml
 
@@ -137,12 +138,14 @@ init-container-pod   1/1     Running   0          2m25s
 - This PV should be accessible from all namespaces
 - Run a Pod with the name `pv-pod` that uses this persistent volume from `myvol` namespace
 
-### Solution
+### Configure storage Solution
 
 - Get the PV yaml
+
 <https://kubernetes.io/docs/concepts/storage/persistent-volumes/>
 
 - Modify to use hostPath
+
 <https://kubernetes.io/docs/concepts/storage/volumes/#hostpath>
 
 - Create PV
@@ -158,6 +161,7 @@ kubectl create ns myvol
 ```
 
 - Get PVC yaml
+
 <https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims>
 
 - Modify and apply the PVC yaml
@@ -224,7 +228,7 @@ spec:
 - Run a Pod with name `xxazz-pod` under `run-once` namespace by using the alphine image with command `sleep 3600`
 - Ensure the task in the Pod runs once and stops after running it once
 
-### Solution
+### Run a Pod once Solution
 
 #### Could run as Pod
 
@@ -281,7 +285,7 @@ status: {}
 - Enable recording and perform rolling upgrade to latest `nginx` version
 - After upgrade, undo the upgrade again back to `nginx 1.14`
 
-### Solution
+### Manage updates Solution
 
 - Generate Deployment yaml
 
@@ -355,7 +359,7 @@ kube-system   replicaset.apps/coredns-66bff467f8   2         2         2       8
 - Create a ConfigMap that defines the variable `myuser=mypassword`
 - Create a Pod that runs alpine and use this variable from the ConfigMap
 
-### Solution
+### Use ConfigMaps Solution
 
 - Generate ConfigMap yaml
 
@@ -405,7 +409,7 @@ spec:
 - The solution should start `nginx` and ensure that it is started on every node
 - If new node is added, the Pod is automatically added to that node as well
 
-### solution
+### Run parallel Pods Solution
 
 - Get DaemonSet yaml
 
@@ -441,7 +445,7 @@ spec:
 - Ensure that all Pods are moved away from the local nodes and started again somewhere else
 - After successfully executing this task, make sure `worker-3` can be used again
 
-### Solution 
+### Mark a Node as unavailable Solution
 
 - Cordon a node
 
@@ -467,7 +471,7 @@ kubectl uncordon worker-3
 - Put the node `worker-2` in maintenance mode, no new Pods will be scheduled on it
 - After successfully executing this task, undo it
 
-### Solution
+### Use Maintanance mode Solution
 
 The same solution as above
 
@@ -476,11 +480,12 @@ The same solution as above
 - Create a backup of `Etcd` database
 - Write the backup to `/var/exam/etcd-backup`
 
-### Solution
+### Back up Etcd database Solution
 
 ``` bash
 # https://discuss.kubernetes.io/t/etcd-backup-ssues/8304
-etcdctl snapshot save mysnapshot.db --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key
+etcdctl snapshot save mysnapshot.db --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key
 ```
 
 ## Use DNS
@@ -497,7 +502,7 @@ etcdctl snapshot save mysnapshot.db --endpoints=https://127.0.0.1:2379 --cacert=
 - Configure the node `worker-3` to automatically start a Pod that runs `nginx` using the name `auto-web`
 - Put the manifest file in `/etc/kubernetes/manifests`
 
-### Solution
+### Configure a Node to autostart a Pod Solution
 
 - Generate Pod yaml
 - Copy the Pod yaml to `/etc/kubernetes/manifests/` under node `worker-3`
@@ -506,7 +511,7 @@ etcdctl snapshot save mysnapshot.db --endpoints=https://127.0.0.1:2379 --cacert=
 
 - Find the Pod with the highest CPU load and write its name to the file `/var/exam/cpu-pods.txt`
 
-### Solution
+### Find the Pod with the highest CPU load Solution
 
 - Get metric-server yaml
 

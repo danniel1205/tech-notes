@@ -29,7 +29,7 @@ Youtube/Netflix search by video name, etc.
   - 500 videos are uploaded / minute
 - This is a read heavy system which needs to handle high volume of concurrent reads
   - Might need rate limiting
-  
+
 `8 * 10 * 4 Byte * 500 * 60 minute * 24 hours = 230 MBs / Day`
 
 `230 MBs * 365 Days * 10 Years = 840 GBs in total for 10 years`
@@ -49,11 +49,12 @@ the memory. We want to design a distributed service.
 
 ##### Real-time tokenizing
 
-![](resoureces/twitter-real-time-search-svc.png) 
+![](resoureces/twitter-real-time-search-svc.png)
 
 - Once a new tweet or video metadata comes, it will be immediately sent to the `tokenizer` service for processing.
 - There could be several MQs connecting the input and the `tokenizer` worker threads.
 - Multiple `tokenizer` worker threads could pop the event and generate the forward index.
+
 ```text
 
 documentID : list of terms
@@ -61,20 +62,21 @@ documentID : list of terms
 0          | [(i, 0), (like,2), (apple,7)]
 1          | [(liverpool,0),(wins,2)]
 ```
+
 - The forward index results will be sent to `indexer` service to generate the inverted index and store on shards.
 
 ##### Offline tokenizing
 
 ![daily-data-processing](resoureces/daily-data-procssing.png)
 
-  - Engagement aggregator: Counts the number of engagements for each Tweet in a given day. These engagement counts are
-    used later as an input in scoring each Tweet.
-  - Aggregation: Joins multiple data sources together based on Tweet ID.
-  - Ingestion: Performs different types of preprocessing — language identification, tokenization, text feature extraction,
-    URL resolution and more.
-  - Scorer: Computes a score based on features extracted during Ingestion. For the smaller historical indices, this score
-    determined which Tweets were selected into the index.
-  - Partitioner: Divides the data into smaller chunks through our hashing algorithm. The final output is stored into HDFS.
+- Engagement aggregator: Counts the number of engagements for each Tweet in a given day. These engagement counts are
+  used later as an input in scoring each Tweet.
+- Aggregation: Joins multiple data sources together based on Tweet ID.
+- Ingestion: Performs different types of preprocessing — language identification, tokenization, text feature extraction,
+  URL resolution and more.
+- Scorer: Computes a score based on features extracted during Ingestion. For the smaller historical indices, this score
+  determined which Tweets were selected into the index.
+- Partitioner: Divides the data into smaller chunks through our hashing algorithm. The final output is stored into HDFS.
 
 #### Inverted index building
 
@@ -138,7 +140,7 @@ to the query service to reduce the network calls.
   - Each segment holds a fixed number of documents.
   - Fill up one segment first before moving to next segment.
   - Only the current segment is actively being modified, other segments are read-only.
-- Posting pools and `currReadyTailP` to avoid concurrent reads/writes within the same segment  
+- Posting pools and `currReadyTailP` to avoid concurrent reads/writes within the same segment
 
 ### How does document updates work
 
@@ -151,7 +153,7 @@ to the query service to reduce the network calls.
   - `i:docID-1`
   - `hate:docID-1`
   - `like:docID-1*`
-  
+
 We have a flag in each posting to indicate if the posting entry should be deleted during the segments merge or if it should
 be skipped during query. This is the similar idea to DB index segments merge.
 
@@ -169,7 +171,7 @@ The inverted index in memory will be lost in worst case scenario. However, the o
   - Delta Compression and Bit Packing (size reduced)
   - Store count instead of positional info in posting list (size reduced)
   - Positional info is stored in another parallel array for further compression
-  
+
 <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/omnisearch-index-formats.html>
 
 #### Reduce the indexing latency and enhancements on original design
@@ -210,7 +212,7 @@ TBA
 - <https://blog.twitter.com/engineering/en_us/a/2014/building-a-complete-tweet-index.html>
 - <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/omnisearch-index-formats.html>
 - <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2020/reducing-search-indexing-latency-to-one-second.html>
-- <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/search-relevance-infrastructure-at-twitter.html>  
-- <https://blog.twitter.com/engineering/en_us/a/2014/building-a-complete-tweet-index.html>  
+- <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/search-relevance-infrastructure-at-twitter.html>
+- <https://blog.twitter.com/engineering/en_us/a/2014/building-a-complete-tweet-index.html>
 - <http://blog.gaurav.im/2016/12/28/systems-design-twitter-search/>
 - <https://www.slideshare.net/ramezf/twitter-search-architecture>

@@ -1,6 +1,3 @@
----
-tags: k8s-fundamentals
----
 # StatefulSets
 
 <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>
@@ -11,7 +8,9 @@ tags: k8s-fundamentals
 <https://stackoverflow.com/questions/41583672/kubernetes-deployments-vs-statefulsets>
 <https://medium.com/stakater/k8s-deployments-vs-statefulsets-vs-daemonsets-60582f0c62d4>
 
-In short, every replica of a stateful set will have its own state, and each of the pods will be creating its own PVC(Persistent Volume Claim). So a statefulset with 3 replicas will create 3 pods, each having its own Volume, so total 3 PVCs.
+In short, every replica of a stateful set will have its own state, and each of the pods will be creating its own
+PVC(Persistent Volume Claim). So a statefulset with 3 replicas will create 3 pods, each having its own Volume, so total
+3 PVCs.
 
 ## StatefulSet try-out on vShpere
 
@@ -131,8 +130,8 @@ NAME                                             PROVISIONER              RECLAI
 storageclass.storage.k8s.io/gc-storage-profile   csi.vsphere.vmware.com   Delete          Immediate           false                  10h
 ```
 
-* Two pods, `web-0` and `web-1` got created in order. The creation order is mentioned in the [doc](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies)
-* Two PVs and PVCs got created for each individule pod
+- Two pods, `web-0` and `web-1` got created in order. The creation order is mentioned in the [doc](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies)
+- Two PVs and PVCs got created for each individule pod
 
 ### Scale the statefulset
 
@@ -179,7 +178,7 @@ persistentvolume/pvc-3588dcb0-ce2e-4e1f-9938-4d4b35d5252b   1Gi        RWO      
 persistentvolume/pvc-a405fce4-81cc-4739-bf43-7aefb3831384   1Gi        RWO            Delete           Bound    default/www-web-0   gc-storage-profile            17h
 ```
 
-* The PVs and PVCs were not deleted automatically. This is also a expected behavior mentioned in [doc](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations)
+- The PVs and PVCs were not deleted automatically. This is also a expected behavior mentioned in [doc](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations)
 
 #### Scale up to 3 replicas again
 
@@ -204,7 +203,7 @@ persistentvolume/pvc-3588dcb0-ce2e-4e1f-9938-4d4b35d5252b   1Gi        RWO      
 persistentvolume/pvc-a405fce4-81cc-4739-bf43-7aefb3831384   1Gi        RWO            Delete           Bound    default/www-web-0   gc-storage-profile            17h
 ```
 
-* The PVs and PVCs will not be recreated, they are reused
+- The PVs and PVCs will not be recreated, they are reused
 
 ### Access to the pods behind statefulset
 
@@ -273,11 +272,11 @@ web-2
 
 ### What happens if Pod is rescheduled to a different node
 
-* Label two nodes
-* Modify the statefulset yaml to have replicas = 1. And have a node selector to one of the labeled node
-* Update the statefulset yaml to make the pod to be rescheduled on another node
-* Volume will be detached from first node and reattach to second node
-  
+- Label two nodes
+- Modify the statefulset yaml to have replicas = 1. And have a node selector to one of the labeled node
+- Update the statefulset yaml to make the pod to be rescheduled on another node
+- Volume will be detached from first node and reattach to second node
+
 ``` text
 I0505 19:46:24.644822       1 csi_handler.go:509] Found NodeID test-cluster-e2e-script-workers-r7rzh-967bc4648-2rf5m in CSINode test-cluster-e2e-script-workers-r7rzh-967bc4648-2rf5m
 I0505 19:46:28.646976       1 csi_handler.go:371] Detached "csi-19b38af007545a2b3f3829ec0d81d3e33684cde3fa767558f1c03b7bed46fc81"

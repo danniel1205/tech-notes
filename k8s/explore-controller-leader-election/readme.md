@@ -14,6 +14,7 @@ the following are what I found:
 - controller-runtime uses `ConfigMap` or `Endpoints` as the lock primitives for leader election. ([Code](https://github.com/kubernetes-sigs/controller-runtime/blob/197751df6040ec99414574e89f3fa73914ce335d/pkg/leaderelection/leader_election.go#L54))
   The default one uses `ConfigMap`.
 - If leader election is enabled for a controller, there will be only one active controller instance to reconcile.
+
 ```go
 mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
@@ -23,12 +24,12 @@ mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		LeaderElectionID:   "6c48dc90.dg.k8s",
 	})
 ```
+
 - If leader election is NOT enabled, and you have multiple controller replicas, all the controller replicas will watch on
   the same event and reconcile concurrently. I have tried this by running a [custom controller](https://github.com/danniel1205/explore-k8s-custom-controller/blob/master/config/manager/manager.yaml#L29)
   I implemented for demo. When I create a `ConfigMap` all the replicas try to reconcile.
-  
-So the conclusion is: THERE IS NO CLIENT SIDE SHARDING SUPPORTED IN CONTROLLER RUNTIME.
 
+So the conclusion is: THERE IS NO CLIENT SIDE SHARDING SUPPORTED IN CONTROLLER RUNTIME.
 
 ## References
 

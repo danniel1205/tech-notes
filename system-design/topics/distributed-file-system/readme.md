@@ -26,9 +26,9 @@
     - Master maintains two mappings:
       - file name -> array of chunk ids/handlers
       - id/handler -> [`list of chunk servers`, `version #`, `primary chunk server`, `lease expiration`]
-- Have a client lib which is used by application for data IO. No data goes through control plane node. 
+- Have a client lib which is used by application for data IO. No data goes through control plane node.
 
-### High level architecture 
+### High level architecture
 
 ![gfs-architecture](resources/gfs-architecture.png)
 

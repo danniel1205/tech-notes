@@ -1,7 +1,8 @@
 # Explore ETCD
 
 ## What is ETCD
-https://etcd.io/
+
+<https://etcd.io/>
 
 - A distributed key-value data store which stores the state of the system and objects
 - Use Raft protocol to  coordinate the data access in distributed setup
@@ -30,8 +31,8 @@ https://etcd.io/
 
 - Using footloose to build the vm-like clusters
 - Using Ansible to configure the clusters
-    - Install pre requisites
-    - Install etcd
+  - Install pre requisites
+  - Install etcd
 - Bring up a kind cluster using the external etcd cluster
 
 ## References

@@ -13,7 +13,9 @@ Official link: [here](https://rancher.com/docs/rancher/v2.x/en/overview/architec
 
 ## How RKE create a cluster
 
-An experiement has been done against VMWare vSphere. A `Rancher Server` has been deployed on a VM within the vSphere cluster as a Docker container. Requried resources are pre-configured, pre-installed on vSphere, so the environment is ready to be used by Rancher to provision K8S cluster.
+An experiement has been done against VMWare vSphere. A `Rancher Server` has been deployed on a VM within the vSphere
+cluster as a Docker container. Requried resources are pre-configured, pre-installed on vSphere, so the environment is
+ready to be used by Rancher to provision K8S cluster.
 
 Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisioning/rke-clusters/node-pools/vsphere/provisioning-vsphere-clusters/)
 
@@ -54,7 +56,7 @@ Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisio
 
     - Create default Role, ClusterRole, ServiceAccount
   - Building up worker plane
-    - Start [kubelet] container from `rancher/hyperkube` 
+    - Start [kubelet] container from `rancher/hyperkube`
     - Start [kube-proxy] container from `rancher/hyperkube`
 
     ``` bash
@@ -65,7 +67,6 @@ Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisio
     ```
 
   - Setting up network plugin
-  
     ``` bash
     ~/tmp/rancher  kubectl get job rke-network-plugin-deploy-job -n kube-system -o yaml
     apiVersion: batch/v1
@@ -148,31 +149,23 @@ Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisio
     startTime: "2020-06-11T23:11:36Z"
     succeeded: 1
     ```
-
   - Setting up coredns
-  
   ``` bash
   ~/tmp/rancher  kubectl get jobs -A
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-coredns-addon-deploy-job        1/1           6s         87m
   ```
-
   - Setting up metrics server
-  
   ``` bash
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-metrics-addon-deploy-job        1/1           11s        87m
   ```
-
   - Setting up nginx ingress controller
-  
   ``` bash
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-ingress-controller-deploy-job   1/1           9s         86m
   ```
-
   - Setting up user addons
-
 - Finishing up the cluster provisoning
   - Installing Rancher CRDs
   - Starting agents

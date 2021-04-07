@@ -44,27 +44,27 @@ docker push danielguo/cow-say-template:v1
   `kubectl create secret generic cow-say-value --from-file=values.yaml=./ytt/values.yaml`
 - Create App CR for cow-say app [Link to the Yaml](./lab-1/artifacts/app.yaml)
 - Double check the deployed app
-  
+
   ``` bash
     kapp list
     Target cluster 'https://127.0.0.1:32776' (nodes: kind-control-plane)
-    
+
     Apps in namespace 'default'
-    
+
     Name              Namespaces  Lcs   Lca
     cow-say-app-ctrl  default     true  22s
-    
+
     Lcs: Last Change Successful
     Lca: Last Change Age
-    
+
     1 apps
-    
+
     Succeeded
   ```
 
 - Enable port forwarding and access the app `kubectl port-forward service/cow-say 8081:1323`
 - Curl to the app endpoint
-  
+
   ``` bash
     curl localhost:8081
      _______

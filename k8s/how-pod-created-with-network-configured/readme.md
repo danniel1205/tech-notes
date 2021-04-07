@@ -7,7 +7,7 @@
   - Notices (through a replicaSet informer) that the newly created `ReplicaSet` object.
   - Create `Pod` objects.
 - `kube-scheduler` which is also a controller (inside kube-scheduler binary):
-  - Notices (through a pod informer) that the `Pod` objects with empty `Pod.spec.nodename`.  
+  - Notices (through a pod informer) that the `Pod` objects with empty `Pod.spec.nodename`.
   - Puts the `Pod` objects in the scheduling queue.
 - The meanwhile the `kubelet` (is also a controller):
   - Notices the `Pod` objects (through a pod informer) that the `Pod.spec.nodeName` (which are empty) does not match its node name.
@@ -25,14 +25,14 @@
   - Add: the `Pod` object is created, configure the network for that `Pod` object.
   - Delete: the `Pod` object is deleted, cleanup the network resource for that `Pod object.
   - Check: can be called periodically to make sure everything is good.
-  
+
 ![cri-cni-interaction](./resources/cri-cni-interaction.png)
-    
+
 - `CNI` will create `veth` pair and assign IP address to that `Pod` object.
 
 ![pod-to-pod-networking](./resources/pod-to-pod-network-same-node.gif)
 
-- `ReplicaSet` controller reconciles the `Pod` objects. 
+- `ReplicaSet` controller reconciles the `Pod` objects.
 - If Pod object terminates unexpectedly, kubelet notices the change:
   - Get the Pod object from API Server.
   - Change its status to "Terminated".
