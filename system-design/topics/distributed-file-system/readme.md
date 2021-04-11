@@ -73,13 +73,48 @@ be fast because it is the internal network.
   - Application uses client lib to calculates the `chunk index` based on offset.
   - Application uses client lib to send the write request(`file name, chunk index`) to control plane.
 - Control plane receives the request.
-  - From the file name and chunk index to get the `chunk ID`. Generate a new `chunk ID` if no entry found in the map, it
-    means that the write operation is writing a new file.
+  - From the file name and chunk index to get the `chunk ID`.
   - From the `chunk ID` to get the `list of chunk servers`.
   - Return the `chunk ID` and `chunk server locations` back to client.(The chunk servers hold the replicas)
 - Client caches the result for future reads.
 - Client choose the closest chunk server to read the data.
 
+### APIs DataNode|chunk server has
+
+- replicate file chunks to other nodes
+- remove local file chunk replicas
+- re-register or to shut down the node
+- send an immediate file chunk report to control plane
+- send heartbeat to control plane
+
+### How to handle control plane failure
+
+- In Kafka, the control plane called `NameNode`, there is also a `BackupNode` holds the replicated data of `NameNode`. If
+  `NameNode` fails, `BackupNode` has the replicated data. The paper does not mention how it fails over. However, using Raft
+  leader election might be also a good idea.
+- In GFS, the control plane called `GFS Mater`, it has replicas on multiple machines. If it is just process failure, it
+  could be restarted immediately. If it is machine failure, the monitoring infra will start a new master process on different
+  replicated machine.
+
+### How to handle chunk server|DataNode failure
+
+- Each file chunks are replicated to different machines.
+- Process failures are restartable.
+- Machine failure will cause the data lost on that machine.
+- There are Heartbeats between control plane and server where the replica is located. So that control plane knows if there
+  are any chunk servers are not available. If client sends a read requests, the control plane could return available server
+  list.
+
+### What will happen if adding a new server
+
+- New server is empty.
+- File chunks will be rebalanced to new server. E.g., if there are two replicas of a same file chunk located on the same
+  server, they will be rebalanced to different servers.
+- If replica factor is changed, e.g., from 3 to 5, each file chunks will be copied to the new server. The file chunks could
+  be copied in parallel.
+
 ## References
 
+- [GFS Paper](resources/gfs.pdf)
+- [HDFS Paper](resources/hdfs.pdf)
 - <https://www.youtube.com/watch?v=EpIgvowZr00&ab_channel=MIT6.824%3ADistributedSystems>
