@@ -89,6 +89,39 @@ func (Consumer c) Consume(topic string, labels) []byte {
 - Kafka's each partition is an ordered write-ahead log(using page cache to improve the performance) of messages that are
   persisted to disk.
 
+## Delivery guarantees
+
+![reliable-transfer](resources/reliable-transfer.png)
+
+- t1: Producer sends message to queue.
+- t2: Enqueue.
+- t3: ACK returns to producer (ownership transfer from producer to queue).
+- t4: Consumer gets message from queue.
+- t5:
+  - RabbitMQ: Consumer sends ACK back to queue, so that it could **delete** the message.
+  - Kafka: Kafka does not maintain the message ownership information, so message will not be deleted from queue. Consumers
+    could read from previous offset if failure happens.
+
+### How to guarantee at-least-once
+
+- RabbitMQ: ACK from consumer.
+- Custom implementation: Have a separate retry queue/hashtable to temporarily hold the consumed message(but not yet acknowledged).
+- Kafka: Consumer could retry on previous offset.
+
+### How to guarantee at-most-once
+
+- RabbitMQ: Discards the ACK from consumer, continue without waiting for ACK.
+- Custom implementation: No separate retry queue/hashtable.
+- Kafka: Consumer does not have to retry.
+
+### How to guarantee exactly-once
+
+Two-phase commit:
+
+- `--->` Ask consumer "are you ready to consume"?.
+- `<---` Consumer returns "yes".
+- `--->` Go ahead to consume.
+
 ## Scalability
 
 - RabbitMQ: Shard the queue into multiple queues and trade off the total ordering.
