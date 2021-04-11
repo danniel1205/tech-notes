@@ -193,3 +193,4 @@ will be redirected to current leader. This is implemented by Raft algorithm alre
 - <https://tanzu.vmware.com/developer/blog/understanding-the-differences-between-rabbitmq-vs-kafka/>
 - <http://cloudurable.com/blog/kafka-architecture-topics/index.html>
 - <https://kafka.apache.org/documentation>
+- [How Uber implements at-least-once](https://eng.uber.com/reliable-reprocessing/)
