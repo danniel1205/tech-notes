@@ -43,6 +43,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design distributed delayed job queue](system-design/topics/distributed-delayed-job-queueing-system/readme.md)
     - [Design distributed caching](system-design/topics/caching/readme.md)
     - [Design real time interactions on live video](system-design/topics/real-time-interactions-on-live-video/readme.md)
+    - [Design message broker(RabbitMQ) or event streaming system(Kafka)](system-design/topics/message-broker-and-event-streaming/readme.md)
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
