@@ -207,7 +207,7 @@ TBA
 - <https://youtu.be/CeGtqouT8eA?t=1455>
 - <http://blog.gaurav.im/2016/12/28/systems-design-twitter-search/>
 - <https://blog.twitter.com/engineering/en_us/a/2011/the-engineering-behind-twitter-s-new-search-experience.html>
-- [Paper: Early bird - Twitter realtime search](resoureces/early-bird-twitter-real-time-search.pdf)
+- [Paper: Early bird - Twitter realtime search](resoureces/earlybird.pdf)
 - <https://blog.twitter.com/engineering/en_us/a/2011/the-engineering-behind-twitter-s-new-search-experience.html>
 - <https://blog.twitter.com/engineering/en_us/a/2014/building-a-complete-tweet-index.html>
 - <https://blog.twitter.com/engineering/en_us/topics/infrastructure/2016/omnisearch-index-formats.html>
