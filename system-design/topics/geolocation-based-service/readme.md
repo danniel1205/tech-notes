@@ -159,22 +159,35 @@ a datastore, it is also ok if you want to push driver location heartbeat events 
 
 ## Components design
 
-### Location service
+### Restaurant profile service
 
-Location service itself is stateless, so that it could be easily horizontally scaled. The location data is persistent in
-cache or database cluster.
+- Take the request of restaurants CRUDs.
+- Persist images/videos into object store.
+- Pass requests to index service to build the spatial index or inverted index to serve queries.
+
+### Index service
+
+Index service itself is stateless, so that it could be easily horizontally scaled. The location data is persistent in
+cache and database.
 
 - Implement the logic of generating restaurant ID from altitude and longitude.([More details on how to generate ID](#how-to-generate-regionid))
 - Implement the Hash logic for sharding.
 - Implement nearby query.
 
+### Query service
+
+- Query against the inverted index(text based search).
+- Query against spatial index(nearby search).
+
 ### Checkout service
 
 - Handle checkout requests.
 - Perform checkout validations:
-  - validate payment method
-  - validate restaurant availability
-- Invoke dispatch service for food delivery
+  - validate payment method.
+  - validate restaurant availability.
+- Invoke external payment service to fulfill the payment.
+- Invoke dispatch service for food delivery.
+- Notify user.
 
 ### Dispatch service
 
@@ -272,7 +285,7 @@ and send updates to customer. OR the customer's client lib consumes the events b
 
 ## How is driver notified an order
 
-// TODO: Design notification service
+Notification service deserves a dedicated article. This will be added soon.
 
 ## References
 
@@ -282,3 +295,4 @@ and send updates to customer. OR the customer's client lib consumes the events b
 - [How Uber shards its geolocation](https://www.youtube.com/watch?v=AzptiVdUJXg&ab_channel=UberEngineering)
 - <https://eng.uber.com/h3/>
 - <https://www.youtube.com/watch?v=cSFWlF96Sds&ab_channel=RedisLabs>
+- <https://medium.com/partha-pratim-sanyal/system-design-doordash-a-prepared-food-delivery-service-bf44093388e2>
