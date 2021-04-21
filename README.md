@@ -33,7 +33,6 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - Design cases
     - [Design auto complete service](system-design/topics/auto-complete-service/readme.md)
     - [Design collaborative editing](system-design/topics/how-collaborative-editing-work/readme.md)
-    - [Design shopping cart] - TBA
     - [Design instant messaging](system-design/topics/instant-messaging-system/readme.md)
     - [Design rate limiting](system-design/topics/rate-limiting/readme.md)
     - [Design news feeds](system-design/topics/news-feeds/readme.md)
@@ -44,6 +43,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design distributed caching](system-design/topics/caching/readme.md)
     - [Design real time interactions on live video](system-design/topics/real-time-interactions-on-live-video/readme.md)
     - [Design message broker(RabbitMQ) or event streaming system(Kafka)](system-design/topics/message-broker-and-event-streaming/readme.md)
+    - [Design geolocation based service(UberEats/DoorDash/...)](system-design/topics/geolocation-based-service/readme.md)
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
