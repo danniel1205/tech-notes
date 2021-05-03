@@ -47,3 +47,4 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
+  - [Shard locality management: Akkio](how-facebook-xxx-series/managing-data-store-locality-at-scale-with-akkio/readme.md)
