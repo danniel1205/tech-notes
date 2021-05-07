@@ -79,7 +79,8 @@ func (Consumer c) Consume(topic string, labels) []byte {
     // provides a custom connection name
     Connection conn = factory.newConnection("app:audit component:event-consumer");
     ```
-- Messages are stored in DRAM(if overloaded, then use disk).
+- Messages are stored in DRAM(has [durability setting](https://www.rabbitmq.com/persistence-conf.html#how-it-works) to
+  configure how disk is involved).
 - Messages are delivered to consumers in FIFO order from each queue(queue is sorted, so retry still keeps the order).
 
 ## Data persistence
