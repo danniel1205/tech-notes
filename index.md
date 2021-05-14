@@ -1,10 +1,8 @@
-# Tech Notes
+## Tech notes
 
 ![header-pic](header-pic.png)
 
-This repo contains the notes/tutorials from my personal tech exploration.
-
-## Table of contents
+### Table of content
 
 - [CKA related](cka)
 - K8S related
@@ -50,3 +48,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
   - [Shard locality management: Akkio](how-facebook-xxx-series/managing-data-store-locality-at-scale-with-akkio/readme.md)
+
+### Contact
+
+[Linkedin](https://www.linkedin.com/in/daniel-guo-0498a549/) | [Github](https://github.com/danniel1205)
