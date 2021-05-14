@@ -1,4 +1,3 @@
-## Tech notes
 
 ![header-pic](header-pic.png)
 
