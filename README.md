@@ -6,7 +6,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
 
 ## Table of contents
 
-- [CKA related](cka)
+- [CKA related](https://github.com/danniel1205/tech-notes/tree/master/cka)
 - K8S related
   - [admission controllers](k8s/explore-admission-controllers/explore-admission-controllers.md)
   - [antrea](k8s/explore-antrea/explore-antrea.md)
@@ -21,7 +21,13 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [secrets store csi](k8s/explore-secrets-store-csi/explore-secrets-store-csi.md)
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
-- [General knowledge base](general-knowledge-base)
+- General knowledge base
+  - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
+  - [Distributed consensus](general-knowledge-base/distributed-consensus/readme.md)
+  - [Explore Oauth](general-knowledge-base/explore-oauth/readme.md)
+  - [Explore openLDAP](general-knowledge-base/explore-openldap/readme.md)
+  - [Go channels](general-knowledge-base/go-channels/readme.md)
+  - [Logging with cobra](general-knowledge-base/logging-with-cobra/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
