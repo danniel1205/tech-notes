@@ -35,7 +35,7 @@ brew-openssl x509 -req -in ldap.csr -CA ca.crt -CAkey ca.key -CAcreateserial -ou
 docker-compose up -d
 ```
 
-docker compose file is under [link](./openldap/docker-compose.yaml).
+docker compose file is under [link](openldap/docker-compose.yaml).
 
 Once the service is up, you should be able to access the LDAP UI at `http://ip:8080`
 
@@ -52,7 +52,7 @@ cd ./bookstack
 docker-compose up -d
 ```
 
-docker compose file is under [link](./bookstack/docker-compose.yaml). The [.env](./bookstack/bookstack-ldap.env) file is the one has all LDAP configurations
+docker compose file is under [link](bookstack/docker-compose.yaml). The [.env](bookstack/bookstack-ldap.env) file is the one has all LDAP configurations
 
 Once Bookstack app is running, you should be able to login by using the user account you have created from OpenLDAP.
 
