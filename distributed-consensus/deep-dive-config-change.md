@@ -25,8 +25,6 @@ retry the configuration change since it does not receive the response from previ
 
 ### Safety Add or remove arbitrary servers at a time
 
-This has been covered in [distributed-system](./distributed-system.md). I just copy and paste the content here for reference.
-
 The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) which uses two phases.
 
 ![joint-consensus](./resources/joint-consensus.png)
@@ -50,7 +48,7 @@ When a new server is added, it starts with empty log entries:
 
 a. Leader needs to replicate all its log to the new member which might cause the leader overloaded.
 
-b. As memtioned in [etcd-blog](https://etcd.io/docs/v3.4.0/learning/design-learner/), increasing the quorum immediately
+b. As mentioned in [etcd-blog](https://etcd.io/docs/v3.4.0/learning/design-learner/), increasing the quorum immediately
 when a new member joins would cause a lot of problems.
 
 c. If we have s1, s2, s3 and now we add s4, s3 could be isolated from network partition before s4 catches up leader's log.
