@@ -154,11 +154,11 @@ type I18n interface {
 |---|---|---|---|
 |123_cn|你好| | |
 |123_en|hello| | |
----
+
 |   |cn_default|cn_singular|cn_plural|en_default|en_singular|en_plural|
 |---|---|---|---|---|---|---|
 |123|你好| | |Hello| | |
----
+
 |   |default|singular|plural|
 |---|---|---|---|
 |123|encode(cn:你好,en:Hello)| | |
