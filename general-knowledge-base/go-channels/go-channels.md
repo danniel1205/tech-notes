@@ -16,7 +16,7 @@ ch := make(chan int)
 
 Allocate an hchan struct on the `heap` returns a pointer of it
 
-![hchan](./hchan.png)
+![hchan](hchan.png)
 
 ## Sends and receives
 
@@ -77,7 +77,7 @@ if c.qcount < c.dataqsiz {
 
 ##### What happens when buffer is full
 
-![gopark](./gopark.png)
+![gopark](gopark.png)
 
 - Create `sudog` instance with current `goroutine` info and enqueue into `sendq`
 
@@ -100,7 +100,7 @@ gp.param = nil
 c.sendq.enqueue(mysg)
 ```
 
-![sudog](./sudog.png)
+![sudog](sudog.png)
 
 - Golang calls `gopark` to put current `goroutine` to be `waiting`
 - Dequeue next `goroutine` from `runQ` to process
@@ -126,7 +126,7 @@ if sg := c.sendq.dequeue(); sg != nil {
 - Either pass the value directly to receiver OR enqueue the value to buffer, receiver reads the value from the head of buffer
 - Golang calls `goready` to invoke the waiting sender
 
-![goready](./goready.png)
+![goready](goready.png)
 
 #### If there are no waiting senders
 

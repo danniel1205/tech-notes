@@ -48,7 +48,7 @@ Election liveness: Some candidate must eventually becomes a leader
 
 Log structure:
 
-![img](./resources/log-structure.png)
+![img](resources/log-structure.png)
 
 The different color or the number within the box represents the different term and each server has its own copy of log
 and persistent on disk.
@@ -85,7 +85,7 @@ Because of above properties, there is an `AppendEntries` consistency check:
 When leader changes, logs among servers might not be identical. Leader's log is the only truth, and eventually leader
 makes followers log identical to its log.
 
-![log-consistency](./resources/log-consistency.png)
+![log-consistency](resources/log-consistency.png)
 
 If there is network partition at term 5 (S1 - S3 is one group, S4 - S5 is one group) and leader at term 5 is S2. The
 committed entry `5` needs to be present in the logs of all future leaders, otherwise `5` might be missing if leader becomes
@@ -100,7 +100,7 @@ Safety requirement:
 
 Pick the best leader:
 
-![pick-best-leader](./resources/hard-to-tell-if-entry-is-committed.png)
+![pick-best-leader](resources/hard-to-tell-if-entry-is-committed.png)
 
 (Term2, Index5) are committed entries. But if S3 becomes unavailable, new leader needs to be picked from S1 and S2. If
 new leader is S2 which does not have (Term2, Index5), there will be a problem that the committed entries will be lost.
@@ -111,14 +111,14 @@ Voters deny the vote if:
 
 This guarantees S4 and S5 will NOT be elected as the new leader from the following:
 
-![pick-best-leader](./resources/pick-best-leader-1.png)
+![pick-best-leader](resources/pick-best-leader-1.png)
 
 However, the following case will still mess things up. The leader on Term2 only replicated entries on S1 and S2 before
 its term ended. S5 was selected as leader on Term3 and append logs to its own then crashed. S1 is the current leader which
 is trying to finish committing entry from Term2. Now the entry 2 is replicated on [S1, S2, S3], but is not safely
 committed, since S5 could still be elected as leader at Term5 and will overwrite the entry 3 on [S1, S2, S3]
 
-![pick-best-leader](./resources/pick-best-leader-2.png)
+![pick-best-leader](resources/pick-best-leader-2.png)
 
 For a leader to decide an entry is committed:
 
@@ -126,7 +126,7 @@ For a leader to decide an entry is committed:
 - At least one new entry from the leader's term must also be stored on the majority of servers. (Entry 4 needs to be
   stored on majority of servers as well)
 
-![new-commitment-rule](./resources/new-commitment-rules.png)
+![new-commitment-rule](resources/new-commitment-rules.png)
 
 If entry 4 is committed, then S5 cannot be elected as leader at term 5.
 
@@ -156,7 +156,7 @@ just return the response from previously executed command
 
 ## Configuration changes
 
-![config-change](./resources/config-change.png)
+![config-change](resources/config-change.png)
 
 If we had 3 servers at the beginning, and now want to add 2 more servers at the same time. There are several factors we
 need to consider:
@@ -169,7 +169,7 @@ need to consider:
 The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) which
 uses two phases.
 
-![joint-consensus](./resources/joint-consensus.png)
+![joint-consensus](resources/joint-consensus.png)
 
 - Client sends a config change request to leader
 - Leader enters the joint consensus phase

@@ -56,7 +56,7 @@ replicas. There are two principles:
 - Version number could be used for optimistic concurrency control.
 
 The problem becomes the distributed consensus problem. We could choose to use leader based replica solution and use [Raft
-algorithm](../../../distributed-consensus/raft-distributed-consensus.md) to guarantee the data consistency among all
+algorithm](../../../general-knowledge-base/distributed-consensus/raft-distributed-consensus.md) to guarantee the data consistency among all
 replicas. So that during write operation, client could write data to leader and leader will take care of the date replication.
 This helps reduce the network traffic between the client and chunk server, the network bandwidth within chunk servers would
 be fast because it is the internal network.

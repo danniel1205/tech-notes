@@ -18,7 +18,7 @@ OAuth is a industry-standard protocol for authorization. It is for authorization
 
 ### Authorization code flow
 
-![authorization-code-flow](./resources/authorization-code-flow.png)
+![authorization-code-flow](resources/authorization-code-flow.png)
 
 #### Authorization code flow Request to get auth token
 
@@ -80,7 +80,7 @@ Pragma: no-cache
 
 ### Implicit flow
 
-![implicit-flow](./resources/implicit-flow.png)
+![implicit-flow](resources/implicit-flow.png)
 
 #### Implicit flow Request to get access token
 
@@ -112,7 +112,7 @@ Location: {Redirect URI}
 
 ### Resource owner password credentials flow
 
-![resource-owner-password-credentials-flow](./resources/resource-owner-password-credentials-flow.png)
+![resource-owner-password-credentials-flow](resources/resource-owner-password-credentials-flow.png)
 
 #### Resource owner password credentials flow Request to get access token
 
@@ -146,7 +146,7 @@ Pragma: no-cache
 
 ### Client credentials flow
 
-![client-credentials-flow](./resources/client-credentials-flow.png)
+![client-credentials-flow](resources/client-credentials-flow.png)
 
 #### Client credentials flow Request to get access token
 
@@ -178,7 +178,7 @@ Pragma: no-cache
 
 ### Refresh token flow
 
-![refresh-token-flow](./resources/refresh-token-flow.png)
+![refresh-token-flow](resources/refresh-token-flow.png)
 
 #### Refresh token flow Request to get the new access token
 
@@ -225,17 +225,17 @@ And this [link](https://www.authlete.com/developers/pkce/#2-pkce-authorization-r
 It is possible that a malicious process from the client side intercept the authorization token and use that token to ask
 for the access token. So that we need to have a mechanism to protect it. We call it PKCE(proof key for code exchange).
 
-![auth-code-interception-attach](./resources/auth-code-interception-attack.png)
+![auth-code-interception-attach](resources/auth-code-interception-attack.png)
 
 ##### Below are the steps of PKCE
 
-![pkce-request-auth-code](./resources/pkce-request-auth-code.png)
+![pkce-request-auth-code](resources/pkce-request-auth-code.png)
 
-![pkce-return-auth-code](./resources/pkce-return-auth-code.png)
+![pkce-return-auth-code](resources/pkce-return-auth-code.png)
 
-![pkce-request-access-code](./resources/pkce-request-access-code.png)
+![pkce-request-access-code](resources/pkce-request-access-code.png)
 
-![pkce-return-access-code](./resources/pkce-return-access-code.png)
+![pkce-return-access-code](resources/pkce-return-access-code.png)
 
 ## How login via Google, Github, Twitter, FB works in a third party app
 

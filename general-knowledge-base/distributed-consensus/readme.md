@@ -39,7 +39,7 @@ Asymmetric, leader-based:
 ---
 
 - Paxos: [wiki](<https://en.wikipedia.org/wiki/Paxos_%28computer_science%29>)
-- Raft: [notes](./raft-distributed-consensus.md)
+- Raft: [notes](raft-distributed-consensus.md)
 
 ### Byzantine fault tolerant
 

@@ -21,6 +21,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [secrets store csi](k8s/explore-secrets-store-csi/explore-secrets-store-csi.md)
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
+- [General knowledge base](general-knowledge-base)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
