@@ -3,7 +3,7 @@
 
 ### Table of content
 
-- [CKA related](cka)
+- [CKA related](https://github.com/danniel1205/tech-notes/tree/master/cka)
 - K8S related
   - [admission controllers](k8s/explore-admission-controllers/explore-admission-controllers.md)
   - [antrea](k8s/explore-antrea/explore-antrea.md)
@@ -18,7 +18,13 @@
   - [secrets store csi](k8s/explore-secrets-store-csi/explore-secrets-store-csi.md)
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
-- [General knowledge base](general-knowledge-base)
+- General knowledge base
+  - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
+  - [Distributed consensus](general-knowledge-base/distributed-consensus/readme.md)
+  - [Explore Oauth](general-knowledge-base/explore-oauth/readme.md)
+  - [Explore openLDAP](general-knowledge-base/explore-openldap/readme.md)
+  - [Go channels](general-knowledge-base/go-channels/readme.md)
+  - [Logging with cobra](general-knowledge-base/logging-with-cobra/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
@@ -50,6 +56,6 @@
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
   - [Shard locality management: Akkio](how-facebook-xxx-series/managing-data-store-locality-at-scale-with-akkio/readme.md)
 
-### Contact
+### Contact me
 
 [Linkedin](https://www.linkedin.com/in/daniel-guo-0498a549/) | [Github](https://github.com/danniel1205)
