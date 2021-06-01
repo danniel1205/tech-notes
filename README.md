@@ -28,6 +28,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Explore openLDAP](general-knowledge-base/explore-openldap/readme.md)
   - [Go channels](general-knowledge-base/go-channels/readme.md)
   - [Logging with cobra](general-knowledge-base/logging-with-cobra/readme.md)
+  - [rpc-vs-rest](general-knowledge-base/rpc-vs-rest/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
