@@ -106,3 +106,4 @@ Personal suggestion: Using conditional variable like what Java does for the dela
 ## References
 
 - [Original Blog Post](https://engineering.fb.com/2021/02/22/production-engineering/foqs-scaling-a-distributed-priority-queue/)
+- [Asynchronous computing @Facebook](https://engineering.fb.com/2020/08/17/production-engineering/async/)
