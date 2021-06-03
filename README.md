@@ -22,6 +22,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
 - General knowledge base
+  - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
   - [Distributed consensus](general-knowledge-base/distributed-consensus/readme.md)
   - [Explore Oauth](general-knowledge-base/explore-oauth/readme.md)
@@ -32,7 +33,6 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
-    - [2 data models and query languages](system-design/2-data-models-and-query-languages/how-tree-is-stored-in-database.md)
     - [3 storage and retrieval](system-design/3-storage-and-retrieval/readme.md)
     - [4 encoding and evolution](system-design/4-encoding-and-evolution/readme.md)
     - [5 replication](system-design/5-replication/readme.md)
@@ -59,3 +59,4 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
   - [Shard locality management: Akkio](how-facebook-xxx-series/managing-data-store-locality-at-scale-with-akkio/readme.md)
+  - [Blog: Distributed priority queuing service: FOQS](how-facebook-xxx-series/scale-a-distributed-priority-queue/readme.md)
