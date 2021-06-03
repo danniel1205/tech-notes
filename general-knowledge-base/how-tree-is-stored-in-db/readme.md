@@ -9,7 +9,7 @@ In database, we store the node along with the ref to its parent node or its chil
 
 ### Adjacency list Example of MongoDB
 
-![tree-structure](./resources/tree-structure.png)
+![tree-structure](resources/tree-structure.png)
 
 ``` MongoDB
 db.categories.insertMany( [
@@ -35,7 +35,7 @@ db.categories.insertMany( [
 
 ### Adjacency list Example of SQL database
 
-![adjacency-list-sql-table](./resources/adjacency-list-sql-table.png)
+![adjacency-list-sql-table](resources/adjacency-list-sql-table.png)
 
 ---
 
@@ -52,7 +52,7 @@ stop in the left field, and its return stop in the right field.
 
 ### Nested set Example of MongoDB
 
-![nested-set](./resources/nested-set.png)
+![nested-set](resources/nested-set.png)
 
 ``` MongoDB
 db.categories.insertMany( [
@@ -67,7 +67,7 @@ db.categories.insertMany( [
 
 ### Nested set Example of SQL database
 
-![nested-set-sql-table](./resources/nested-set-sql-table.png)
+![nested-set-sql-table](resources/nested-set-sql-table.png)
 
 ---
 
@@ -89,7 +89,7 @@ as finding nodes by partial paths.
 
 ### Materialized Path Example of MongoDB
 
-![tree-structure](./resources/tree-structure.png)
+![tree-structure](resources/tree-structure.png)
 
 ``` MongoDB
 db.categories.insertMany( [
@@ -104,9 +104,9 @@ db.categories.insertMany( [
 
 ### Materialized Path Example of SQL database
 
-![materialized-path-sql-tree](./resources/materialized-path-sql-tree.png)
+![materialized-path-sql-tree](resources/materialized-path-sql-tree.png)
 
-![materialized-path-sql-table](./resources/materialized-path-sql-table.png)
+![materialized-path-sql-table](resources/materialized-path-sql-table.png)
 
 ---
 
