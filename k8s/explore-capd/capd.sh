@@ -48,7 +48,7 @@ Examples
   Create a workload cluster
         bash capd.sh -w
   Destroys all CAPD clusters including the kind management cluster
-        bash capd.sh -d
+        bash e2e.sh -d
 EOF
 )"
 
