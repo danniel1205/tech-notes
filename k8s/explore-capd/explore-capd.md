@@ -1,5 +1,33 @@
 # Explore cluster API for docker infrastructure
 
+I wrote a [bash script](capd.sh) to help you quickly bootstrap an environment with CAPD management cluster and workload cluster.
+See usage for more details:
+
+```text
+usage: capd.sh [FLAGS]
+  Create a management cluster + workload cluster environment using Kind
+  and the Cluster API providre for Docker (CAPD).
+  WARNING: If /Users/xiaoming/.cluster-api/ exists, the content will be replaced.
+FLAGS
+  -h    show this help and exit
+  -p    get all prerequisites ready.
+  -m    deploy one management cluster.
+  -w    deploy one workload cluster.
+  -d    destroy all CAPD clusters including the kind management cluster.
+Examples
+  Get all prerequisites ready
+        bash capd.sh -p
+  Create a management cluster
+        bash capd.sh -m
+  Create a workload cluster
+        bash capd.sh -w
+  Destroys all CAPD clusters including the kind management cluster
+        bash e2e.sh -d
+```
+---
+The following steps are tested with old CAPD version on K8S v1.18.6, some steps might not be required in the latest release.
+I keep the following just for reference.
+
 ## Official page
 
 <https://cluster-api.sigs.k8s.io/user/quick-start.html>
