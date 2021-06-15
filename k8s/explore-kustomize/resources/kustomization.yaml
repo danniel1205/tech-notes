@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cowsay.yaml
+
+images:
+  - name: danielguo/cowsay-web-app
+    newName: nginx
+    newTag: latest
+
+replicas:
+  - name: cowsay
+    count: 3
+
+patches:
+  - path: init_container_patch.yaml
+    target:
+      kind: Deployment
+      name: cowsay
+  - path: deploy_containers_patch.yaml
+    target:
+      kind: Deployment
+      name: test
+
+vars:
+- name: MY_SERVICE_NAME
+  objref:
+    kind: Service
+    name: cowsay
+    apiVersion: v1
+
+# These labels are added to all configmaps and secrets.
+generatorOptions:
+  labels:
+    fruit: apple
+
+configMapGenerator:
+  - name: my-java-server-env-vars
+    literals:
+      - JAVA_HOME=/opt/java/jdk
+      - JAVA_TOOL_OPTIONS=-agentlib:hprof
+    options:
+      disableNameSuffixHash: true
+      labels:
+        pet: dog
+

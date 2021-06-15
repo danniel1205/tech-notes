@@ -1,0 +1,12 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cowsay
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: nginx
+          imagePullPolicy: IfNotPresent
+          image: nginx:patch

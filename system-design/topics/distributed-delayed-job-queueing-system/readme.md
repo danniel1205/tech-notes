@@ -28,12 +28,11 @@ type Task struct {
   Namespace string // the namespace of a task to provide queue isolation
   Delay Time       // the delay when task needs to be executed
   Score int        // the score which could be used to calculate the priority other than time
+  Topics string    // for consumers to subscribe
   Payload Payload
 }
 
 type Payload struct {
-  // this should contain the payload of task, e.g., topics, what to be executed
-  Topics string // for consumers to subscribe
   CallbackFuncName string // for consumers to invoke the callback function
   Args []string // args pass to the callback function
 }
