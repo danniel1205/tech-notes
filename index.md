@@ -18,6 +18,7 @@
   - [secrets store csi](k8s/explore-secrets-store-csi/explore-secrets-store-csi.md)
   - [statefulset on vsphere](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
+  - [kustomize](k8s/explore-kustomize/readme.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
