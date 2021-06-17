@@ -9,7 +9,7 @@ and Point B is where logs will be processed.
 
 The same reason as other open source solutions, i.e., [Fluentd](https://www.fluentd.org/), that we need a solution to
 collect, aggregate, deliver those large amount of logs from source to another place for log processing. This kind of solution
-needs to handle high data throughput, needs to be high available and scalable. 
+needs to handle high data throughput, needs to be high available and scalable.
 
 ## User stories
 
