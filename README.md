@@ -31,6 +31,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Go channels](general-knowledge-base/go-channels/readme.md)
   - [Logging with cobra](general-knowledge-base/logging-with-cobra/readme.md)
   - [rpc-vs-rest](general-knowledge-base/rpc-vs-rest/readme.md)
+  - [Distributed hash table](general-knowledge-base/distributed-hash-table/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
