@@ -62,6 +62,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
   - [Shard locality management: Akkio](how-facebook-xxx-series/managing-data-store-locality-at-scale-with-akkio/readme.md)
   - [Blog: Distributed priority queuing service: FOQS](how-facebook-xxx-series/scale-a-distributed-priority-queue/readme.md)
+  - [Blog: Migrating Messenger storage to optimize performance](how-facebook-xxx-series/migrate-messenger-storage/readme.md)
 - How Google xxx series
   - [Millwheel: Stream processing framework](how-google-xxx-series/millwheel-stream-processing-framework/readme.md)
 - How Amazon xxx series
