@@ -68,4 +68,4 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - How Amazon xxx series
   - [Dynamo](how-amazon-xxx-series/dynamo/readme.md)
 - How Uber xxx series
-  - [Peloton](how-uber-xxx-series/peloton-unified-resource-scheduler/readme.md)
+  - [Unified resource scheduler: Peloton](how-uber-xxx-series/peloton-unified-resource-scheduler/readme.md)
