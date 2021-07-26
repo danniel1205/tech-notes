@@ -57,6 +57,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design message broker(RabbitMQ) or event streaming system(Kafka)](system-design/topics/message-broker-and-event-streaming/readme.md)
     - [Design geolocation based service(UberEats/DoorDash/...)](system-design/topics/geolocation-based-service/readme.md)
     - [Design i18n/translation service](system-design/topics/i18n-service/readme.md)
+    - [Design distributed crawler](system-design/topics/distributed-web-crawler/readme.md)
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
