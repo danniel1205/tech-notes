@@ -19,7 +19,8 @@ Youtube/Netflix search by video name, etc.
 
 ### Questions to ask
 
-- Does this search service need to support other business logic, e.g. generating the home timeline?
+- Does this search service need to support other business logic as the shared service ?
+- Does this search service need to be plugged into other upstream services? I.E., Crawler service
 
 ## Assumptions
 
