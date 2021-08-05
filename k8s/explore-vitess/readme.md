@@ -3,7 +3,7 @@
 ## Why do we need Vitess
 
 MySQL does not have a good support of **sharding**, **re-sharding**, **routing**.(MySQL cluster is not open source). In
-addition, the performance of purely using MySQL is low: Client needs to establish connection for each query. 
+addition, the performance of purely using MySQL is low: Client needs to establish connection for each query.
 
 ## Architecture
 
