@@ -19,9 +19,9 @@ WORKLOAD_CLUSTER_MD_REPLICAS=1
 WORKLOAD_CLUSTER_KUBECONFIG=${WORKLOAD_CLUSTER_NAME}.kubeconfig
 WORKSPACE="${PROJECT_ROOT}/workspace"
 
-INFRA_VERSION=v0.4.99
+INFRA_VERSION=v1.0.99
 # CAPI release, used to pull a particular tag from Github
-CAPI_RELEASE=v0.4.3
+CAPI_RELEASE=v1.0.1
 
 K8S_SIGS_REPO="$GOPATH"/src/github.com/kubernetes-sigs
 CAPI_REPO="$K8S_SIGS_REPO"/cluster-api
@@ -113,10 +113,14 @@ function prepare() {
   git reset --hard HEAD
   git checkout main
   git pull --rebase
-  set +e
-  git branch -D "${CAPI_RELEASE}"
-  set -e
-  git checkout tags/"${CAPI_RELEASE}" -b "${CAPI_RELEASE}"
+
+  if [[ ${CAPI_RELEASE} != "main" ]]
+  then
+    set +e
+    git branch -D "${CAPI_RELEASE}"
+    set -e
+    git checkout tags/"${CAPI_RELEASE}" -b "${CAPI_RELEASE}"
+  fi
 
   # run go mod vendor before build
   go mod vendor
