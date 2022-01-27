@@ -14,15 +14,14 @@ WORKLOAD_CLUSTER_NAME=capd-wl
 # Workload cluster namespace
 WORKLOAD_CLUSTER_NAMESPACE=capd-wl-ns
 # Workload cluster machine deployment replicas
-WORKLOAD_CLUSTER_MD_REPLICAS=3
+WORKLOAD_CLUSTER_MD_REPLICAS=1
 # Workload cluster kubeconfig file name
 WORKLOAD_CLUSTER_KUBECONFIG=${WORKLOAD_CLUSTER_NAME}.kubeconfig
 WORKSPACE="${PROJECT_ROOT}/workspace"
 
-# CAPD infra version, it is v0.3.99 by default
-INFRA_VERSION=v0.3.99
+INFRA_VERSION=v1.0.99
 # CAPI release, used to pull a particular tag from Github
-CAPI_RELEASE=v0.3.17
+CAPI_RELEASE=v1.0.1
 
 K8S_SIGS_REPO="$GOPATH"/src/github.com/kubernetes-sigs
 CAPI_REPO="$K8S_SIGS_REPO"/cluster-api
@@ -48,7 +47,7 @@ Examples
   Create a workload cluster
         bash capd.sh -w
   Destroys all CAPD clusters including the kind management cluster
-        bash e2e.sh -d
+        bash capd.sh -d
 EOF
 )"
 
@@ -91,6 +90,16 @@ function healthCheck() {
 }
 
 function prepare() {
+  read -rp "$HOME/.cluster-api will be cleaned up. Do you want to continue?(y/n)" toContinue
+
+  if [[ $toContinue == "n" ]]
+  then
+    echo "The variable is greater than 10."
+  fi
+
+  # cleanup the local ~/.cluster-api folder
+  rm -rf ~/.cluster-api
+
   # create workspace if it does not exist
   mkdir -p "${WORKSPACE}"
 
@@ -102,12 +111,19 @@ function prepare() {
   fi
   cd "$CAPI_REPO" || exit
   git reset --hard HEAD
-  git checkout master
+  git checkout main
   git pull --rebase
-  set +e
-  git branch -D "${CAPI_RELEASE}"
-  set -e
-  git checkout tags/"${CAPI_RELEASE}" -b "${CAPI_RELEASE}"
+
+  if [[ ${CAPI_RELEASE} != "main" ]]
+  then
+    set +e
+    git branch -D "${CAPI_RELEASE}"
+    set -e
+    git checkout tags/"${CAPI_RELEASE}" -b "${CAPI_RELEASE}"
+  fi
+
+  # run go mod vendor before build
+  go mod vendor
 
   # build clusterctl binary
   make clusterctl
@@ -181,7 +197,7 @@ EOF
   # export KIND_EXPERIMENTAL_DOCKER_NETWORK=bridge  # for kind v0.8.x
 
   # create kind cluster
-  kind create cluster --name "${MGMT_CLUSTER_NAME}" --image=kindest/node:v1.20.2 --config "${WORKSPACE}"/kind-cluster-with-extramounts.yaml
+  kind create cluster --name "${MGMT_CLUSTER_NAME}" --image=kindest/node:v1.22.0 --config "${WORKSPACE}"/kind-cluster-with-extramounts.yaml
   # load image into kind cluster
   kind load docker-image "${CAPD_IMG_REGISTRY}"/cluster-api-controller-amd64:dev --name "${MGMT_CLUSTER_NAME}"
   kind load docker-image "${CAPD_IMG_REGISTRY}"/kubeadm-bootstrap-controller-amd64:dev --name "${MGMT_CLUSTER_NAME}"
@@ -198,11 +214,8 @@ EOF
 
   kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capd-controller-manager -n capd-system
   kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-controller-manager -n capi-system
-  kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-kubeadm-bootstrap-controller-manager -n capi-webhook-system
+  kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-kubeadm-bootstrap-controller-manager -n capi-kubeadm-bootstrap-system
   kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-kubeadm-control-plane-controller-manager -n capi-kubeadm-control-plane-system
-  kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-controller-manager -n capi-webhook-system
-  kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-kubeadm-bootstrap-controller-manager -n capi-webhook-system
-  kubectl_mgmt_cluster wait --for=condition=Available --timeout=300s deployment/capi-kubeadm-control-plane-controller-manager -n capi-webhook-system
 
   kubectl_mgmt_cluster create ns ${MGMT_CLUSTER_NAMESPACE}
   # The CAPD management cluster created by using "clusterctl init" does not have the cluster resources for itself:
@@ -305,9 +318,10 @@ function create_workload_cluster() {
   echo -e "Creating the workload cluster... \U00023f3"
 
   kubectl_mgmt_cluster create ns ${WORKLOAD_CLUSTER_NAMESPACE}
-  "${WORKSPACE}"/clusterctl config cluster ${WORKLOAD_CLUSTER_NAME} \
+
+  "${WORKSPACE}"/clusterctl generate cluster ${WORKLOAD_CLUSTER_NAME} \
     --target-namespace=${WORKLOAD_CLUSTER_NAMESPACE} --flavor development \
-    --kubernetes-version v1.19.11 \
+    --kubernetes-version v1.22.0 \
     --control-plane-machine-count=1 \
     --worker-machine-count=${WORKLOAD_CLUSTER_MD_REPLICAS} \
     --config ~/.cluster-api/dev-repository/config.yaml | kubectl_mgmt_cluster apply -f -
@@ -337,7 +351,7 @@ function create_workload_cluster() {
 
   # deploy CNI
   echo -e "Deploying Calico in the workload cluster... \U00023f3"
-  ${workload_cluster_kubectl} apply -f https://docs.projectcalico.org/v3.18/manifests/calico.yaml
+  ${workload_cluster_kubectl} apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
   # wait for node to be ready
   # TODO: Might need to add a timeout here

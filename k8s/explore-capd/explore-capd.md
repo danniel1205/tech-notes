@@ -7,7 +7,7 @@ See usage for more details:
 usage: capd.sh [FLAGS]
   Create a management cluster + workload cluster environment using Kind
   and the Cluster API providre for Docker (CAPD).
-  WARNING: If /Users/xiaoming/.cluster-api/ exists, the content will be replaced.
+  WARNING: If $HOME/.cluster-api/ exists, the content will be replaced.
 FLAGS
   -h    show this help and exit
   -p    get all prerequisites ready.
@@ -22,8 +22,16 @@ Examples
   Create a workload cluster
         bash capd.sh -w
   Destroys all CAPD clusters including the kind management cluster
-        bash e2e.sh -d
+        bash capd.sh -d
 ```
+
+Starting from scratch:
+
+1. Run `capd.sh -p` to get local repositories, images and binaries ready.
+2. Run `capd.sh -m` to bring up the management cluster.
+3. Run `capd.sh -w` to bring up the workload cluster.
+4. Once you are done testing, run `capd.sh -d` to tear down all clusters.
+
 ---
 The following steps are tested with old CAPD version on K8S v1.18.6, some steps might not be required in the latest release.
 I keep the following just for reference.
