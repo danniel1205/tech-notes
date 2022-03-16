@@ -127,3 +127,6 @@ To summarize, the write path works as follows:
 ## References
 
 - <https://grafana.com/docs/loki/latest/fundamentals/architecture/>
+- <https://medium.com/@vagrantdev/distributed-logging-best-practices-and-lesson-learned-d52143fae266>
+- <https://dzone.com/articles/distributed-logging-architecture-for-microservices>
+- <https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/>
