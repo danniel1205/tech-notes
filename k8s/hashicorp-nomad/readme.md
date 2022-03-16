@@ -15,7 +15,7 @@ Nomad provides several key features:
 - Device Plugins & GPU Support: Nomad offers built-in support for GPU workloads such as machine learning (ML) and artificial
   intelligence (AI). Nomad uses device plugins to automatically detect and utilize resources from hardware devices such
   as GPU, FPGAs, and TPUs.
-- Federation for Multi-Region, Multi-Cloud: Nomad was designed to support infrastructure at a global scale. Nomad supports 
+- Federation for Multi-Region, Multi-Cloud: Nomad was designed to support infrastructure at a global scale. Nomad supports
  federation out-of-the-box and can deploy applications across multiple regions and clouds.
 - Proven Scalability: Nomad is optimistically concurrent, which increases throughput and reduces latency for workloads.
   Nomad has been proven to scale to clusters of 10K+ nodes in real-world production environments.
@@ -35,7 +35,7 @@ Nomad provides several key features:
 
 ### Federation differences vs KubeFed
 
-KubeFed: 
+KubeFed:
 ![](resources/kubefed.png)
 
 Nomad:
@@ -55,13 +55,13 @@ Nomad:
 
 1. A job submission triggers an evaluation.
 2. The evaluation request is enqueued into a broker(single instance running on leader server).
-   1. Provide priority ordering.
-   2. Ensure at least once delivery.
+    2.1. Provide priority ordering.
+    2.2. Ensure at least once delivery.
 3. Nomad server runs scheduling worker to process evaluations to generate allocation plan.
-   1. Feasibility checking: Find a set of feasible nodes.
-   2. Ranking: Score(**bin packing**) the nodes and find the best fit.
+    3.1. Feasibility checking: Find a set of feasible nodes.
+    3.2. Ranking: Score(**bin packing**) the nodes and find the best fit.
 4. Submit the allocation plan to the leader server(plan queue).
-   1. Server uses plan queue to prevent over-subscription or conflicts(concurrent issue).
+    4.1 Server uses plan queue to prevent over-subscription or conflicts(concurrent issue).
 5. After a plan is created, client picks it up and begin execution.
 
 ### Volumes
