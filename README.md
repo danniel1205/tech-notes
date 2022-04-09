@@ -23,6 +23,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
   - [kustomize](k8s/explore-kustomize/readme.md)
   - [vitess](k8s/explore-vitess/readme.md)
+  - [k8s-list-watch](k8s/list-watch/readme.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
