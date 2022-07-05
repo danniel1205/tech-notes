@@ -24,6 +24,8 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [kustomize](k8s/explore-kustomize/readme.md)
   - [vitess](k8s/explore-vitess/readme.md)
   - [k8s-list-watch](k8s/list-watch/readme.md)
+  - [hashicorp-nomad](k8s/hashicorp-nomad/readme.md)
+  - [kube-apiserver-server-chain](k8s/kube-apiserver-server-chain/readme.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
