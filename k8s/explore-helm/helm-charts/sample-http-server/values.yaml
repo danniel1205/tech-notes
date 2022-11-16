@@ -1,0 +1,6 @@
+app:
+  name: sample-http-server
+
+image:
+  name: sample-http-server
+  tag: latest
