@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-go
+  labels:
+    app: example-go
+spec:
+  selector:
+    matchLabels:
+      app: example-go
+  template:
+    metadata:
+      labels:
+        app: example-go
+    spec:
+      containers:
+        - name: example-go
+          image: example-go-image
+          ports:
+            - containerPort: 8000
