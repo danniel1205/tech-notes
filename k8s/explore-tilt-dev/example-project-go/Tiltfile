@@ -1,0 +1,15 @@
+# For more on Extensions, see: https://docs.tilt.dev/extensions.html
+load('ext://restart_process', 'docker_build_with_restart')
+
+docker_build_with_restart(
+  'example-go-image',
+  '.',
+  entrypoint=['tilt-dev'],
+  dockerfile='deployments/Dockerfile',
+  live_update=[
+    sync('./web', '/app/web'),
+  ],
+)
+
+k8s_yaml('deployments/deployment.yaml')
+k8s_resource('example-go', port_forwards=8000)
