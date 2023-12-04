@@ -27,6 +27,8 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [hashicorp-nomad](k8s/hashicorp-nomad/readme.md)
   - [kube-apiserver-server-chain](k8s/kube-apiserver-server-chain/readme.md)
   - [Tilt Dev](k8s/explore-tilt-dev/readme.md)
+  - [Explore Helm](k8s/explore-helm/readme.md)
+    - [Helm Client in Controller](k8s/explore-helm/helm-client-in-controller/README.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
