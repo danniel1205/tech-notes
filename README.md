@@ -41,6 +41,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Distributed hash table](general-knowledge-base/distributed-hash-table/readme.md)
   - [Row vs Column oriented store](general-knowledge-base/row-vs-column-oriented-database/readme.md)
   - [Distributed lock](general-knowledge-base/distributed-lock/readme.md)
+  - [Multi-tenancy architecture](./general-knowledge-base/multi-tenancy/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
