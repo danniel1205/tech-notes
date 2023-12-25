@@ -33,13 +33,14 @@ Asymmetric, leader-based:
 - Leader
 - Follower
 - Candidate: Candidate of a leader
-- At any given time, one server is in charget, others accept its decision.
-- Client communites with leader
+- At any given time, one server is in charged, others accept its decision.
+- Client communicates with leader
 
 ---
 
 - Paxos: [wiki](<https://en.wikipedia.org/wiki/Paxos_%28computer_science%29>)
 - Raft: [notes](raft-distributed-consensus.md)
+  - [Deep Dive on config change scenario](deep-dive-config-change.md)
 
 ### Byzantine fault tolerant
 
