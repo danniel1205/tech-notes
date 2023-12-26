@@ -23,8 +23,8 @@ operations: update `in-memory` hash table and append to log file
 
 ### Solution 1 Improve on write
 
-- Append new data into separate log file (log segements)
-- Async compaction and segements merging
+- Append new data into separate log file (log segments)
+- Async compaction and segments merging
 - For deleting records, append a tombstone record and ignore old records on compaction and merging
 
 On write, append new record into current log file (update current hash table) or into new log file
@@ -67,7 +67,7 @@ Crash could happend in between of the disk IO. File system crash recovery soluti
 
   Benefits: Data in log segement file is sorted; Compacting and merging is easier (Merge sort)
 
-- No need to maintain the same number of `in-memory` hash tables as segement files. Only maintain one table with the
+- No need to maintain the same number of `in-memory` hash tables as segment files. Only maintain one table with the
   value of a particular key points to the head of sorted segment file address. Two keys in the `in-memory` hash table
   could represent a range, which makes the range query possible
 
@@ -75,8 +75,9 @@ Crash could happend in between of the disk IO. File system crash recovery soluti
 
 #### Solution 2 On write
 
-- Have a `in-memory` red-black or AVL tree data structure to hold the new data (the tree is sorted by keys)
-- When hit the threshold of current tree, we write the tree onto disk as the **sorted segement file** (SSTable).
+- Have a `in-memory` red-black or AVL tree data structure to hold the new data (the tree is sorted by keys). This
+  `in-memory` tree is also called `memtable`.
+- When hit the threshold of current tree, we write the tree onto disk as the **sorted segment file** (SSTable).
   Compacting and merging could happen in background
 - Once data is written onto disk, update the `in-memory` hash table. Key and Value point to the first record in the sorted
   segment file
