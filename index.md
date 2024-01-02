@@ -1,7 +1,9 @@
 
 ![header-pic](header-pic.png)
 
-### Table of content
+This repo contains the notes/tutorials from my personal tech exploration.
+
+## Table of contents
 
 - [CKA related](https://github.com/danniel1205/tech-notes/tree/master/cka)
 - K8S related
@@ -20,7 +22,12 @@
   - [how pod is created with network configured](k8s/how-pod-created-with-network-configured/readme.md)
   - [kustomize](k8s/explore-kustomize/readme.md)
   - [vitess](k8s/explore-vitess/readme.md)
+  - [k8s-list-watch](k8s/list-watch/readme.md)
   - [hashicorp-nomad](k8s/hashicorp-nomad/readme.md)
+  - [kube-apiserver-server-chain](k8s/kube-apiserver-server-chain/readme.md)
+  - [Tilt Dev](k8s/explore-tilt-dev/readme.md)
+  - [Explore Helm](k8s/explore-helm/readme.md)
+    - [Helm Client in Controller](k8s/explore-helm/helm-client-in-controller/README.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
@@ -33,6 +40,7 @@
   - [Distributed hash table](general-knowledge-base/distributed-hash-table/readme.md)
   - [Row vs Column oriented store](general-knowledge-base/row-vs-column-oriented-database/readme.md)
   - [Distributed lock](general-knowledge-base/distributed-lock/readme.md)
+  - [Multi-tenancy architecture](./general-knowledge-base/multi-tenancy/readme.md)
 - System design
   - [Distributed system architecture patterns](./system-design/distributed-system-architectural-patterns/readme.md)
   - Design data intensive application notes
@@ -61,6 +69,7 @@
     - [Design distributed web crawler](system-design/topics/distributed-web-crawler/readme.md)
     - [Design stock exchange](system-design/topics/stock-exchange/readme.md)
     - [Design Netflix/Youtube](system-design/topics/netflix/readme.md)
+    - [Design distributed counter](system-design/topics/distributed-counter/readme.md)
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
@@ -74,7 +83,3 @@
   - [Dynamo](how-amazon-xxx-series/dynamo/readme.md)
 - How Uber xxx series
   - [Unified resource scheduler: Peloton](how-uber-xxx-series/peloton-unified-resource-scheduler/readme.md)
-
-### Contact me
-
-[Linkedin](https://www.linkedin.com/in/daniel-guo-0498a549/) | [Github](https://github.com/danniel1205)
