@@ -1,0 +1,22 @@
+
+local_resource(
+  "make-build-controller-binary",
+  "make build",
+  dir='./helm-client-in-controller',
+  deps=['./helm-client-in-controller/internal', './helm-client-in-controller/cmd'])
+
+docker_build(
+  'controller',
+  './helm-client-in-controller',
+  dockerfile='helm-client-in-controller/Dockerfile',
+  live_update=[
+    sync('./helm-client-in-controller/bin/manager', '/'),
+  ],
+)
+
+local_resource(
+  "run-helm-command",
+  "kubectl create ns test; helm install sample-http-server ./sample-http-server --namespace=test",
+  dir='./helm-charts')
+
+k8s_yaml(kustomize('helm-client-in-controller/config/default'))

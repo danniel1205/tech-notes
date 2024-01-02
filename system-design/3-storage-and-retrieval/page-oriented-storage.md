@@ -2,9 +2,12 @@
 
 ## B-Tree
 
-The most widely used indexing structure. Instead of having the log indexing on variable size segements, B tree uses
-`fixed-size` pages, and read or write one page at a time. The B tree is holding **in memory**, the leaf contains the
-ref(disk address) to the actual data.
+The most widely used indexing structure. Instead of having the log indexing on variable size segments and always write a
+segment sequentially. B tree uses `fixed-size` pages, and read or write one page at a time. The database engine primarily
+builds B tree structures(Disk-Based B-Trees) on disk, the leaf contains the ref(disk address) to the actual data.
+
+In-Memory B-Trees (Performance-Driven Scenarios), Certain database systems, primarily In-Memory Databases (IMDBs), keep
+the entire B-tree index in memory.
 
 Log indexing
 ![log-indexing](./resources/log-indexing.jpg)
@@ -15,8 +18,8 @@ B tree indexing
 ### On read
 
 - Starting from the root of B tree
-- Find the sub page from the boundires until hit the leaf
-- The leaf has the ref to acutal data
+- Find the sub page between the boundaries of two keys until hit the leaf
+- The leaf has the ref to actual data
 
 ### On write
 
