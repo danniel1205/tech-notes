@@ -63,6 +63,8 @@ Crash could happend in between of the disk IO. File system crash recovery soluti
 
 ## Solution 2 (SSTables and LSM-Trees)
 
+![](resources/lsm-tree.png)
+
 - Make the segement file sorted by keys (Keep the recent data entry if keys are same)
 
   Benefits: Data in log segement file is sorted; Compacting and merging is easier (Merge sort)

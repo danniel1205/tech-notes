@@ -64,6 +64,40 @@ func (Consumer c) Consume(topic string, labels) []byte {
   - Consumer maintains the offset. Message ID has data length embedded, so it is easy to know how much data to load.
 - ZooKeeper also records the last read offset in case of consumer failures.
 
+#### How does Kafka know which consumers subscribe to a specific topic
+
+* Consumer Groups: Consumers don't subscribe individually to topics. Instead, they join consumer groups, which act as
+  logical units for message consumption. A consumer group can have multiple consumers working collaboratively to consume
+  messages from the shared topics.
+
+* Group Coordinator: Each consumer group has a designated group coordinator, typically the leader of one of the
+  partitions in the topic. This coordinator is responsible for managing group membership and keeping track of which
+  consumers are subscribed to the topic within the group.
+
+* Group Metadata: Every consumer in a group maintains a local copy of the group metadata. This metadata includes
+  information about all members of the group, including their IDs, leader status, and assigned partitions.
+
+* Heartbeats: Consumers periodically send heartbeats to the group coordinator. These heartbeats confirm their current
+  status and presence in the group. If a consumer fails to send heartbeats within a specific timeout, the coordinator
+  assumes it has left the group and removes it from the metadata.
+
+* Rebalancing: When a consumer joins or leaves a group, or a partition leader changes, the group coordinator initiates a
+  rebalancing process. This process reassigns partitions among the active consumers in the group to ensure even load
+  distribution and efficient message consumption.
+
+* Offset Commits: Each consumer tracks its progress within a topic by recording its offset, which indicates the last
+  message it has processed. Consumers periodically commit their offsets to a dedicated topic called the consumer_offsets
+  topic.
+
+* Offset Tracking: The group coordinator and all consumers maintain copies of the committed offsets for each consumer
+  and partition. This allows the coordinator to track individual progress and reassign partitions during rebalancing
+  based on current consumption positions.
+
+In summary, Kafka uses a combination of consumer groups, group coordinators, metadata, heartbeats, rebalancing, and
+offset tracking to manage subscriptions and dynamically deliver messages to the appropriate consumers within each group.
+This system ensures efficient and resilient message flow while adapting to changes in group membership and partition
+leadership.
+
 ### RabbitMQ Architecture
 
 ![rabbitmq-architecture](resources/rabbitmq-architecture.png)
