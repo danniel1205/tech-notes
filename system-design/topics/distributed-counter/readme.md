@@ -123,7 +123,7 @@ Challenges:
 
   ![](resources/row-lock-is-slow.png)
 
-* Write scalability is a challenge because traditional relational database often have a single mater node for write,
+* Write scalability is a challenge because traditional relational database often have a single master node for write,
   creating bottleneck for high write volumes.
 * If we want to iterate and provide more features which causes complex queries, that can be computationally expensive
   and slow.
@@ -271,7 +271,7 @@ It can be implemented as [look-aside with write-around architecture](../caching/
 
 ## Push real-time count updates to all users(subscribed users)
 
-Please see [this notes](../real-time-interactions-on-live-video/readme.md) for more details on how Linkedin handles the
+Please see [this notes](../realtime-interactions-on-live-video/readme.md) for more details on how Linkedin handles the
 live likes updates. Also the `Green` boxes in architecture diagram shows the workflow.
 
 ## Failure handling
@@ -302,7 +302,9 @@ partitioned network in the CRDT database is the following:
 ## Miscellaneous
 
 * Cassandra stress test
+
   ![](resources/cassandra-stress-test.png)
+
   * <https://netflixtechblog.com/benchmarking-cassandra-scalability-on-aws-over-a-million-writes-per-second-39f45f066c9e>
 
 * Millions of websockets

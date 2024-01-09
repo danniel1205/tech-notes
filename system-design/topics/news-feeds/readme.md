@@ -164,7 +164,7 @@ Above workflow is from [this youtube video](https://www.youtube.com/watch?v=bUHF
 
 ### Streaming likes on Live video
 
-More details could be found [here](../real-time-interactions-on-live-video/readme.md)
+More details could be found [here](../realtime-interactions-on-live-video/readme.md)
 
 ### Add comments
 

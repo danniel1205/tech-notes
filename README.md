@@ -63,7 +63,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design text based search system](system-design/topics/text-based-search/readme.md)
     - [Design distributed delayed job queue](system-design/topics/distributed-delayed-job-queueing-system/readme.md)
     - [Design distributed caching](system-design/topics/caching/readme.md)
-    - [Design real time interactions on live video](system-design/topics/real-time-interactions-on-live-video/readme.md)
+    - [Design real time interactions on live video](system-design/topics/realtime-interactions-on-live-video/readme.md)
     - [Design message broker(RabbitMQ) or event streaming system(Kafka)](system-design/topics/message-broker-and-event-streaming/readme.md)
     - [Design geolocation based service(UberEats/DoorDash/...)](system-design/topics/geolocation-based-service/readme.md)
     - [Design i18n/translation service](system-design/topics/i18n-service/readme.md)
