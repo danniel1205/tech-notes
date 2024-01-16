@@ -10,9 +10,11 @@ In-Memory B-Trees (Performance-Driven Scenarios), Certain database systems, prim
 the entire B-tree index in memory.
 
 Log indexing
+
 ![log-indexing](./resources/log-indexing.jpg)
 
 B tree indexing
+
 ![b-tree-indexing](./resources/b-tree-indexing.jpg)
 
 ### On read

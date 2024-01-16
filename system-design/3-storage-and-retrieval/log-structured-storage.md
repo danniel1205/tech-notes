@@ -96,6 +96,14 @@ If the key we are looking for does not exist, we have to check the current `in-m
 scan the SSTable on disk from most recent to oldest. Storage engines usually use
 **`Bloom filters`** ([wiki](https://en.wikipedia.org/wiki/Bloom_filter)) to improve the performance.
 
+### Solution 2 Improve on compaction
+
+* size-tiered compaction: HBase, Cassandra.
+  * Newer and smaller SSTables are successively merged into older and larger SSTables.
+* leveled-compaction Cassandra LevelDB and RocksDB.
+  * Key range is split up into smaller SSTables and older data is moved to separate "levels", which allows the
+    compaction to proceed more incrementally and use less disk space.
+
 ### Solution 2 Crash recovery
 
 It is possible that system crashes before writing `in-memory` red-black or AVL tree onto disk as the SSTable. We could

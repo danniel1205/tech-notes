@@ -256,30 +256,40 @@ import java.time.LocalTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+public class Connection {
+    String userID;
+    Flux<String> flux;
+    public Connection(String userID, Flux<String> flux) {
+        this.userID = userID;
+        this.flux = flux;
+    }
+}
+
 @RestController
-@RequestMapping("/subscribe")
 public class SSEController {
 
-    // Map to store active SSE connections with client identifiers
-    private final Map<String, List<Flux<String>>> activeConnections = new ConcurrentHashMap<>();
+    private final Map<String, List<Flux<String>>> videoSubscriptions = new ConcurrentHashMap<>();
+    private final Map<String, Flux<String>> activeConnections = new ConcurrentHashMap<>();
 
-    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping("/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> subscribe() {
         // Generate a unique identifier for the client
         String videoId = <some-code-to-get-video-id-from-request>;
+        String userId = <get-userId=from=request>;
 
         // Create a Flux to send SSE events to the client
         Flux<String> flux = Flux.interval(Duration.ofSeconds(1))
                 .map(sequence -> "data: Server time is " + LocalTime.now() + "\n\n")
                 .doOnCancel(() -> {
                     // Cleanup resources when the client disconnects
-                    System.out.println("Client disconnected: " + clientId);
+                    System.out.println("Client disconnected: " + userId);
                     // Remove the disconnected client from the registry
-                    activeConnections.remove(clientId);
+                    activeConnections.get(userId).close();
                 });
 
         // Add the new connection to the registry
-        activeConnections.get(videoId).add(flux);
+        videoSubscriptions.get(videoId).add(flux);
+        activeConnections.put(userId, flux);
 
         return flux;
     }
@@ -287,8 +297,11 @@ public class SSEController {
     // Example method to broadcast a message to all active connections
     public void broadcastMessage(String message) {
         // Iterate through the active connections and send the message
-        activeConnections.forEach((videoId, eventFlux) -> {
-            eventFlux.onNext("data: " + message + "\n\n");
+        videoSubscriptions.forEach((videoId, connections) -> {
+            for (Flux<String> f : connections) {
+                // Add the broadcast logic here
+                // clean up the close connection
+            }
         });
     }
 }
