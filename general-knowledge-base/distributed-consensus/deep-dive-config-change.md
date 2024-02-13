@@ -3,13 +3,15 @@
 ## Safety
 
 ![config-change](resources/config-change.png)
+
 From above diagram, it is possible S1 and S2 form the majority of C-old, and S3, S4, S5 form the majority of C-new. We
 need to avoid two leaders from both C-old and C-new to be elected within the same term.
 
-### Safety Add or remove one server at a time
+### Safety of adding or removing one server at a time
 
 ![change-one-member-at-a-time](resources/change-one-member-at-a-time.png)
-If add or remove one server at a time, this prevents cluster from splitting into two independent majorities. Which means
+
+If adding or removing one server at a time, this prevents cluster from splitting into two independent majorities. Which means
 it is not possible to have two leaders within the same term.
 
 #### Workflow
@@ -17,30 +19,31 @@ it is not possible to have two leaders within the same term.
 - leader receives the request to change membership
 - leader appends C-new to its log
 - leader replicates C-new to all followers
-- configuration compltes once the C-new log entries are committed
+- configuration completes once the C-new log entries are committed
 
 ---
 It is possible leader crashes before the C-new gets committed. In this case, a new leader will be elected, client could
 retry the configuration change since it does not receive the response from previous leader.
 
-### Safety Add or remove arbitrary servers at a time
+### Safety of adding or removing arbitrary servers at a time
 
 The solution is mentioned in 4.3 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf) which uses two phases.
 
 ![joint-consensus](resources/joint-consensus.png)
 
 - Client sends a config change request to leader
-- Leader enters the joint consensus phase
+- Leader enters the joint consensus phase by adding a configuration change entry in its log describing the join consensus
+  phase (The cluster is consist of both new and old configurations)
   - Store the C[old,new] as log entry and replicate to all 5 servers
   - Config change log entry is applied immediately on receipt
-  - Need joint consensus from both C[old] servers and C[new] servers in order to commit a log entry and select a new leader.
-    (If we had 3 servers, now adding 9 new servers, joint consensus needs 2/3 + 5/9 to reach majorit)
+  - Need joint consensus from both C[old] servers and C[new] servers in order to commit a log entry or select a new leader.
+    (If we had 3 servers, now adding 9 new servers, joint consensus needs 2/3 + 5/9 to reach majority)
 - Once C[old,new] log entries are committed, leader creates a log entry C[new] and replicates to all servers
 - Once C[new] log entries are committed, old config becomes irrelevant, cluster is under new config now
 
 ## Availability
 
-### Availability Add or remove one server at a time
+### Availability of adding or removing one server at a time
 
 #### Catching up new servers
 

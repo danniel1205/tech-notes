@@ -12,7 +12,7 @@
 Term: Election + Normal operation under a single leader
 
 - Term ID is increment only
-- 0/1 leader per term
+- 0 or 1 leader per term
 - Each server maintain the current term on disk
 
 Heartbeats and Timeouts
@@ -20,14 +20,15 @@ Heartbeats and Timeouts
 - Servers start up as follower
 - Leaders must send `heartbeats`(empty AppendEntries RPCs) to maintain authority
 - Followers expect to receive RPCs from leader
-  - If no RPCs from leader with `electionTimeout`(100-500ms), follower starts a new election
+  - If no RPCs from leader with `electionTimeout`(100-500ms), follower assumes leader has crashed and starts a new
+    election.
 
 Election basics when a server starts an election:
 
-- Increment curent term
+- Increment current term
 - Change to `candidate` state
 - Vote for self
-- Send `RequestVote` RPCs to all other servers, retries until
+- Send `RequestVote` RPCs in parallel to all other servers, retries until
   - Receive votes from majority(`n /2 + 1`) of servers
     - Become leader
     - Send `heartbeats` to all other servers
@@ -40,7 +41,7 @@ Election safety: At most one leader per term
 
 - Each server gives one vote per term
 
-Election liveness: Some candidate must eventually becomes a leader
+Election liveness: Some candidate must eventually become a leader
 
 - Each server choose `electionTimeout` randomly between [t, 2t]
 
@@ -80,7 +81,7 @@ Because of above properties, there is an `AppendEntries` consistency check:
 
 ![append-entries-consistency-check](resources/appendentries-consistency-check.png)
 
-## When leader changes
+## Leader changes
 
 When leader changes, logs among servers might not be identical. Leader's log is the only truth, and eventually leader
 makes followers log identical to its log.
@@ -116,14 +117,15 @@ This guarantees S4 and S5 will NOT be elected as the new leader from the followi
 However, the following case will still mess things up. The leader on Term2 only replicated entries on S1 and S2 before
 its term ended. S5 was selected as leader on Term3 and append logs to its own then crashed. S1 is the current leader which
 is trying to finish committing entry from Term2. Now the entry 2 is replicated on [S1, S2, S3], but is not safely
-committed, since S5 could still be elected as leader at Term5 and will overwrite the entry 3 on [S1, S2, S3]
+committed, since S5 could still be elected as leader at Term5 and will broadcast the entry 3 on [S1, S2, S3] and in this
+case we will lose entry 2 which has been committed.
 
 ![pick-best-leader](resources/pick-best-leader-2.png)
 
 For a leader to decide an entry is committed:
 
 - Must be stored on the majority of servers
-- At least one new entry from the leader's term must also be stored on the majority of servers. (Entry 4 needs to be
+- At least one new entry (`4` in purple) from the leader's term must also be stored on the majority of servers. (Entry 4 needs to be
   stored on majority of servers as well)
 
 ![new-commitment-rule](resources/new-commitment-rules.png)
@@ -132,8 +134,12 @@ If entry 4 is committed, then S5 cannot be elected as leader at term 5.
 
 ## How to make log entries identical after leader changes
 
+![](resources/leader-change-log-inconsistency.png)
+
 - Leader deletes extraneous entries of followers
 - Leader fills in missing entries of followers
+
+![](resources/repair-follower-logs.png)
 
 ``` text
 - keeps nextIdx for each follower, nextIdx initialized to leader's last index + 1
@@ -183,7 +189,7 @@ uses two phases.
 ---
 Above solution works, but Raft is now using a simpler solution described in 4.2 of the [paper](https://github.com/ongardie/dissertation/blob/master/stanford.pdf)
 
-See [deep-dive-config-change](./resources/deep-dive-config-change.md) for more details.
+See [deep-dive-config-change](./deep-dive-config-change.md) for more details.
 
 ## Reading materials
 
