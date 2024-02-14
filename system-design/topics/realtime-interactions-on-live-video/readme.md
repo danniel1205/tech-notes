@@ -78,7 +78,7 @@ How to handle the 1000 likes per second?
 
 ### Multi data centers
 
-We don't have video subscribers from DC-1 and DC-2, but there are only subscribers from DC-3.
+We don't have subscribers for red-video from DC-1 and DC-2, but there are only subscribers from DC-3.
 
 ![multi-datacenter-1](resources/multi-datacenter-1.png)
 
@@ -88,9 +88,9 @@ We don't have video subscribers from DC-1 and DC-2, but there are only subscribe
 - DC-1's subscribe table is similar to this:
 
 ```text
-live-video-1: dc-3-front-1
-live-video-2: dc-2-front-1
-live-video-2: dc-1-front-1
+live-video-red: dc-3-front-1
+live-video-green: dc-2-front-1
+live-video-green: dc-1-front-1
 ...
 ```
 

@@ -161,9 +161,9 @@ leader-less replication. **Amazon's Dynamo DB** uses this model.
 
 ### How does it work
 
-- Client sends write reqeusts to several replicas(could be all replicas). Or the coordinator node will redirect write
+- Client sends write requests to several replicas(could be all replicas). Or the coordinator node will redirect write
   requests to all replicas. If the replicas are globally distributed in different data center, the write requests would
-  be broadcasted to all replicas globally.
+  be broadcast to all replicas globally.
 - Client sends requests to all regional nodes or sends to one node, the one as a coordinator to redirect requests to
   all other regional nodes. The correct answer is decided by quorum. e.g. `n/2 + 1` response with `A`, the minorities
   response with `B`, we return `A` to client, and do a stale data repair.
@@ -176,9 +176,9 @@ replicas, the stale data could be also read. There are several solutions to make
 - Quorums write and read to make sure there must have the latest value within the quorum.
   - Usually N / 2 + 1 as the quorum
 - Use version to determine which value is newer. Client accept the latest version.
-- Repir the stale nodes
-  - Read repair: client sees the stale value and write the latest value back to that replica.
-  - Background process looks for diffs and fixes the stale data asynchronously
+- Repair the stale nodes
+  - Read-repair: Client sees the stale value and write the latest value back to that replica.
+  - Anti-entropy process: Background process looks for diffs and fixes the stale data asynchronously
 
 ### Handle network partition
 
