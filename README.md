@@ -72,7 +72,8 @@ This repo contains the notes/tutorials from my personal tech exploration.
     - [Design Netflix/Youtube](system-design/topics/netflix/readme.md)
     - [Design distributed counter](system-design/topics/distributed-counter/readme.md)
     - [Design realtime comment](system-design/topics/realtime-comments-on-live-video/readme.md)
-    - [Design realtime presence](system-design/topics/realtime-presence-platform/readme.md))
+    - [Design realtime presence](system-design/topics/realtime-presence-platform/readme.md)
+    - [Design monitoring system](system-design/topics/monitoring-system/readme.md)
 - How Facebook xxx series
   - [Cluster management: Twine](how-facebook-xxx-series/cluster-management-system/readme.md)
   - [Distributed datastore for social graph: TAO](how-facebook-xxx-series/distribute-datastore-for-social-graph/readme.md)
