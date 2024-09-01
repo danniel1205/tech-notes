@@ -41,10 +41,12 @@ Using in memory hashmap to store data.
 On write: map.put(key, value); On read: map.get(key)
 
 Pros:
+
 - Easy to implement
 - Fast read and write
 
 Cons:
+
 - Data loss
 - Memory capacity limit
 
@@ -75,11 +77,13 @@ c:xxx
 ```
 
 Pros:
+
 - Optimized disk usage
 - Fast on write
 - Easier for data compression
 
 Cons:
+
 - Relatively slow on read (scan memTable+SSTable)
 
 ### Page oriented (B Tree)
@@ -93,25 +97,29 @@ leaf: [key,value,key,value,key,value]
 ```
 
 Pros:
+
 - Fast on read
 
 Cons:
+
 - Slow on write (write amplification)
   - A new key is added --> re-balance the page branching --> rebuild entire B tree
 - Space Segments
 - Difficult on compression
 
-## Architecture 
+## Architecture
 
 [Client] <--> [Storage Engine] <--> [Memory/Disk/SSD]
 
 [Storage Engine]:
+
 - memTable + WAL
 - Logic to flush SSTable
 - Bloom filter for query optimization
 - Compression logic
 
 [Disk/SSD]:
+
 - SSTable
 
 ## Scaling
@@ -143,10 +151,12 @@ can be distributed. The downside is the read performance on range query.
 All writes are redirected to leader. All nodes can handle read.
 
 Pros:
+
 - Consistency guarantee on write
 - High performance on read with eventual consistency
 
 Cons:
+
 - Leader is the bottleneck on high volume writes.
 
 ### Leaderless
@@ -154,7 +164,9 @@ Cons:
 All nodes can independently handle read and write.
 
 Pros:
+
 - High performance on both read and write.
 
 Cons:
+
 - Additional efforts needed to handle conflicts.
