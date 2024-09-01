@@ -36,8 +36,11 @@
 
 ### Write flow
 
+![](resources/write-flow.png)
+
 - Application wants to write a new file(`fileOffset=0`) or append data to an existing file(`fileOffset=filesize`).
-  - Application uses client lib to calculates the `chunk index` based on offset.
+  - Application uses client lib to calculates the `chunk index` based on offset. (Imaging we have an array of chunk IDs,
+    [c1, c2, c3], c1 is at chunk index 0.)
   - Application uses client lib to send the write request(`file name, chunk index`) to control plane.
 - Control plane receives the request.
   - From the file name and chunk index to get the `chunk ID`. Generate a new `chunk ID` if no entry found in the map, it
@@ -69,6 +72,8 @@ be fast because it is the internal network.
 
 ### Read flow
 
+![](resources/read-flow.png)
+
 - The client sends file name and offset to the control plane.
   - Application uses client lib to calculates the `chunk index` based on offset.
   - Application uses client lib to send the write request(`file name, chunk index`) to control plane.
@@ -78,6 +83,29 @@ be fast because it is the internal network.
   - Return the `chunk ID` and `chunk server locations` back to client.(The chunk servers hold the replicas)
 - Client caches the result for future reads.
 - Client choose the closest chunk server to read the data.
+
+### Chunk size
+
+GFS picks 64MB as the chunk size.
+
+If chunk size is too small, it will have the following problems:
+
+- Too many chunks need to be managed. Increases the management overhead of master node, including the metadata size.
+- More client and master node interactions on read and write.
+
+If chunk size is too big, will also have problems:
+
+- The file is not partitioned, all requests to the chunk server where the file is stored will cause hot spot.
+
+### Chunk locations
+
+This is the metadata needed for client to access the actual data. This data is maintained on chunk server which serves
+as the single of truth. When master restarts, it fetches this metadata from chunk server and keeps in its memory.
+
+### Operational log
+
+It is actually a WAL for GFS. The log is replicated to all nodes. GFS master node periodically create a checkpoint
+(snapshot), so a recovery can start from that checkpoint instead of replaying entire log.
 
 ### APIs DataNode|chunk server has
 

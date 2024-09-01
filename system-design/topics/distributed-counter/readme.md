@@ -198,8 +198,8 @@ Leader based with partition:
 * `Post A` is partitioned into `Post A-1`, `Post A-2`, etc. And spread out to multiple instances.
   * On write: using Round robin or Consistent Hash Ring to decide which instance to write to. For each partition,
     it is leader based replicated.
-  * On read: read from all partitions' leaders or do quorum read and sum up the final counts. (This slows down the read
-  performance because we have to read from multiple instances and sum up all counts)
+  * On read: read from all partitions and sum up the final counts. (This slows down the read performance because we have
+    to read from multiple instances and sum up all counts)
 
 Even we do partition, all writes still have to be redirected to partition's leader. Read performance is not improved
 if we have `Post A-1`, `Post A-2` kind of partition.
