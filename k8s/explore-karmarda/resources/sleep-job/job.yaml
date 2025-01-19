@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel-sleep-job
+spec:
+  parallelism: 3          # Number of pods to run in parallel
+  completions: 3         # Total number of pods to complete
+  backoffLimit: 4        # Number of retries before considering the job failed
+  template:
+    metadata:
+      name: sleep-job-pod
+    spec:
+      containers:
+        - name: sleep-container
+          image: busybox
+          command: ["sleep", "600"]  # Command to execute
+      restartPolicy: Never
