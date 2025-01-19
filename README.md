@@ -29,6 +29,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Tilt Dev](k8s/explore-tilt-dev/readme.md)
   - [Explore Helm](k8s/explore-helm/readme.md)
     - [Helm Client in Controller](k8s/explore-helm/helm-client-in-controller/README.md)
+  - [multi-cluster: karmarda](k8s/explore-karmarda/readme.md)
 - General knowledge base
   - [How tree structure is stored in database](general-knowledge-base/how-tree-is-stored-in-db/readme.md)
   - [Compare Redis and Memcached](general-knowledge-base/compare-redis-memcached/readme.md)
