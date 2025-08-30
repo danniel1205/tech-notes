@@ -27,6 +27,7 @@ which only includes the application's code and dependencies.
 ### Kata runtime
 
 #### Virtual Machine Management
+
 Setting up, configuring, and maintaining the lightweight virtual machines (VMs)
 that house Kata Containers.
 
