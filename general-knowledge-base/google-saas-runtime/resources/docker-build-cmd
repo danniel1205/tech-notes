@@ -1,0 +1,11 @@
+IMAGE_NAME=us-west2-docker.pkg.dev/daniellguo-anthos-dev/daniellguo-easysaas-ar/gke-cluster-bp:dev
+ENGINE_TYPE=inframanager
+ENGINE_VERSION=1.5.7
+
+docker buildx build -t $IMAGE_NAME \
+  --platform linux/amd64,linux/arm64 \
+  --builder=container \
+  --push \
+  --annotation "com.easysaas.engine.type=$ENGINE_TYPE" \
+  --annotation "com.easysaas.engine.version=$ENGINE_VERSION" \
+  --provenance=false .
