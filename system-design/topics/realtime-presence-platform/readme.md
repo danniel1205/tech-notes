@@ -32,8 +32,8 @@
 ```go
 type Presence struct {
   UserID    int64 // 8 bytes
-	Presence  String  // true | false 1 Byte
-	Timestamp Timestamp // 8 bytes in Redis
+ Presence  String  // true | false 1 Byte
+ Timestamp Timestamp // 8 bytes in Redis
 }
 ```
 

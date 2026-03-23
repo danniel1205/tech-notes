@@ -1,4 +1,4 @@
-FROM ruby:slim
+FROM --platform=$BUILDPLATFORM ruby:slim
 
 WORKDIR /workdir
 
