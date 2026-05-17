@@ -9,6 +9,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - AI/ML related
   - [Build simple loal RAG](ai/local-rag/notebook.ipynb)
   - [Build simple local agent](ai/ai-agent/notebook.ipynb)
+  - [AI Inference Concepts](ai/ai-inference-concpets/readme.md)
 - [CKA related](https://github.com/danniel1205/tech-notes/tree/master/cka)
 - K8S related
   - [admission controllers](k8s/explore-admission-controllers/explore-admission-controllers.md)
