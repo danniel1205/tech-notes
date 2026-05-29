@@ -109,4 +109,8 @@ graph TD
   It detects the loaded drivers, reads GPU attributes, and manages
   how workloads claim slices of that hardware.
 
+---
 
+## Tryout Guide
+
+See more details [here](./resources/dra_tryout_guide.md).
