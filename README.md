@@ -34,6 +34,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
   - [Explore Helm](k8s/explore-helm/readme.md)
     - [Helm Client in Controller](k8s/explore-helm/helm-client-in-controller/README.md)
   - [multi-cluster: karmarda](k8s/explore-karmarda/readme.md)
+  - [Explore DRA](k8s/explore-dra/readme.md)
 - K8S papers
   - [Evaluating K8S Perf for GAI Inference](k8s-papers/evaluating-k8s-perf-for-gai-inference/readme.md)
 - General knowledge base
