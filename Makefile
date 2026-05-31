@@ -6,3 +6,6 @@ linter-image:
 
 md-linter:
 	docker run -v ${CURR_DIR}:/workdir danielguo/mdlinter
+
+toc:
+	python3 generate_toc.py
