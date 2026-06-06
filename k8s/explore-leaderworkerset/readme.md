@@ -11,7 +11,7 @@ This guide explores the architecture, motivation, and alternatives for orchestra
 
 ---
 
-## 1. High-Level Architectural Overview
+## High-Level Architectural Overview
 
 Modern Large Language Models (LLMs) and foundational AI models have grown too large to fit on a single GPU or even a single physical node. They require sharding across multiple accelerators and nodes using tensor parallelism, pipeline parallelism, or expert parallelism. 
 
@@ -21,29 +21,43 @@ Kubernetes native primitives (like Deployments and StatefulSets) are designed fo
 graph TD
     subgraph DisaggregatedSet [DisaggregatedSet Orchestration]
         direction TB
-        subgraph PrefillRole [Prefill LWS Group]
-            L1[Leader Pod - Router/KV Cache] === W1_1[Worker Pod 1 - GPU Shard]
-            L1 === W1_2[Worker Pod 2 - GPU Shard]
-        end
-        subgraph DecodeRole [Decode LWS Group]
-            L2[Leader Pod - Router/KV Cache] === W2_1[Worker Pod 1 - GPU Shard]
-            L2 === W2_2[Worker Pod 2 - GPU Shard]
+        
+        subgraph PrefillGroup [Prefill LWS Group]
+            L1[Leader Pod - Router & KV-Cache Manager]
+            W1_1[Worker Pod 1 - GPU Shard / KV Host]
+            W1_2[Worker Pod 2 - GPU Shard / KV Host]
+            L1 -.->|Orchestration & Metadata| W1_1
+            L1 -.->|Orchestration & Metadata| W1_2
         end
         
-        PrefillRole ==>|KV Cache Transfer via high-speed RDMA/NCCL| DecodeRole
+        subgraph DecodeGroup [Decode LWS Group]
+            L2[Leader Pod - Router & KV-Cache Manager]
+            W2_1[Worker Pod 1 - GPU Shard / KV Host]
+            W2_2[Worker Pod 2 - GPU Shard / KV Host]
+            L2 -.->|Orchestration & Metadata| W2_1
+            L2 -.->|Orchestration & Metadata| W2_2
+        end
+
+        W1_1 ====>|Direct KV-Cache Tensor Transfer via RDMA/TCP| W2_1
+        W1_2 ====>|Direct KV-Cache Tensor Transfer via RDMA/TCP| W2_2
     end
 
     classDef leader fill:#2a9d8f,stroke:#264653,stroke-width:2px,color:#fff;
     classDef worker fill:#f4a261,stroke:#e76f51,stroke-width:2px,color:#fff;
-    classDef lws fill:#e9c46a,stroke:#f4a261,stroke-width:2px,stroke-dasharray: 5 5;
     
     class L1,L2 leader;
     class W1_1,W1_2,W2_1,W2_2 worker;
 ```
 
+> [!IMPORTANT]
+> **Architectural Key Distinction:**
+> *   **The Leader Pod** acts strictly as the front door for external traffic (Router) and coordinates which memory blocks are allocated across the cluster (KV-Cache Manager). It stores only the lightweight scheduling **metadata** (block lookup tables) in its standard CPU RAM.
+> *   **The Worker Pods** hold the actual model parameter weights (GPU Shards) and calculate/host the raw **KV-Cache Tensors** directly in their physical GPU VRAM. 
+> *   **Direct Handoff:** Consequently, the heavy transfer of KV-Cache bytes during prefill-decode disaggregation occurs **directly between worker GPUs** (via point-to-point RDMA or TCP), entirely bypassing the Leader pods to prevent network bottlenecks.
+
 ---
 
-## 2. Deep Dive: What They Are
+## Deep Dive: What They Are
 
 ### A. LeaderWorkerSet (LWS)
 **LeaderWorkerSet** is a custom Kubernetes API designed to manage a group of pods as a single **unit of replication** (a "super pod"). It typically consists of one **Leader** pod and a predefined number of **Worker** pods.
@@ -102,7 +116,7 @@ graph TD
 
 ---
 
-## 3. Why They Are Needed: The Problems They Solve
+## Why They Are Needed: The Problems They Solve
 
 | Problem in AI Inference | How standard K8s fails | How LWS & DS solve it |
 | :--- | :--- | :--- |
@@ -113,7 +127,48 @@ graph TD
 
 ---
 
-## 4. Kubernetes Alternatives: A Comparative Matrix
+## End-to-End Request Flow Sequence
+
+The diagram below maps out the sequence of control (metadata orchestration) and data (high-speed tensor transfer) paths from the moment an end user submits a prompt to the moment the response streams back to their screen.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as End User
+    participant Router as Global Router (Gateway)
+    participant P_Leader as Prefill Leader Pod
+    participant P_Worker as Prefill Worker Pods (GPUs)
+    participant D_Leader as Decode Leader Pod
+    participant D_Worker as Decode Worker Pods (GPUs)
+
+    User->>Router: Submit Prompt ("What is quantum computing?")
+    Note over Router: Scheduler selects optimal<br/>Prefill and Decode LWS Groups
+    
+    Router->>P_Leader: Forward Request directly to selected Pod IP<br/>(Includes target Decode Worker IP metadata)
+    P_Leader->>P_Worker: Initiate Prefill execution
+    Note over P_Worker: Compute Prompt KV-Cache
+    
+    P_Worker->>D_Worker: Direct KV-Cache Tensor Transfer<br/>(Bypasses Leaders via point-to-point RDMA or TCP)
+    
+    P_Worker->>P_Leader: Signal transfer completion
+    P_Leader->>Router: Handoff successful
+    
+    Router->>D_Leader: Start Autoregressive Decode Loop
+    
+    loop Autoregressive Token Generation
+        D_Leader->>D_Worker: Run Single-Token Forward Pass
+        D_Worker->>D_Leader: Return Probability Logits
+        Note over D_Leader: Sample Logits & Select Next Token
+        D_Leader->>Router: Stream Next Token ("Quantum")
+        Router->>User: Flush Token to Client Browser
+    end
+    
+    Note over D_Leader, D_Worker: Detect End-of-Sequence (EOS)<br/>& Free VRAM Memory Blocks
+```
+
+---
+
+## Kubernetes Alternatives: A Comparative Matrix
 
 When designing a distributed inference serving platform on Kubernetes, here is how the different primitives compare:
 
@@ -128,7 +183,7 @@ When designing a distributed inference serving platform on Kubernetes, here is h
 
 ---
 
-## 5. Historical Evolution & Industry Workarounds
+## Historical Evolution & Industry Workarounds
 
 To appreciate LWS and DS, it is helpful to look at how the industry solved these issues before these custom resources existed.
 
@@ -147,7 +202,7 @@ To appreciate LWS and DS, it is helpful to look at how the industry solved these
 
 ---
 
-## 6. Real-World Application: vLLM serving at scale
+## Real-World Application: vLLM serving at scale
 
 Modern distributed inference engines like **vLLM** leverage LeaderWorkerSet to orchestrate shards across multiple nodes. When coupled with **DisaggregatedSet**, vLLM can run in a highly optimized configuration where:
 1.  Incoming queries hit a routing layer.
