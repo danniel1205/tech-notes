@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gemma-router-code
+  namespace: default
+data:
+  p2p_proxy.py: |
+    import sys
+    import os
+    import uuid
+    import aiohttp
+    import asyncio
+    from fastapi import FastAPI, Request
+    from fastapi.responses import StreamingResponse
+    import uvicorn
+
+    sys.path.append("/vllm-workspace/examples/disaggregated/disaggregated_serving")
+    import disagg_proxy_demo
+
+    PREFILL_ZMQ = os.environ.get("PREFILL_ZMQ")
+    DECODE_ZMQ = os.environ.get("DECODE_ZMQ")
+
+    class P2PProxy(disagg_proxy_demo.Proxy):
+        async def forward_request(self, url, data, request_id, use_chunked=True):
+            print(f"👉 [Forward] Sending request to {url} with RequestID: {request_id}")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6*60*60)) as session:
+                headers = {
+                    "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
+                    "X-Request-Id": request_id
+                }
+                try:
+                    async with session.post(url=url, json=data, headers=headers) as response:
+                        print(f"👈 [Forward] Got response status {response.status} from {url}")
+                        if 200 <= response.status < 300 or 400 <= response.status < 500:
+                            if use_chunked:
+                                print(f"🌊 [Forward] Streaming response chunks from {url}...")
+                                async for chunk_bytes in response.content.iter_chunked(1024):
+                                    yield chunk_bytes
+                            else:
+                                content = await response.read()
+                                yield content
+                        else:
+                            error_content = await response.read()
+                            yield error_content
+                except Exception as e:
+                    yield str(e).encode('utf-8')
+
+        async def consume_prefill(self, generator):
+            try:
+                async for _ in generator:
+                    pass
+            except Exception as e:
+                print(f"Prefill consumption failed: {e}")
+
+        async def create_chat_completion(self, raw_request: Request):
+            try:
+                request = await raw_request.json()
+                
+                # Prefill model max_tokens override to 1
+                kv_prepare_request = request.copy()
+                kv_prepare_request["max_tokens"] = 1
+                if "max_completion_tokens" in kv_prepare_request:
+                    kv_prepare_request["max_completion_tokens"] = 1
+
+                prefill_instance = self.scheduling_policy.schedule(self.prefill_cycler)
+                decode_instance = self.scheduling_policy.schedule(self.decode_cycler)
+
+                uid = uuid.uuid4().hex
+                request_id = f"___prefill_addr_{PREFILL_ZMQ}___decode_addr_{DECODE_ZMQ}_{uid}"
+
+                # 1. Prefill stage
+                prefill_gen = self.forward_request(
+                    f"http://{prefill_instance}/v1/chat/completions", kv_prepare_request, request_id
+                )
+                asyncio.create_task(self.consume_prefill(prefill_gen))
+
+                # 2. Decode stage
+                generator = self.forward_request(
+                    f"http://{decode_instance}/v1/chat/completions", request, request_id
+                )
+                return StreamingResponse(content=generator, media_type="text/event-stream")
+            except Exception as e:
+                return StreamingResponse(content=iter([str(e).encode('utf-8')]))
+
+        async def create_completion(self, raw_request: Request):
+            try:
+                request = await raw_request.json()
+                kv_prepare_request = request.copy()
+                kv_prepare_request["max_tokens"] = 1
+
+                prefill_instance = self.scheduling_policy.schedule(self.prefill_cycler)
+                decode_instance = self.scheduling_policy.schedule(self.decode_cycler)
+
+                uid = uuid.uuid4().hex
+                request_id = f"___prefill_addr_{PREFILL_ZMQ}___decode_addr_{DECODE_ZMQ}_{uid}"
+
+                # 1. Prefill stage
+                prefill_gen = self.forward_request(
+                    f"http://{prefill_instance}/v1/completions", kv_prepare_request, request_id
+                )
+                asyncio.create_task(self.consume_prefill(prefill_gen))
+
+                # 2. Decode stage
+                generator = self.forward_request(
+                    f"http://{decode_instance}/v1/completions", request, request_id
+                )
+                return StreamingResponse(content=generator, media_type="text/event-stream")
+            except Exception as e:
+                return StreamingResponse(content=iter([str(e).encode('utf-8')]))
+
+    class P2PProxyServer(disagg_proxy_demo.ProxyServer):
+        def __init__(self, args):
+            self.validate_parsed_serve_args(args)
+            self.port = args.port
+            self.proxy_instance = P2PProxy(
+                prefill_instances=[] if args.prefill is None else args.prefill,
+                decode_instances=[] if args.decode is None else args.decode,
+                model=args.model,
+                scheduling_policy=disagg_proxy_demo.RoundRobinSchedulingPolicy()
+            )
+
+        def run_server(self):
+            app = FastAPI()
+            app.include_router(self.proxy_instance.router)
+            config = uvicorn.Config(app, host="0.0.0.0", port=self.port, loop="uvloop")
+            server = uvicorn.Server(config)
+            server.run()
+
+    if __name__ == "__main__":
+        args = disagg_proxy_demo.parse_args()
+        proxy_server = P2PProxyServer(args=args)
+        proxy_server.run_server()

@@ -1,0 +1,219 @@
+# 1. Headless Service for Prefill Pods (required for peer discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-prefill
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# 2. Prefill LeaderWorkerSet (KV Producer)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  # replicas specifies the number of superpods (LWS groups) to deploy.
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: prefill-leader
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: prefill-pool
+        containers:
+          - name: prefill-leader
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # msgpack is required by vLLM's P2pNcclConnector for serialization/deserialization.
+                pip install msgpack &&
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-2-2b-it" \
+                  --max-model-len 4096 \
+                  # --enforce-eager: Required. vLLM KV-transfer hook pipeline currently requires PyTorch eager mode.
+                  --enforce-eager \
+                  # --kv-transfer-config: Sets up disaggregated serving peer role.
+                  # kv_role=kv_producer indicates this instance processes prompts and sends KV cache tensors.
+                  # kv_ip must match the headless service DNS name of the prefill service.
+                  --kv-transfer-config '{"kv_connector":"P2pNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","kv_connector_extra_config":{"mem_pool_size_gb":1,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              # VLLM_DISABLE_REQUEST_ID_RANDOMIZATION: Crucial. Prevents vLLM from randomizing request IDs.
+              # This ensures the prefill and decode engines use identical request IDs, matching NCCL transfer keys.
+              - name: VLLM_DISABLE_REQUEST_ID_RANDOMIZATION
+                value: "1"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              # Disable P2P and GDR to force NCCL to use standard TCP socket over network.
+              # GKE L4 GPU VM instances do not have physical NVLink/PCIe interconnects between them.
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            resources:
+              limits:
+                nvidia.com/gpu: "1"
+            # IPC_LOCK capability is required by NCCL for locking shared GPU memory buffers.
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            # Shared memory directory mounted as Memory emptyDir. Required for NCCL/IPC operations.
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: prefill-pool
+        containers:
+          - name: prefill-worker
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["sleep", "infinity"]
+            env:
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+            resources:
+              limits:
+                nvidia.com/gpu: "1"
+---
+# 3. Headless Service for Decode Pods (required for peer discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-decode
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# 4. Decode LeaderWorkerSet (Autoregressive Token Generator)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  # replicas specifies the number of superpods (LWS groups) to deploy.
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: decode-leader
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: decode-pool
+        containers:
+          - name: decode-leader
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # msgpack is required by vLLM's P2pNcclConnector for serialization/deserialization.
+                pip install msgpack &&
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-2-2b-it" \
+                  --max-model-len 4096 \
+                  # --enforce-eager: Required. vLLM KV-transfer hook pipeline currently requires PyTorch eager mode.
+                  --enforce-eager \
+                  # --kv-transfer-config: Sets up disaggregated serving peer role.
+                  # kv_role=kv_consumer indicates this instance autoregressively decodes tokens using received KV cache.
+                  # kv_ip must match the headless service DNS name of the prefill service to connect to.
+                  --kv-transfer-config '{"kv_connector":"P2pNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","kv_connector_extra_config":{"mem_pool_size_gb":1,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              # VLLM_DISABLE_REQUEST_ID_RANDOMIZATION: Crucial. Prevents vLLM from randomizing request IDs.
+              # This ensures the prefill and decode engines use identical request IDs, matching NCCL transfer keys.
+              - name: VLLM_DISABLE_REQUEST_ID_RANDOMIZATION
+                value: "1"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              # Disable P2P and GDR to force NCCL to use standard TCP socket over network.
+              # GKE L4 GPU VM instances do not have physical NVLink/PCIe interconnects between them.
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            resources:
+              limits:
+                nvidia.com/gpu: "1"
+            # IPC_LOCK capability is required by NCCL for locking shared GPU memory buffers.
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            # Shared memory directory mounted as Memory emptyDir. Required for NCCL/IPC operations.
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: decode-pool
+        containers:
+          - name: decode-worker
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["sleep", "infinity"]
+            env:
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+            resources:
+              limits:
+                nvidia.com/gpu: "1"

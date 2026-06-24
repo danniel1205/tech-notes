@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-router-svc
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: gemma-router
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemma-router
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-router
+  template:
+    metadata:
+      labels:
+        app: gemma-router
+    spec:
+      containers:
+        - name: router
+          image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              echo "Resolving engine hostnames to IPs..."
+              PREFILL_IP=$(python3 -c "import socket; print(socket.gethostbyname('gemma-prefill-0.gemma-prefill.default.svc.cluster.local'))")
+              DECODE_IP=$(python3 -c "import socket; print(socket.gethostbyname('gemma-decode-0.gemma-decode.default.svc.cluster.local'))")
+              echo "Resolved Prefill IP: $PREFILL_IP"
+              echo "Resolved Decode IP: $DECODE_IP"
+              
+              export PREFILL_ZMQ="${PREFILL_IP}:14579"
+              export DECODE_ZMQ="${DECODE_IP}:14579"
+              
+              exec python3 /app/p2p_proxy.py \
+                --model "google/gemma-4-12b-it" \
+                --prefill "$PREFILL_IP:8000" \
+                --decode "$DECODE_IP:8000" \
+                --port 8080
+          env:
+            - name: OPENAI_API_KEY
+              value: "dummy-key"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: router-code
+              mountPath: /app
+      volumes:
+        - name: router-code
+          configMap:
+            name: gemma-router-code
