@@ -1,22 +1,28 @@
 # Step-by-Step Guide: Hosting Gemma 4 (12B IT) on GKE using LWS and Local GPU Parallelism
 
-This guide provides step-by-step instructions to deploy Google's mid-sized **Gemma 4 (12B IT)** model (multimodal reasoning model, ~24 GiB weight size at BF16) in a **Disaggregated Serving (DS)** architecture on GKE.
+This guide provides step-by-step instructions to deploy Google's mid-sized
+**Gemma 4 (12B IT)** model (multimodal reasoning model, ~24 GiB weight size at
+BF16) in a **Disaggregated Serving (DS)** architecture on GKE.
 
-To achieve maximum performance and avoid the complexity of distributed Ray orchestration, we serve the model using **local Tensor Parallelism (TP=2)** inside a single pod. We achieve this by provisioning GKE node pools featuring **`g2-standard-24`** VM instances, each hosting **2x NVIDIA L4 GPUs** (24GB VRAM each) connected locally.
+To achieve maximum performance and avoid the complexity of distributed Ray
+orchestration, we serve the model using **local Tensor Parallelism (TP=2)**
+inside a single pod. We achieve this by provisioning GKE node pools featuring
+**`g2-standard-24`** VM instances, each hosting **2x NVIDIA L4 GPUs** (24GB VRAM
+each) connected locally.
 
 ---
 
 ## Architecture Design
 
-*   **Cluster Nodes:** 2x `g2-standard-24` VM instances.
-    *   **Node A (Prefill Nodepool):** Hosts 1x Prefill pod utilizing its 2 local L4 GPUs.
-    *   **Node B (Decode Nodepool):** Hosts 1x Decode pod utilizing its 2 local L4 GPUs.
-*   **LWS Group (`size: 1`):**
-    *   Since all 2 GPUs are hosted locally on a single machine, we run LWS with `size: 1` (Leader Pod only, 0 Worker pods).
-    *   The Leader Pod requests `nvidia.com/gpu: 2` to gain exclusive access to the VM's GPUs.
-*   **Communication:** vLLM executes Tensor Parallelism (TP=2) locally using native Python multiprocessing. The KV cache is transferred from Node A to Node B over GKE's network via TCP sockets.
+* **Cluster Nodes:** 2x `g2-standard-24` VM instances.
+  * **Node A (Prefill Nodepool):** Hosts 1x Prefill pod utilizing its 2 local L4 GPUs.
+  * **Node B (Decode Nodepool):** Hosts 1x Decode pod utilizing its 2 local L4 GPUs.
+* **LWS Group (`size: 1`):**
+  * Since all 2 GPUs are hosted locally on a single machine, we run LWS with `size: 1` (Leader Pod only, 0 Worker pods).
+  * The Leader Pod requests `nvidia.com/gpu: 2` to gain exclusive access to the VM's GPUs.
+* **Communication:** vLLM executes Tensor Parallelism (TP=2) locally using native Python multiprocessing. The KV cache is transferred from Node A to Node B over GKE's network via TCP sockets.
 
-```
+```text
                       [ Client Request ]
                               │
                               ▼
@@ -73,7 +79,10 @@ See details in [`gemma-4-serving-lws.yaml`](gemma-4-serving-lws.yaml).
 
 ## Step 3: Deploy the Global Router and Configmap
 
-To coordinate disaggregated serving, you must deploy the Global Router proxy. The router intercepts completions requests, overrides `max_tokens = 1` for the prefill engine to execute prompt processing in the background, and forwards the full request to the decode engine to generate tokens.
+To coordinate disaggregated serving, you must deploy the Global Router proxy.
+The router intercepts completions requests, overrides `max_tokens = 1` for the
+prefill engine to execute prompt processing in the background, and forwards the
+full request to the decode engine to generate tokens.
 
 1. Apply the router configmap containing the FastAPI routing script:
    ```bash

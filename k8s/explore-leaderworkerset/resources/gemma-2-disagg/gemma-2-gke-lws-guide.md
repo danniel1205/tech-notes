@@ -1,45 +1,54 @@
 # Step-by-Step Guide: Deploying Gemma on GKE using LeaderWorkerSet & DisaggregatedSet
 
-This guide provides a comprehensive, step-by-step walkthrough to deploy **Gemma 2** (or any compatible open-source LLM like Llama 3) on a Google Kubernetes Engine (GKE) cluster. We will use **vLLM** as the model serving framework, orchestrated by **LeaderWorkerSet (LWS)** and **DisaggregatedSet (DS)** to implement a high-performance **Prefill-Decode Disaggregated serving** architecture.
+This guide provides a comprehensive, step-by-step walkthrough to deploy
+**Gemma 2** (or any compatible open-source LLM like Llama 3) on a Google
+Kubernetes Engine (GKE) cluster. We will use **vLLM** as the model serving
+framework, orchestrated by **LeaderWorkerSet (LWS)** and **DisaggregatedSet
+(DS)** to implement a high-performance **Prefill-Decode Disaggregated serving**
+architecture.
 
 ---
 
 ## Architecture Overview
 
-```
+```text
                       [ Client Request ]
                               │
                               ▼
                 [ Global Router (vLLM Gateway) ]
                 (Stateless CPU Pods - Manages Routing)
                               │
-             ┌────────────────┴────────────────┐
-             ▼ (Forward Prompt)                ▼ (Orchestrate Loop)
-     [ Prefill LWS Group ]             [ Decode LWS Group ]
-     (1 Leader + N Workers)            (1 Leader + M Workers)
-             │                                 │
-             ▼                                 ▼
-   [ Prefill GPU Workers ] ===============► [ Decode GPU Workers ]
-     (Processes input prompt                 (Generates tokens;
-      and generates KV-cache)   [RDMA/TCP]    hosts KV-cache)
+              ┌────────────────┴────────────────┐
+              ▼ (Forward Prompt)                ▼ (Orchestrate Loop)
+      [ Prefill LWS Group ]             [ Decode LWS Group ]
+      (1 Leader + N Workers)            (1 Leader + M Workers)
+              │                                 │
+              ▼                                 ▼
+    [ Prefill GPU Workers ] ===============► [ Decode GPU Workers ]
+      (Processes input prompt                 (Generates tokens;
+       and generates KV-cache)   [RDMA/TCP]    hosts KV-cache)
 ```
 
 ---
 
 ## Prerequisites
 
-1.  **Google Cloud Project:** Active GCP project with billing enabled.
-2.  **Hugging Face Token:** Access token to download the Gemma model weights (e.g., `google/gemma-2-9b-it`). Accept the model license on Hugging Face before starting.
-3.  **gcloud CLI:** Installed and authenticated.
-4.  **kubectl & Helm:** Installed on your local machine.
+1. **Google Cloud Project:** Active GCP project with billing enabled.
+2. **Hugging Face Token:** Access token to download the Gemma model weights
+   (e.g., `google/gemma-2-9b-it`). Accept the model license on Hugging Face
+   before starting.
+3. **gcloud CLI:** Installed and authenticated.
+4. **kubectl & Helm:** Installed on your local machine.
 
 ---
 
 ## Step 1: Create the GKE Cluster and GPU Node Pools
 
-We will create a GKE cluster with two distinct GPU node pools using **NVIDIA L4 GPUs** (ideal for cost-effective inference serving):
-*   **Prefill Node Pool:** Compute-heavy (e.g., L4 GPUs).
-*   **Decode Node Pool:** Memory/generation-heavy (e.g., L4 GPUs).
+We will create a GKE cluster with two distinct GPU node pools using **NVIDIA L4
+GPUs** (ideal for cost-effective inference serving):
+
+* **Prefill Node Pool:** Compute-heavy (e.g., L4 GPUs).
+* **Decode Node Pool:** Memory/generation-heavy (e.g., L4 GPUs).
 
 Run the following commands to provision the cluster and node pools:
 
@@ -122,7 +131,9 @@ kubectl create secret generic hf-secret \
 
 ## Step 4: Deploy the Gemma 2 Prefill and Decode LeaderWorkerSets
 
-Instead of using the unreleased DisaggregatedSet operator, we will deploy the disaggregated serving architecture by manually creating two standard **LeaderWorkerSets** and their corresponding manifest content. 
+Instead of using the unreleased DisaggregatedSet operator, we will deploy the
+disaggregated serving architecture by manually creating two standard
+**LeaderWorkerSets** and their corresponding manifest content.
 
 Check out [gemma-serving-lws.yaml](gemma-serving-lws.yaml) for the full manifest.
 
