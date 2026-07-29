@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: router
-          image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+          image: vllm/vllm-openai:v0.26.0
           command:
             - /bin/sh
             - -c
@@ -61,23 +61,14 @@ spec:
                   echo "Resolved Prefill IP: $CURRENT_PREFILL_IP"
                   echo "Resolved Decode IP: $CURRENT_DECODE_IP"
                   
-                  export PREFILL_ZMQ="gemma-prefill-0.gemma-prefill:14579"
-                  export DECODE_ZMQ="gemma-decode-0.gemma-decode:14579"
-              cp /app/p2p_proxy.py /tmp/p2p_proxy.py &&
-              python3 -c '
-              fp = "/tmp/p2p_proxy.py"
-              with open(fp, "r") as f: code = f.read()
-              target = "class P2PProxyServer(disagg_proxy_demo.ProxyServer):"
-              insertion = "class P2PProxyServer(disagg_proxy_demo.ProxyServer):\n    def validate_parsed_serve_args(self, args):\n        if not args.prefill:\n            raise ValueError(\"Please specify at least one prefill node.\")\n        if not args.decode:\n            raise ValueError(\"Please specify at least one decode node.\")\n        self.validate_instances(args.prefill)\n        self.validate_instances(args.decode)"
-              if "def validate_parsed_serve_args" not in code:
-                  with open(fp, "w") as f: f.write(code.replace(target, insertion))
-              ' &&
+                  export PREFILL_ZMQ="gemma-prefill-0.gemma-prefill:5600"
+                  export DECODE_ZMQ="gemma-decode-0.gemma-decode:5600"
                   
-              python3 /tmp/p2p_proxy.py \
-                    --model "google/gemma-4-12b-it" \
-                    --prefill "$CURRENT_PREFILL_IP:8000" \
-                    --decode "$CURRENT_DECODE_IP:8000" \
-                    --port 8080 &
+                  python3 /app/p2p_proxy.py \
+                        --model "google/gemma-4-12b-it" \
+                        --prefill "$CURRENT_PREFILL_IP:8000" \
+                        --decode "$CURRENT_DECODE_IP:8000" \
+                        --port 8080 &
                   PROXY_PID=$!
                 else
                   if [ -n "$PROXY_PID" ] && ! kill -0 $PROXY_PID 2>/dev/null; then

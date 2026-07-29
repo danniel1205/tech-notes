@@ -47,7 +47,7 @@ The following configurations were applied to [gemma-serving-lws.yaml](file:///us
 
 | Parameter | Type | Value / Scope | Purpose |
 | :--- | :--- | :--- | :--- |
-| `VLLM_USE_MQ_BROADCASTER` | Env Var | `"false"` | Disables shared memory broadcasting. Shared memory cannot cross VM node boundaries. |
+| `VLLM_USE_MQ_BROADCASTER` | Env Var | Removed | Removed after upgrading to v0.26.0, as the MQ broadcaster issues are resolved upstream. |
 | `VLLM_USE_RAY_V2_EXECUTOR_BACKEND` | Env Var | `"0"` | Disables the shared-memory-reliant Ray V2 executor and falls back to Ray V1 socket-based executor. |
 | `VLLM_DISABLE_REQUEST_ID_RANDOMIZATION` | Env Var | `"1"` | Bypasses vLLM request ID suffix randomization so prefill and decode use matching IDs. |
 | `NCCL_P2P_DISABLE` | Env Var | `"1"` | Disables GPUDirect P2P over network since L4 GPUs reside on separate physical nodes. |
@@ -61,22 +61,14 @@ The following configurations were applied to [gemma-serving-lws.yaml](file:///us
 During verification, several blockers were identified and resolved via container
 startup patches:
 
-### 1. MQ Broadcaster Hang Bypass
+### 1. MQ Broadcaster Hang Bypass (Resolved Upstream)
 
-> [!IMPORTANT]
-> **The Issue:**
-> vLLM's `GroupCoordinator` inside `parallel_state.py` defaults to creating a
-> shared-memory message queue broadcaster (`MessageQueue`). Since the tensor
-> parallel group spans 2 physical VM nodes, trying to broadcast metadata via
-> shared memory blocks indefinitely.
->
-> **The Fix:**
-> We patched
-> `/usr/local/lib/python3.12/dist-packages/vllm/distributed/parallel_state.py`
-> to read `VLLM_USE_MQ_BROADCASTER` and fallback to Gloo/NCCL TCP broadcast:
-> ```python
-> use_message_queue_broadcaster=(os.environ.get("VLLM_USE_MQ_BROADCASTER", "true").lower() == "true")
-> ```
+> [!NOTE]
+> **Status:** Resolved in `v0.26.0`. Previously, vLLM's `GroupCoordinator` inside
+> `parallel_state.py` defaulted to creating a shared-memory message queue
+> broadcaster which deadlocked multi-node TP groups. In the upgraded version,
+> the shared-memory broadcaster is automatically disabled or bypassed in favor
+> of TCP broadcast for multi-node deployments, so the local patch was removed.
 
 ### 2. LWS Worker Hostname Resolution
 
