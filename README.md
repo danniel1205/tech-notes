@@ -54,6 +54,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - [Hashicorp Nomad](k8s/hashicorp-nomad/readme.md)
 - [How pod is created via Deployment with the network configured](k8s/how-pod-created-with-network-configured/readme.md)
 - [kube-apiserver-server-chain](k8s/kube-apiserver-server-chain/readme.md)
+- [Kubernetes LeaderWorkerSet (LWS) & DisaggregatedSet (DS)](k8s/explore-leaderworkerset/readme.md)
 - [List-Watch](k8s/list-watch/readme.md)
 - [Pod cold start performance](k8s/pod-cold-start-performance/readme.md)
 - [StatefulSets](k8s/explore-statefulset-on-vsphere/explore-statefulset-on-vsphere.md)

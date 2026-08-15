@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-router-svc
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: gemma-router
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemma-router
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-router
+  template:
+    metadata:
+      labels:
+        app: gemma-router
+    spec:
+      containers:
+        - name: router
+          image: vllm/vllm-openai:v0.26.0
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              while true; do
+                PREFILL_IP=$(python3 -c "import socket; print(socket.gethostbyname('gemma-prefill-0.gemma-prefill.default.svc.cluster.local'))" 2>/dev/null)
+                DECODE_IP=$(python3 -c "import socket; print(socket.gethostbyname('gemma-decode-0.gemma-decode.default.svc.cluster.local'))" 2>/dev/null)
+                
+                if [ -z "$PREFILL_IP" ] || [ -z "$DECODE_IP" ]; then
+                  echo "Waiting for backend IPs to resolve in DNS..."
+                  sleep 5
+                  continue
+                fi
+                
+                # Check if backend endpoints are actually listening and returning 200 OK
+                PREFILL_READY=$(python3 -c "import urllib.request; print(1 if urllib.request.urlopen('http://$PREFILL_IP:8000/health').getcode() == 200 else 0)" 2>/dev/null)
+                DECODE_READY=$(python3 -c "import urllib.request; print(1 if urllib.request.urlopen('http://$DECODE_IP:8000/health').getcode() == 200 else 0)" 2>/dev/null)
+                
+                if [ "$PREFILL_READY" != "1" ] || [ "$DECODE_READY" != "1" ]; then
+                  echo "Waiting for backend engine endpoints (/health) to be ready..."
+                  sleep 10
+                  continue
+                fi
+                
+                if [ -z "$CURRENT_PREFILL_IP" ]; then
+                  CURRENT_PREFILL_IP=$PREFILL_IP
+                  CURRENT_DECODE_IP=$DECODE_IP
+                  echo "Resolved Prefill IP: $CURRENT_PREFILL_IP"
+                  echo "Resolved Decode IP: $CURRENT_DECODE_IP"
+                  
+                  export PREFILL_ZMQ="gemma-prefill-0.gemma-prefill:5600"
+                  export DECODE_ZMQ="gemma-decode-0.gemma-decode:5600"
+                  
+                  python3 /app/p2p_proxy.py \
+                        --model "google/gemma-4-12b-it" \
+                        --prefill "$CURRENT_PREFILL_IP:8000" \
+                        --decode "$CURRENT_DECODE_IP:8000" \
+                        --port 8080 &
+                  PROXY_PID=$!
+                else
+                  if [ -n "$PROXY_PID" ] && ! kill -0 $PROXY_PID 2>/dev/null; then
+                    echo "Proxy process died!"
+                    exit 1
+                  fi
+                  if [ "$PREFILL_IP" != "$CURRENT_PREFILL_IP" ] || [ "$DECODE_IP" != "$CURRENT_DECODE_IP" ]; then
+                    echo "IP change detected! Prefill: $CURRENT_PREFILL_IP -> $PREFILL_IP, Decode: $CURRENT_DECODE_IP -> $DECODE_IP"
+                    kill $PROXY_PID
+                    exit 0
+                  fi
+                fi
+                sleep 10
+              done
+          env:
+            - name: OPENAI_API_KEY
+              value: "dummy-key"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: router-code
+              mountPath: /app
+      volumes:
+        - name: router-code
+          configMap:
+            name: gemma-router-code

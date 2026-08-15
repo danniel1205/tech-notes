@@ -1,0 +1,177 @@
+# 0. Gateway that exposes the external L7 Load Balancer
+# This will trigger the creation of GCP Regional L7 Internal Load Balancer (Envoy based)
+# The load balancer uses ext-proc to call into the Endpoint Picker (EPP)
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gemma-gateway
+  namespace: default
+  labels:
+    reconcile-trigger: "2"
+spec:
+  gatewayClassName: gke-l7-rilb
+  listeners:
+    - name: http-trigger
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+---
+# 1. InferencePool that groups both Prefill and Decode pods
+apiVersion: inference.networking.k8s.io/v1
+kind: InferencePool
+metadata:
+  name: gemma-4-pool
+  namespace: default
+spec:
+  # Selector matches pods containing the common app label.
+  selector:
+    matchLabels:
+      app: gemma-serving
+  targetPorts:
+    - number: 8000
+  endpointPickerRef:
+    name: gemma-4-epp
+    port:
+      number: 9002
+
+---
+# 2. InferenceObjective mapping the priority and target pool
+# While InferencePool groups the physical backend pod endpoints
+# together, InferenceObjective explains how those endpoints should be prioritized and managed.
+apiVersion: inference.networking.x-k8s.io/v1alpha2
+kind: InferenceObjective
+metadata:
+  name: gemma-4-objective
+  namespace: default
+spec:
+  priority: 10
+  poolRef:
+    name: gemma-4-pool
+
+---
+# 3. HTTPRoute that directs client traffic to the InferencePool
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gemma-4-route
+  namespace: default
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: gemma-gateway
+      namespace: default
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1
+      backendRefs:
+        - group: inference.networking.k8s.io
+          kind: InferencePool
+          name: gemma-4-pool
+
+---
+# 4. Endpoint Picker (EPP) Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-4-epp
+  namespace: default
+spec:
+  ports:
+    - port: 9002
+      targetPort: 9002
+  selector:
+    app: gemma-4-epp
+
+---
+# 5. Endpoint Picker (EPP) Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemma-4-epp
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-4-epp
+  template:
+    metadata:
+      labels:
+        app: gemma-4-epp
+    spec:
+      serviceAccountName: gemma-4-epp-sa
+      containers:
+        - name: epp
+          image: ghcr.io/llm-d/llm-d-router-endpoint-picker:v0.9.0
+          args:
+            - --pool-name=gemma-4-pool
+            - --pool-namespace=default
+          ports:
+            - containerPort: 9002
+
+---
+# 6. EPP ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gemma-4-epp-sa
+  namespace: default
+
+---
+# 7. EPP Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gemma-4-epp-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["inference.networking.k8s.io"]
+    resources: ["inferencepools"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["inference.networking.x-k8s.io"]
+    resources: ["inferenceobjectives", "inferencemodelrewrites", "inferencepoolimports"]
+    verbs: ["get", "list", "watch"]
+
+---
+# 8. EPP RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gemma-4-epp-rolebinding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: gemma-4-epp-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: gemma-4-epp-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# 9. HealthCheckPolicy for InferencePool to query /health instead of /
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: gemma-4-healthcheck
+  namespace: default
+spec:
+  targetRef:
+    group: inference.networking.k8s.io
+    kind: InferencePool
+    name: gemma-4-pool
+  default:
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: /health
+        port: 8000

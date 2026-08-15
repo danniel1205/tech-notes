@@ -1,0 +1,173 @@
+# 1. Headless Service for Prefill Pods (discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-prefill
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# 2. Prefill LeaderWorkerSet (TP=2 on single node)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 1 # Only leader pod is needed per group
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: prefill-leader
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: prefill-pool
+        containers:
+          - name: prefill-leader
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                pip install msgpack &&
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-4-12b-it" \
+                  --max-model-len 4096 \
+                  --enforce-eager \
+                  --tensor-parallel-size 2 \
+                  --kv-transfer-config '{"kv_connector":"P2pNcclConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","kv_connector_extra_config":{"mem_pool_size_gb":5,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              - name: VLLM_DISABLE_REQUEST_ID_RANDOMIZATION
+                value: "1"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            resources:
+              limits:
+                nvidia.com/gpu: "2" # Requests both L4 GPUs on the node
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      spec:
+        containers:
+          - name: prefill-worker
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+---
+# 3. Headless Service for Decode Pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-decode
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# 4. Decode LeaderWorkerSet (TP=2 on single node)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 1
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: decode-leader
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: decode-pool
+        containers:
+          - name: decode-leader
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                pip install msgpack &&
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-4-12b-it" \
+                  --max-model-len 4096 \
+                  --enforce-eager \
+                  --tensor-parallel-size 2 \
+                  --kv-transfer-config '{"kv_connector":"P2pNcclConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","kv_connector_extra_config":{"mem_pool_size_gb":5,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              - name: VLLM_DISABLE_REQUEST_ID_RANDOMIZATION
+                value: "1"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            resources:
+              limits:
+                nvidia.com/gpu: "2" # Requests both L4 GPUs on the node
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      spec:
+        containers:
+          - name: decode-worker
+            image: vllm/vllm-openai@sha256:6d8429e38e3747723ca07ee1b17972e09bb9c51c4032b266f24fb1cc3b22ed8f
