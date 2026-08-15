@@ -427,3 +427,85 @@ corresponding KV-cache.
   can re-use them and only compute the KV-cache for the newly appended prompt.
   However, the complete combined KV-cache is still what's ultimately delivered
   to the Decode pod to run generation.
+
+---
+
+## Evolution of GKE Disaggregated Serving Architectures
+
+The serving manifests in this repository represent a four-stage evolution of disaggregated serving on
+GKE, detailing the progression from a basic proof-of-concept to a highly optimized, production-grade
+cloud-native architecture.
+
+### Architectural Comparison Summary
+
+| Feature / Dimension | Attempt 1: `gemma-2-disagg` | Attempt 2: `gemma-4-disagg` | Attempt 3: `gemma-4-disagg-multi-nodes` | Attempt 4: `gemma-4-disagg-multi-nodes-llmd` |
+| :--- | :--- | :--- | :--- | :--- |
+| **Target Model** | `gemma-2-2b-it` (2B parameters) | `gemma-4-12b-it` (12B parameters) | `gemma-4-12b-it` (12B parameters) | `gemma-4-12b-it` (12B parameters) |
+| **Tensor Parallelism (TP)** | `TP=1` (No parallelism) | `TP=2` (Parallelism within pod) | `TP=2` (Distributed over network) | `TP=2` (Distributed over network) |
+| **Hardware Topology** | 1 GPU/pod (no TP) | 2 GPUs on single VM node (TP=2) | 2 GPUs across two VM nodes (TP=2) | 2 GPUs across two VM nodes (TP=2) |
+| **LWS Size / Pods** | Leader + Worker (Worker sleeps) | Leader pod only (hosts 2 GPUs) | Leader + Worker (1 GPU each) | Leader + Worker (1 GPU each) |
+| **HTTP Routing Engine** | Custom FastAPI sidecar proxy | Custom FastAPI sidecar proxy | Custom FastAPI sidecar proxy | **GKE Gateway API** (Regional L7 Envoy Load Balancer) |
+| **Phase Scheduling** | Hardcoded in FastAPI sidecar | Hardcoded in FastAPI sidecar | Hardcoded in FastAPI sidecar | **llm-d EPP** via Envoy ext-proc |
+| **NEG / Node Discovery** | Manual headless DNS resolution | Manual headless DNS resolution | Manual headless DNS resolution | GKE **`InferencePool`** controller (automates NEG registration) |
+| **Health Checking** | Kubernetes readiness probes | Kubernetes readiness probes | Kubernetes readiness probes | GKE-native **`HealthCheckPolicy`** (direct Envoy `/health` checks) |
+
+### Detailed Evolution Breakdown
+
+#### Phase 1: `gemma-2-disagg` (The POC)
+
+* **Goal:** Verify that vLLM's `P2pNcclConnector` could transfer KV cache blocks between a dedicated
+  prefill and decode engine using a custom routing sidecar.
+* **Architecture:** The model size was small (2B), running on a single GPU per LWS group. No
+  multi-node synchronization was needed. The worker pods were configured to `sleep` to satisfy
+  LWS group size structures without executing computations.
+* **References:**
+  * Guide: [gemma-2-gke-lws-guide.md][guide_p1]
+  * Summary: [gemma-2-disagg-serving-summary.md][summary_p1]
+
+#### Phase 2: `gemma-4-disagg` (Scaling Up Model size)
+
+* **Goal:** Migrate to a larger model (`gemma-4-12b-it`) which required multi-GPU execution.
+* **Architecture:** Configured `TP=2` to leverage 2 GPUs, but restricted the LWS group size to
+  `size: 1`. Both GPUs resided on a **single physical GKE VM instance**, allowing All-Reduce
+  communications to happen locally via PCIe/NVLink lanes. This avoided network-bound NCCL issues.
+* **References:**
+  * Guide: [gemma-4-gke-lws-guide.md][guide_p2]
+
+#### Phase 3: `gemma-4-disagg-multi-nodes` (Scaling Out to Multiple VMs)
+
+* **Goal:** Scale the TP group across separate physical VM instances (Leader on Node A, Worker
+  on Node B). This is required when single instances with multiple GPUs are unavailable or
+  when scaling up to extremely large model sizes.
+* **Architecture & Workarounds:** This step introduced the most network and engine-level complexities:
+  * **NCCL Networking:** Had to disable GPUDirect P2P (`NCCL_P2P_DISABLE="1"`, `NCCL_NET_GDR_LEVEL="0"`) to force All-Reduce traffic over standard TCP sockets since the GPUs were on separate nodes.
+  * **vLLM Deadlocks:** Disabled the vLLM V1 core (`VLLM_USE_V1="0"`) due to a GCS Ray Executor V2 shared-memory deadlock, falling back to the stable V0 core.
+  * **Headless DNS Loop:** Enabled `publishNotReadyAddresses: true` to prevent circular dependencies where worker nodes couldn't join Ray because DNS didn't resolve unready pods.
+  * **Dynamic IP Bindings:** Injected GKE pod IPs via Kubernetes fieldRefs (`VLLM_NIXL_SIDE_CHANNEL_HOST`) to enable Nixl connection resolution.
+* **References:**
+  * Guide: [gemma-4-gke-lws-multi-nodes-guide.md][guide_p3]
+  * Summary: [disaggregated_serving_summary.md][summary_p3]
+
+#### Phase 4: `gemma-4-disagg-multi-nodes-llmd` (Production-Ready native GKE Routing)
+
+* **Goal:** Clean up the custom FastAPI script scripts and sidecar proxies, replacing them with standard, native GCP infrastructure.
+* **Architecture:**
+  * **Gateway API & EPP:** The custom FastAPI routing pod was deleted. Standard GKE Gateway API
+    resources (`Gateway`, `HTTPRoute`) now handle HTTP ingress, utilizing the `llm-d` Endpoint
+    Picker (EPP) container to dynamically schedule prefill and decode phases using Envoy gRPC
+    callouts.
+  * **Native Pool Management:** Replaced manual endpoint tracking scripts with GKE's `InferencePool` and `HealthCheckPolicy` resources.
+  * **Footprint:** Reduced configuration complexity from 5 custom files (including custom Docker configmaps and proxies) to 3 declarative, native manifests.
+* **References:**
+  * Guide: [gemma-4-disagg-multi-node-llmd-guide.md][guide_p4]
+  * Comparison: [llmd_architecture_comparison.md][architecture_comparison_p4]
+
+[guide_p1]: resources/gemma-2-disagg/gemma-2-gke-lws-guide.md
+[summary_p1]: resources/gemma-2-disagg/gemma-2-disagg-serving-summary.md
+[guide_p2]: resources/gemma-4-disagg/gemma-4-gke-lws-guide.md
+[guide_p3]: resources/gemma-4-disagg-multi-nodes/gemma-4-gke-lws-multi-nodes-guide.md
+[summary_p3]: resources/gemma-4-disagg-multi-nodes/disaggregated_serving_summary.md
+[guide_p4]: resources/gemma-4-disagg-multi-nodes-llmd/gemma-4-disagg-multi-node-llmd-guide.md
+[architecture_comparison_p4]: resources/gemma-4-disagg-multi-nodes-llmd/llmd_architecture_comparison.md
+
+
+
