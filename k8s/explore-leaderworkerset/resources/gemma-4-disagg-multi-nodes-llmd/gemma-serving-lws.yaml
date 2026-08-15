@@ -1,0 +1,347 @@
+# 1. Headless Service for Prefill Pods (discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-prefill
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: sidechannel
+      port: 5600
+      targetPort: 5600
+---
+# 2. Prefill LeaderWorkerSet (TP=2 across 2 nodes)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-prefill
+  namespace: default
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2 # 1 leader + 1 worker (each pod gets 1 GPU on its VM node)
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app: gemma-serving
+          role: prefill-leader
+          llm-d.ai/role: prefill
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: prefill-pool
+        containers:
+          - name: prefill-leader
+            image: vllm/vllm-openai:v0.26.0
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                pip install msgpack ray
+                
+                # Start Ray Head
+                ray start --head --port=6379 --block &
+                
+                # Wait for the worker to join the Ray cluster
+                sleep 5 &&
+                while [ $(/usr/local/bin/ray status | grep -c "node_") -lt 2 ]; do
+                  echo "Waiting for worker node to join..."
+                  sleep 5
+                done &&
+                
+                # Start vLLM pointing to the Ray cluster
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-4-12b-it" \
+                  --max-model-len 4096 \
+                  --enforce-eager \
+                  --tensor-parallel-size 2 \
+                  --distributed-executor-backend ray \
+                  --kv-transfer-config '{"kv_connector":"NixlPushConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","engine_id":"gemma4-prefill-group","kv_connector_extra_config":{"mem_pool_size_gb":2,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              - name: VLLM_USE_V1
+                value: "0"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: 8000
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 20
+            resources:
+              requests:
+                memory: "12Gi"
+                cpu: "2"
+              limits:
+                memory: "12Gi"
+                cpu: "2"
+                nvidia.com/gpu: "1" # 1 GPU for Leader
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      metadata:
+        labels:
+          app: gemma-serving
+          llm-d.ai/role: prefill
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: prefill-pool
+        containers:
+          - name: prefill-worker
+            image: vllm/vllm-openai:v0.26.0
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # Preload weights to local cache on both nodes before starting Ray/vLLM.
+                # vLLM's distributed loader only downloads on Rank 0, which deadlocks on GKE 
+                # multi-node setups where nodes do not share a network filesystem (NFS).
+                hf download google/gemma-4-12b-it model.safetensors config.json --token "$HF_TOKEN" &&
+                pip install msgpack ray &&
+                sleep 5 &&
+                exec ray start --address="$(LWS_LEADER_ADDRESS):6379" --block
+            env:
+              - name: VLLM_USE_V1
+                value: "0"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            resources:
+              requests:
+                memory: "12Gi"
+                cpu: "2"
+              limits:
+                memory: "12Gi"
+                cpu: "2"
+                nvidia.com/gpu: "1" # 1 GPU for Worker
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+---
+# 3. Headless Service for Decode Pods (discovery)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    leaderworkerset.sigs.k8s.io/name: gemma-decode
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: sidechannel
+      port: 5600
+      targetPort: 5600
+---
+# 4. Decode LeaderWorkerSet (TP=2 across 2 nodes)
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: gemma-decode
+  namespace: default
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 2 # 1 leader + 1 worker (each pod gets 1 GPU on its VM node)
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          app: gemma-serving
+          role: decode-leader
+          llm-d.ai/role: decode
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: decode-pool
+        containers:
+          - name: decode-leader
+            image: vllm/vllm-openai:v0.26.0
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                pip install msgpack ray
+                
+                # Start Ray Head
+                ray start --head --port=6379 --block &
+                
+                # Wait for the worker to join the Ray cluster
+                sleep 5 &&
+                while [ $(/usr/local/bin/ray status | grep -c "node_") -lt 2 ]; do
+                  echo "Waiting for worker node to join..."
+                  sleep 5
+                done &&
+                
+                # Start vLLM pointing to the Ray cluster
+                exec python3 -m vllm.entrypoints.openai.api_server \
+                  --model "google/gemma-4-12b-it" \
+                  --max-model-len 4096 \
+                  --enforce-eager \
+                  --tensor-parallel-size 2 \
+                  --distributed-executor-backend ray \
+                  --kv-transfer-config '{"kv_connector":"NixlPullConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","engine_id":"gemma4-decode-group","kv_connector_extra_config":{"mem_pool_size_gb":2,"send_type":"PUT"}}' \
+                  --port 8000
+            env:
+              - name: VLLM_USE_V1
+                value: "0"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            ports:
+              - containerPort: 8000
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: 8000
+              initialDelaySeconds: 60
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 20
+            resources:
+              requests:
+                memory: "12Gi"
+                cpu: "2"
+              limits:
+                memory: "12Gi"
+                cpu: "2"
+                nvidia.com/gpu: "1" # 1 GPU for Leader
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
+    workerTemplate:
+      metadata:
+        labels:
+          app: gemma-serving
+          llm-d.ai/role: decode
+      spec:
+        nodeSelector:
+          cloud.google.com/gke-nodepool: decode-pool
+        containers:
+          - name: decode-worker
+            image: vllm/vllm-openai:v0.26.0
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # Preload weights to local cache on both nodes before starting Ray/vLLM.
+                # vLLM's distributed loader only downloads on Rank 0, which deadlocks on GKE 
+                # multi-node setups where nodes do not share a network filesystem (NFS).
+                hf download google/gemma-4-12b-it model.safetensors config.json --token "$HF_TOKEN" &&
+                pip install msgpack ray &&
+                sleep 5 &&
+                exec ray start --address="$(LWS_LEADER_ADDRESS):6379" --block
+            env:
+              - name: VLLM_USE_V1
+                value: "0"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_SOCKET_IFNAME
+                value: "eth0"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+            resources:
+              requests:
+                memory: "12Gi"
+                cpu: "2"
+              limits:
+                memory: "12Gi"
+                cpu: "2"
+                nvidia.com/gpu: "1" # 1 GPU for Worker
+            securityContext:
+              capabilities:
+                add:
+                  - IPC_LOCK
+            volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 15Gi
