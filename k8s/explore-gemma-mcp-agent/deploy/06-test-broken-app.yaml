@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-broken-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-broken-app
+  template:
+    metadata:
+      labels:
+        app: test-broken-app
+    spec:
+      containers:
+      - name: web
+        image: nginx:nonexistenttag  # Typo image tag to trigger ImagePullBackOff / ErrImagePull
+        ports:
+        - containerPort: 80

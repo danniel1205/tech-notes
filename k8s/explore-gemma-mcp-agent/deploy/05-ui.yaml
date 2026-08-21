@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-agent-ui
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-agent-ui
+  template:
+    metadata:
+      labels:
+        app: k8s-agent-ui
+    spec:
+      containers:
+      - name: ui
+        image: gcr.io/daniellguo-anthos-dev/k8s-agent-ui:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8501
+        env:
+        - name: PORT
+          value: "8501"
+        - name: AGENT_SERVICE_URL
+          value: "http://k8s-agent-service:8090"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-agent-ui
+  namespace: default
+spec:
+  ports:
+  - port: 8501
+    targetPort: 8501
+  selector:
+    app: k8s-agent-ui

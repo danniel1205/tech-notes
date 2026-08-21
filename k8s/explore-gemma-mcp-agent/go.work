@@ -1,0 +1,8 @@
+go 1.25.13
+
+use (
+	./agent_go
+	./mcp_server_go
+	./tests/integration
+	./ui_go
+)

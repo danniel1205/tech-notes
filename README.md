@@ -51,6 +51,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
 - [Explore Tilt Dev's live updates](k8s/explore-tilt-dev/readme.md)
 - [Explore Vitess](k8s/explore-vitess/readme.md)
 - [Expore Rancher](k8s/explore-rancher/readme.md)
+- [Gemma Autonomous Kubernetes Troubleshooting Agent in gVisor Sandbox with MCP](k8s/explore-gemma-mcp-agent/README.md)
 - [Hashicorp Nomad](k8s/hashicorp-nomad/readme.md)
 - [How pod is created via Deployment with the network configured](k8s/how-pod-created-with-network-configured/readme.md)
 - [kube-apiserver-server-chain](k8s/kube-apiserver-server-chain/readme.md)

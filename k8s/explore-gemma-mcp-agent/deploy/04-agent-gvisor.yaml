@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-agent
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-agent
+  template:
+    metadata:
+      labels:
+        app: k8s-agent
+    spec:
+      runtimeClassName: gvisor  # Enforces gVisor sandbox container runtime (runsc)
+      containers:
+      - name: agent
+        image: gcr.io/daniellguo-anthos-dev/k8s-agent:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8090
+        env:
+        - name: PORT
+          value: "8090"
+        - name: LLM_API_BASE
+          value: "http://gemma-llm-service:8000/v1"
+        - name: LLM_MODEL
+          value: "Qwen/Qwen2.5-7B-Instruct"
+        - name: MCP_SERVER_URL
+          value: "http://k8s-mcp-server:8080/sse"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-agent-service
+  namespace: default
+spec:
+  ports:
+  - port: 8090
+    targetPort: 8090
+  selector:
+    app: k8s-agent

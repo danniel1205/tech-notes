@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemma-vllm
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemma-vllm
+  template:
+    metadata:
+      labels:
+        app: gemma-vllm
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        args:
+        - "--model=Qwen/Qwen2.5-7B-Instruct"
+        - "--port=8000"
+        - "--max-model-len=8192"
+        - "--gpu-memory-utilization=0.90"
+        - "--enable-auto-tool-choice"
+        - "--tool-call-parser=hermes"
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            nvidia.com/gpu: "1"
+          requests:
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - name: model-cache
+          mountPath: /root/.cache/huggingface
+      volumes:
+      - name: model-cache
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemma-llm-service
+  namespace: default
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: gemma-vllm
