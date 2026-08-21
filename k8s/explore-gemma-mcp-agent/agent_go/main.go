@@ -30,8 +30,8 @@ INSTRUCTIONS:
 1. Use the provided Kubernetes MCP read tools (e.g., k8s_list_resources, k8s_describe_resource, k8s_get_resource, k8s_get_pod_logs, k8s_get_events) to systematically investigate cluster state and gather facts.
 2. Inspect resource specifications, status conditions, event streams, metrics/logs, container exit codes, and cross-resource dependencies.
 3. Identify the exact root cause of any issue.
-4. Formulate a clear diagnostic explanation for the user.
-5. If a fix requires modifying the cluster (e.g., k8s_patch_resource, k8s_restart_pod, k8s_scale_deployment), DO NOT run the mutating tool directly. Instead, pause execution, explain the diagnosis, and present the exact remediation action for user permission.`
+4. When a fix requires modifying or patching the cluster (e.g. k8s_patch_resource, k8s_restart_pod, k8s_scale_deployment), ALWAYS CALL the mutating tool directly with the full patch JSON. DO NOT ask the user for an approval token or permission in plain text; the system's human-in-the-loop security layer will automatically intercept your call and present an interactive approval button in the UI.
+5. When proposing or applying a patch for Kubernetes workloads (e.g. deployments, statefulsets, pods) that modifies container properties, always include the container's "name" property (e.g. {"spec": {"template": {"spec": {"containers": [{"name": "web", "image": "nginx:latest"}]}}}}).`
 
 var mutatingPrefixes = []string{"k8s_patch", "k8s_restart", "k8s_scale", "k8s_delete", "k8s_create", "k8s_apply", "k8s_update"}
 
@@ -124,6 +124,22 @@ func isMutatingTool(name string) bool {
 	return false
 }
 
+// isApprovalIntent detects whether a user prompt intends to approve a pending remediation action
+func isApprovalIntent(query string) bool {
+	q := strings.ToLower(strings.TrimSpace(query))
+	q = strings.TrimRight(q, "!.,?")
+	if q == "yes" || q == "y" || q == "approve" || q == "approved" || q == "proceed" || q == "ok" || q == "okay" || q == "sure" || q == "go ahead" || q == "fix it" || q == "apply" || q == "apply fix" || q == "apply the fix" || q == "do it" {
+		return true
+	}
+	approvalPrefixes := []string{"yes", "approve", "proceed", "go ahead", "apply", "fix it", "ok", "okay", "sure"}
+	for _, p := range approvalPrefixes {
+		if strings.HasPrefix(q, p+" ") || strings.HasPrefix(q, p+",") {
+			return true
+		}
+	}
+	return false
+}
+
 // ensureMCPClient connects or reconnects to MCP Server over SSE if not already connected
 func (a *AgentSession) ensureMCPClient(ctx context.Context) error {
 	if a.mcpClient != nil {
@@ -148,7 +164,15 @@ func (a *AgentSession) fetchOpenAITools(ctx context.Context) ([]OpenAITool, erro
 
 	toolList, err := a.mcpClient.ListTools(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed fetching tools from MCP server: %w", err)
+		// If connection was dropped (e.g. MCP server restarted), reconnect and retry
+		a.mcpClient = nil
+		if recErr := a.ensureMCPClient(ctx); recErr != nil {
+			return nil, fmt.Errorf("failed reconnecting to MCP server: %w", recErr)
+		}
+		toolList, err = a.mcpClient.ListTools(ctx, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed fetching tools from MCP server: %w", err)
+		}
 	}
 
 	var openaiTools []OpenAITool
@@ -169,6 +193,37 @@ func (a *AgentSession) RunTroubleshootingLoop(ctx context.Context, userQuery str
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	// Check if the user is approving a pending action through plain text (e.g. "yes", "approve", "go ahead")
+	if a.pendingAction != nil && isApprovalIntent(userQuery) {
+		log.Printf("User approved pending action '%s' via text input: '%s'", a.pendingAction.ToolName, userQuery)
+		action := *a.pendingAction
+		a.mu.Unlock()
+		res, err := a.ExecuteApprovedAction(ctx, action)
+		a.mu.Lock()
+		if err != nil {
+			return nil, fmt.Errorf("failed executing text-approved action: %w", err)
+		}
+		msg, _ := res["message"].(string)
+		if msg == "" {
+			msg = fmt.Sprintf("Successfully executed %s", action.ToolName)
+		}
+		diagMsg := fmt.Sprintf("✅ **Action Approved via Chat & Executed Successfully**\n\n```text\n%s\n```", msg)
+		a.conversationHistory = append(a.conversationHistory, ChatMessage{
+			Role:    "user",
+			Content: userQuery,
+		})
+		a.conversationHistory = append(a.conversationHistory, ChatMessage{
+			Role:    "assistant",
+			Content: diagMsg,
+		})
+		return map[string]interface{}{
+			"status":    "REMEDIATED",
+			"diagnosis": diagMsg,
+			"message":   msg,
+			"result":    res["result"],
+		}, nil
+	}
+
 	a.conversationHistory = append(a.conversationHistory, ChatMessage{
 		Role:    "user",
 		Content: userQuery,
@@ -184,9 +239,27 @@ func (a *AgentSession) RunTroubleshootingLoop(ctx context.Context, userQuery str
 	for i := 0; i < maxIterations; i++ {
 		log.Printf("[Iteration %d] Querying Qwen LLM at %s...", i+1, llmAPIBase)
 
+		// =========================================================================
+		// CONTEXT WINDOW MANAGEMENT (Sliding Window for Smaller / 8k Context Models)
+		// =========================================================================
+		// For 7B models with an 8,192 token limit (e.g. Qwen 2.5 7B on single L4 GPU),
+		// verbose Kubernetes manifests across multi-turn chats can overflow context.
+		// We preserve the system prompt (index 0) and the most recent 6 messages.
+		//
+		// 💡 FUTURE UPGRADE NOTE:
+		// If upgrading to larger long-context models (e.g. Qwen 2.5 14B/32B/72B, Claude 3.5,
+		// Gemini 1.5/2.0 with 32k-1M+ context), you can safely remove or increase this limit
+		// to retain full multi-turn conversational history:
+		//     messagesToSend := a.conversationHistory
+		// =========================================================================
+		messagesToSend := a.conversationHistory
+		if len(messagesToSend) > 8 {
+			messagesToSend = append([]ChatMessage{a.conversationHistory[0]}, a.conversationHistory[len(a.conversationHistory)-6:]...)
+		}
+
 		reqBody := ChatCompletionRequest{
 			Model:    llmModel,
-			Messages: a.conversationHistory,
+			Messages: messagesToSend,
 			Tools:    tools,
 		}
 
@@ -269,15 +342,39 @@ func (a *AgentSession) RunTroubleshootingLoop(ctx context.Context, userQuery str
 				}
 
 				toolResult, err := a.mcpClient.CallTool(ctx, callParams)
+				if err != nil {
+					// If connection dropped, reconnect and retry call
+					a.mcpClient = nil
+					if recErr := a.ensureMCPClient(ctx); recErr == nil {
+						toolResult, err = a.mcpClient.CallTool(ctx, callParams)
+					}
+				}
 				var contentStr string
 				if err != nil {
 					contentStr = fmt.Sprintf("Tool call error: %v", err)
 				} else if len(toolResult.Content) > 0 {
-					contentBytes, _ := json.Marshal(toolResult.Content)
-					contentStr = string(contentBytes)
+					// Extract raw text payload directly from MCP Content objects (e.g. *mcp.TextContent).
+					// This avoids double-JSON serialization/wrapping so the LLM receives the clean,
+					// unescaped Kubernetes resource definitions, status specs, and log outputs.
+					var textParts []string
+					for _, c := range toolResult.Content {
+						if tc, ok := c.(*mcp.TextContent); ok {
+							textParts = append(textParts, tc.Text)
+						} else {
+							b, _ := json.Marshal(c)
+							textParts = append(textParts, string(b))
+						}
+					}
+					contentStr = strings.Join(textParts, "\n")
 				} else {
 					contentStr = "{}"
 				}
+
+				snippet := contentStr
+				if len(snippet) > 200 {
+					snippet = snippet[:200] + "..."
+				}
+				log.Printf("Tool %s returned %d bytes payload: %s", fnName, len(contentStr), snippet)
 
 				// Append tool result to conversation history
 				a.conversationHistory = append(a.conversationHistory, ChatMessage{
@@ -322,13 +419,31 @@ func (a *AgentSession) ExecuteApprovedAction(ctx context.Context, action Propose
 
 	toolResult, err := a.mcpClient.CallTool(ctx, callParams)
 	if err != nil {
+		// If connection dropped while user was reviewing approval in UI, reconnect and retry
+		a.mcpClient = nil
+		if recErr := a.ensureMCPClient(ctx); recErr == nil {
+			toolResult, err = a.mcpClient.CallTool(ctx, callParams)
+		}
+	}
+	if err != nil {
 		return nil, fmt.Errorf("remediation tool execution failed: %w", err)
+	}
+
+	var resultText string
+	if len(toolResult.Content) > 0 {
+		if tc, ok := toolResult.Content[0].(*mcp.TextContent); ok {
+			resultText = tc.Text
+		}
+	}
+	if resultText == "" {
+		resultText = fmt.Sprintf("Successfully executed %s", action.ToolName)
 	}
 
 	a.pendingAction = nil
 	return map[string]interface{}{
-		"status": "REMEDIATED",
-		"result": toolResult,
+		"status":  "REMEDIATED",
+		"message": resultText,
+		"result":  toolResult,
 	}, nil
 }
 

@@ -9,9 +9,18 @@ kind: ClusterRole
 metadata:
   name: k8s-mcp-role
 rules:
-- apiGroups: ["", "apps"]
-  resources: ["pods", "pods/log", "events", "deployments", "namespaces"]
-  verbs: ["get", "list", "watch", "update", "patch", "delete"]
+# 1. Comprehensive Read Permissions for Cluster Diagnostics & CRD Discovery
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+
+# 2. Mutating Permissions for Remediation (governed by Agent Approval Gate)
+- apiGroups: ["", "apps", "batch"]
+  resources: ["pods", "deployments", "statefulsets", "daemonsets", "jobs"]
+  verbs: ["update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

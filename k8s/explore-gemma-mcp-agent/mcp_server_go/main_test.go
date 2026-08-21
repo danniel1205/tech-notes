@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -49,6 +52,20 @@ func setupFakeK8sEnvironment() {
 		Message: "Nodes are unavailable",
 		Count:   1,
 	})
+
+	mapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{
+		corev1.SchemeGroupVersion,
+		{Group: "apps", Version: "v1"},
+		{Group: "batch", Version: "v1"},
+		{Group: "networking.k8s.io", Version: "v1"},
+		{Group: "custom.acme.com", Version: "v1alpha1"},
+	})
+	mapper.Add(schema.GroupVersionKind{Group: "", Version: "v1", Kind: "Pod"}, meta.RESTScopeNamespace)
+	mapper.Add(schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}, meta.RESTScopeNamespace)
+	mapper.Add(schema.GroupVersionKind{Group: "batch", Version: "v1", Kind: "Job"}, meta.RESTScopeNamespace)
+	mapper.Add(schema.GroupVersionKind{Group: "networking.k8s.io", Version: "v1", Kind: "Ingress"}, meta.RESTScopeNamespace)
+	mapper.Add(schema.GroupVersionKind{Group: "custom.acme.com", Version: "v1alpha1", Kind: "Widget"}, meta.RESTScopeNamespace)
+	restMapper = mapper
 }
 
 func TestHandleGetResource(t *testing.T) {
@@ -110,8 +127,14 @@ func TestHandleListResources(t *testing.T) {
 			if (err != nil) != tt.wantError {
 				t.Fatalf("handleListResources error = %v, wantError = %v", err, tt.wantError)
 			}
-			if !tt.wantError && len(result.Content) == 0 {
-				t.Errorf("expected non-empty content in result")
+			if !tt.wantError {
+				if len(result.Content) == 0 {
+					t.Fatalf("expected non-empty content in result")
+				}
+				tc, ok := result.Content[0].(*mcp.TextContent)
+				if !ok || !strings.Contains(tc.Text, "test-pod") {
+					t.Errorf("expected items with test-pod in list result, got: %v", tc)
+				}
 			}
 		})
 	}
@@ -183,5 +206,92 @@ func TestHandlePatchResource_PermissionCheck(t *testing.T) {
 
 	if len(res.Content) == 0 {
 		t.Errorf("expected success message in content")
+	}
+}
+
+func TestResolveGVR(t *testing.T) {
+	setupFakeK8sEnvironment()
+	tests := []struct {
+		name        string
+		group       string
+		version     string
+		resource    string
+		wantGroup   string
+		wantVersion string
+		wantRes     string
+	}{
+		{
+			name:        "deployments without group defaults to apps/v1",
+			group:       "",
+			version:     "",
+			resource:    "deployments",
+			wantGroup:   "apps",
+			wantVersion: "v1",
+			wantRes:     "deployments",
+		},
+		{
+			name:        "singular deployment normalized to plural",
+			group:       "",
+			version:     "",
+			resource:    "deployment",
+			wantGroup:   "apps",
+			wantVersion: "v1",
+			wantRes:     "deployments",
+		},
+		{
+			name:        "pods without group defaults to core v1",
+			group:       "",
+			version:     "",
+			resource:    "pods",
+			wantGroup:   "",
+			wantVersion: "v1",
+			wantRes:     "pods",
+		},
+		{
+			name:        "jobs without group defaults to batch/v1",
+			group:       "",
+			version:     "",
+			resource:    "jobs",
+			wantGroup:   "batch",
+			wantVersion: "v1",
+			wantRes:     "jobs",
+		},
+		{
+			name:        "custom explicit group and version preserved",
+			group:       "custom.acme.com",
+			version:     "v1alpha1",
+			resource:    "widgets",
+			wantGroup:   "custom.acme.com",
+			wantVersion: "v1alpha1",
+			wantRes:     "widgets",
+		},
+		{
+			name:        "combined apiVersion in version field split into apps/v1",
+			group:       "",
+			version:     "apps/v1",
+			resource:    "deployments",
+			wantGroup:   "apps",
+			wantVersion: "v1",
+			wantRes:     "deployments",
+		},
+		{
+			name:        "combined apiVersion for networking split properly",
+			group:       "",
+			version:     "networking.k8s.io/v1",
+			resource:    "ingresses",
+			wantGroup:   "networking.k8s.io",
+			wantVersion: "v1",
+			wantRes:     "ingresses",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := resolveGVR(tt.group, tt.version, tt.resource)
+			if got.Group != tt.wantGroup || got.Version != tt.wantVersion || got.Resource != tt.wantRes {
+				t.Errorf("resolveGVR(%q, %q, %q) = %v, want {Group: %q, Version: %q, Resource: %q}",
+					tt.group, tt.version, tt.resource, got, tt.wantGroup, tt.wantVersion, tt.wantRes)
+			}
+		})
 	}
 }

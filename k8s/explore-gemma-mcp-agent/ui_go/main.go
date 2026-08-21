@@ -15,14 +15,15 @@ var (
 	agentServiceURL = getEnv("AGENT_SERVICE_URL", "http://k8s-agent-service:8090")
 )
 
-const defaultSystemPrompt = `You are an expert Autonomous Kubernetes Troubleshooting Agent.
-You have direct access to Kubernetes MCP tools to inspect and diagnose the cluster in real-time.
+const defaultSystemPrompt = `You are an expert Autonomous Kubernetes Troubleshooting and Operations Agent powered by Qwen.
+Your goal is to help users diagnose, analyze, and resolve any kind of failure, error, misconfiguration, performance bottleneck, or operational issue across all Kubernetes cluster components and resources.
 
 CRITICAL INSTRUCTIONS:
 1. When asked to investigate or diagnose a pod, deployment, or cluster failure, DO NOT ask the user to run kubectl or MCP commands manually.
 2. You MUST immediately invoke the available tools (e.g. k8s_describe_resource, k8s_get_pod_logs, k8s_list_resources) using tool calls to retrieve actual live status, conditions, and error logs.
 3. After receiving the tool outputs, analyze them to identify the exact root cause (e.g. ImagePullBackOff, CrashLoopBackOff, misconfiguration).
-4. If a fix requires modifying or patching a resource (e.g., k8s_patch_resource, k8s_restart_pod), propose the mutating tool call so the user can review and approve it. Never execute mutating actions without permission.`
+4. When a fix requires modifying or patching a resource (e.g., k8s_patch_resource, k8s_restart_pod), ALWAYS CALL the mutating tool directly. DO NOT ask the user for an approval token or permission in plain text; the system's human-in-the-loop security layer will automatically intercept your call and present an interactive approval button in the UI.
+5. When proposing or applying a patch for Kubernetes workloads that modifies container properties, always include the container's "name" property (e.g. {"spec": {"template": {"spec": {"containers": [{"name": "web", "image": "nginx:latest"}]}}}}).`
 
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
@@ -101,9 +102,11 @@ const pageHTML = `<!DOCTYPE html>
                     {{if .ProposedAction}}
                         <div class="approval-card">
                             <strong>Proposed Operation:</strong> <code>{{index .ProposedAction "tool_name"}}</code><br>
-                            <strong>Target Resource:</strong> <code>{{index .ProposedAction "resource"}}/{{index .ProposedAction "name"}}</code><br>
-                            <strong>Namespace:</strong> <code>{{index .ProposedAction "namespace"}}</code><br>
-                            <pre><code>{{toJSON (index .ProposedAction "patch")}}</code></pre>
+                            {{with $args := index .ProposedAction "arguments"}}
+                                <strong>Target Resource:</strong> <code>{{index $args "resource"}}/{{index $args "name"}}</code><br>
+                                <strong>Namespace:</strong> <code>{{index $args "namespace"}}</code><br>
+                                <pre><code>{{if index $args "patch_json"}}{{index $args "patch_json"}}{{else}}{{toJSON $args}}{{end}}</code></pre>
+                            {{end}}
                             <div class="btn-group">
                                 <form action="/approve" method="POST" style="display:inline;">
                                     <button class="btn btn-approve" type="submit">Approve & Execute Fix</button>
@@ -180,6 +183,16 @@ func main() {
 			json.NewDecoder(resp.Body).Decode(&agentResp)
 			resp.Body.Close()
 
+			if errMsg, ok := agentResp["error"].(string); ok && errMsg != "" {
+				globalState.Messages = append(globalState.Messages, Message{
+					Role:    "assistant",
+					Content: "❌ **Error**: " + errMsg,
+				})
+				globalState.Unlock()
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+				return
+			}
+
 			status, _ := agentResp["status"].(string)
 			if status == "AWAITING_PERMISSION" {
 				diagSummary, _ := agentResp["diagnosis"].(string)
@@ -194,6 +207,17 @@ func main() {
 					ProposedAction: proposedAction,
 				})
 				globalState.PendingApproval = proposedAction
+			} else if status == "REMEDIATED" {
+				diagSummary, _ := agentResp["diagnosis"].(string)
+				if diagSummary == "" {
+					msg, _ := agentResp["message"].(string)
+					diagSummary = "### ✅ Action Approved & Executed Successfully\n\n```text\n" + msg + "\n```"
+				}
+				globalState.Messages = append(globalState.Messages, Message{
+					Role:    "assistant",
+					Content: diagSummary,
+				})
+				globalState.PendingApproval = nil
 			} else {
 				finalSummary, _ := agentResp["diagnosis"].(string)
 				if finalSummary == "" {
@@ -228,15 +252,31 @@ func main() {
 					Role:    "assistant",
 					Content: "❌ **Error executing approved action via Agent Service**: " + err.Error(),
 				})
+			} else if resp.StatusCode != http.StatusOK {
+				var errResp map[string]interface{}
+				json.NewDecoder(resp.Body).Decode(&errResp)
+				resp.Body.Close()
+				errMsg, _ := errResp["error"].(string)
+				if errMsg == "" {
+					errMsg = resp.Status
+				}
+				globalState.Messages = append(globalState.Messages, Message{
+					Role:    "assistant",
+					Content: "❌ **Error executing approved action**: " + errMsg,
+				})
 			} else {
 				var approveResp map[string]interface{}
 				json.NewDecoder(resp.Body).Decode(&approveResp)
 				resp.Body.Close()
 
-				resBytes, _ := json.MarshalIndent(approveResp["result"], "", "  ")
+				msg, _ := approveResp["message"].(string)
+				if msg == "" {
+					resBytes, _ := json.MarshalIndent(approveResp["result"], "", "  ")
+					msg = string(resBytes)
+				}
 				globalState.Messages = append(globalState.Messages, Message{
 					Role:    "assistant",
-					Content: "### ✅ Action Executed Successfully\n\n```json\n" + string(resBytes) + "\n```",
+					Content: "### ✅ Action Executed Successfully\n\n```text\n" + msg + "\n```",
 				})
 			}
 			globalState.PendingApproval = nil
