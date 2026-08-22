@@ -17,13 +17,13 @@ import (
 )
 
 var (
-	llmAPIBase   = getEnv("LLM_API_BASE", "http://gemma-llm-service:8000/v1")
-	llmModel     = getEnv("LLM_MODEL", "Qwen/Qwen2.5-7B-Instruct")
-	mcpServerURL = getEnv("MCP_SERVER_URL", "http://k8s-mcp-server:8080/sse")
-	port         = getEnv("PORT", "8090")
+	llmAPIBase   string
+	llmModel     string
+	mcpServerURL string
+	port         string
 )
 
-const defaultSystemPrompt = `You are an expert Autonomous Kubernetes Troubleshooting and Operations Agent powered by Qwen.
+const defaultSystemPrompt = `You are an expert Autonomous Kubernetes Troubleshooting and Operations Agent.
 Your goal is to help users diagnose, analyze, and resolve any kind of failure, error, misconfiguration, performance bottleneck, or operational issue across all Kubernetes cluster components and resources.
 
 INSTRUCTIONS:
@@ -33,13 +33,31 @@ INSTRUCTIONS:
 4. When a fix requires modifying or patching the cluster (e.g. k8s_patch_resource, k8s_restart_pod, k8s_scale_deployment), ALWAYS CALL the mutating tool directly with the full patch JSON. DO NOT ask the user for an approval token or permission in plain text; the system's human-in-the-loop security layer will automatically intercept your call and present an interactive approval button in the UI.
 5. When proposing or applying a patch for Kubernetes workloads (e.g. deployments, statefulsets, pods) that modifies container properties, always include the container's "name" property (e.g. {"spec": {"template": {"spec": {"containers": [{"name": "web", "image": "nginx:latest"}]}}}}).`
 
-var mutatingPrefixes = []string{"k8s_patch", "k8s_restart", "k8s_scale", "k8s_delete", "k8s_create", "k8s_apply", "k8s_update"}
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
+// getMandatoryEnv retrieves an environment variable or returns an error if missing or empty
+func getMandatoryEnv(key string) (string, error) {
+	val, ok := os.LookupEnv(key)
+	if !ok || strings.TrimSpace(val) == "" {
+		return "", fmt.Errorf("mandatory environment variable %q is not set", key)
 	}
-	return fallback
+	return strings.TrimSpace(val), nil
+}
+
+// loadConfig validates and loads all required runtime configuration variables
+func loadConfig() error {
+	var err error
+	if llmAPIBase, err = getMandatoryEnv("LLM_API_BASE"); err != nil {
+		return err
+	}
+	if llmModel, err = getMandatoryEnv("LLM_MODEL"); err != nil {
+		return err
+	}
+	if mcpServerURL, err = getMandatoryEnv("MCP_SERVER_URL"); err != nil {
+		return err
+	}
+	if port, err = getMandatoryEnv("PORT"); err != nil {
+		return err
+	}
+	return nil
 }
 
 // OpenAI API Data Structures for Tool Calling
@@ -95,6 +113,7 @@ type ProposedAction struct {
 type AgentSession struct {
 	mu                  sync.Mutex
 	mcpClient           *mcp.ClientSession
+	availableTools      map[string]*mcp.Tool
 	conversationHistory []ChatMessage
 	systemPrompt        string
 	pendingAction       *ProposedAction
@@ -106,8 +125,9 @@ func NewAgentSession(mcpSession *mcp.ClientSession, systemPrompt string) *AgentS
 		systemPrompt = defaultSystemPrompt
 	}
 	return &AgentSession{
-		mcpClient:  mcpSession,
-		httpClient: &http.Client{Timeout: 60 * time.Second},
+		mcpClient:      mcpSession,
+		httpClient:     &http.Client{Timeout: 60 * time.Second},
+		availableTools: make(map[string]*mcp.Tool),
 		conversationHistory: []ChatMessage{
 			{Role: "system", Content: systemPrompt},
 		},
@@ -115,11 +135,14 @@ func NewAgentSession(mcpSession *mcp.ClientSession, systemPrompt string) *AgentS
 	}
 }
 
-func isMutatingTool(name string) bool {
-	for _, p := range mutatingPrefixes {
-		if strings.HasPrefix(name, p) {
-			return true
-		}
+// isMutatingTool dynamically checks whether the MCP server marked this tool with requires_approval: true
+func (a *AgentSession) isMutatingTool(name string) bool {
+	tool, found := a.availableTools[name]
+	if !found {
+		return false
+	}
+	if reqApproval, ok := tool.Meta["requires_approval"].(bool); ok && reqApproval {
+		return true
 	}
 	return false
 }
@@ -176,7 +199,9 @@ func (a *AgentSession) fetchOpenAITools(ctx context.Context) ([]OpenAITool, erro
 	}
 
 	var openaiTools []OpenAITool
+	a.availableTools = make(map[string]*mcp.Tool)
 	for _, t := range toolList.Tools {
+		a.availableTools[t.Name] = t
 		openaiTools = append(openaiTools, OpenAITool{
 			Type: "function",
 			Function: OpenAIFunction{
@@ -310,7 +335,7 @@ func (a *AgentSession) RunTroubleshootingLoop(ctx context.Context, userQuery str
 				}
 
 				// Check if tool is mutating (requires Human Permission Gate)
-				if isMutatingTool(fnName) {
+				if a.isMutatingTool(fnName) {
 					log.Printf("⚠️ Mutating tool intercepted: %s. Pausing for human authorization.", fnName)
 					a.pendingAction = &ProposedAction{
 						ToolName:    fnName,
@@ -459,9 +484,13 @@ type ApproveRequest struct {
 }
 
 func main() {
+	if err := loadConfig(); err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+
 	ctx := context.Background()
 	log.Printf("Starting Sandboxed Kubernetes Troubleshooting Agent...")
-	log.Printf("Config: MCP_SERVER_URL=%s, LLM_API_BASE=%s, LLM_MODEL=%s", mcpServerURL, llmAPIBase, llmModel)
+	log.Printf("Config: PORT=%s, MCP_SERVER_URL=%s, LLM_API_BASE=%s, LLM_MODEL=%s", port, mcpServerURL, llmAPIBase, llmModel)
 
 	// 1. Establish SSE Client Transport to MCP Server
 	transport := mcp.NewSSEClientTransport(mcpServerURL, nil)

@@ -15,19 +15,22 @@ Both **Python** and **Go (Golang)** implementations are provided for all compone
 |  +---------------------------+       +-----------------------------------------+  |
 |  | User Interface            |       | gVisor Sandbox Node Pool                |  |
 |  | (Go + HTMX / Streamlit)   |       |   Agent Pod (RuntimeClass: gvisor)      |  |
-|  +-------------+-------------+       +--------------------+--------------------+  |
-|                |                                          |                       |
-|                | 1. Query & Approvals                     | 2. Tool Calls         |
-|                v                                          v                       |
-|  +---------------------------+       +-----------------------------------------+  |
-|  | vLLM Gemma Service (GPU)  |       | K8s MCP Server (Go / Python)            |  |
-|  | (google/gemma-2-9b-it)   |<----->| (Read/Write K8s Tool API)              |  |
-|  +---------------------------+       +--------------------+--------------------+  |
-|                                                           |                       |
-|                                                           | 3. Authenticated API  |
-|                                                           v                       |
+|  +-------------+-------------+       +--------+--------------------+-----------+  |
+|                |                              |                    |              |
+|                | 1. HTTP /chat, /approve      |                    |              |
+|                +----------------------------->|                    |              |
+|                                               |                    |              |
+|                                               | 2. ChatCompletions | 3. Tool Calls|
+|                                               v (with Tools)       v (SSE / JSON) |
+|  +---------------------------+       +-----------------+  +--------------------+  |
+|  | LLM Service (GPU)         |<------+                 |  | K8s MCP Server     |  |
+|  | (vLLM / Qwen / Gemma)     |                         |  | (Go / Python)      |  |
+|  +---------------------------+                         +--+---------+----------+  |
+|                                                                     |             |
+|                                                                     | 4. K8s API  |
+|                                                                     v             |
 |                                      +-----------------------------------------+  |
-|                                      | Kubernetes API Server (kube-apiserver)   |  |
+|                                      | Kubernetes API Server (kube-apiserver)  |  |
 |                                      +-----------------------------------------+  |
 +-----------------------------------------------------------------------------------+
 ```
@@ -42,37 +45,49 @@ sequenceDiagram
     actor User
     participant UI as Web UI (ui_go / app.py)
     participant Agent as Sandboxed Agent (agent_go / agent.py)
-    participant vLLM as Gemma vLLM Service (GPU)
+    participant LLM as LLM Service (vLLM / Qwen / Gemma)
     participant MCP as K8s MCP Server (mcp_server_go / server.py)
     participant K8s as kube-apiserver
 
-    User->>UI: Submit Prompt ("Why is component X failing?")
-    UI->>Agent: POST /api/query {"query": "Why is component X failing?", "system_prompt": "..."}
-    Agent->>MCP: Fetch Tools (ListTools) over SSE
-    MCP-->>Agent: Returns Tool Schemas (k8s_describe_resource, k8s_get_pod_logs)
-    Agent->>vLLM: Request Tool-Calling Plan (chat/completions)
-    vLLM-->>Agent: Request `k8s_describe_resource`
-    Agent->>MCP: Execute Read Tool Call (`k8s_describe_resource`) over SSE
-    MCP->>K8s: Query Pod spec & status
-    K8s-->>MCP: Pod specs & event logs
-    MCP-->>Agent: Return diagnostic data
-    Agent->>vLLM: Analyze log & spec context
-    vLLM-->>Agent: Root Cause: Image typo `nginx:nonexistenttag`.\nPropose fixing to `nginx:latest`.
-    Agent-->>UI: Return JSON {"status": "AWAITING_PERMISSION", "proposed_action": {...}}
-    UI->>User: Display Diagnosis & Permission Approval Card
+    User->>UI: 1. Submit Prompt ("Why is test-broken-app pod not running?")
+    UI->>Agent: 2. POST /api/query {"query": "...", "system_prompt": "..."}
+    Agent->>MCP: 3. Discover dynamic tools: ListTools() over SSE
+    MCP-->>Agent: 4. Returns Tool Schemas (k8s_describe_resource, k8s_get_resource, k8s_patch_resource, ...)
+    Agent->>LLM: 5. ChatCompletion Request (messages + tools payload)
+    LLM-->>Agent: 6. Emits Tool Call: k8s_describe_resource(resource="pods", namespace="default", name="...")
+    Agent->>MCP: 7. Execute Read Tool: CallTool("k8s_describe_resource", args) over SSE
+    MCP->>K8s: 8. Query Pod manifest & cluster events via client-go
+    K8s-->>MCP: 9. Raw Pod spec, status conditions, and Event stream
+    Note over MCP: Strips managedFields &<br/>last-applied-configuration<br/>to optimize context window
+    MCP-->>Agent: 10. Cleaned JSON diagnostic payload
+    Agent->>LLM: 11. Continue ChatCompletion with tool output
+    LLM-->>Agent: 12. Root Cause: ImagePullBackOff (nginx:nonexistenttag).<br/>Emits Mutating Tool Call: k8s_patch_resource(patch_json='{"spec":...nginx:latest...}')
+    Note over Agent: Security Gate intercepts<br/>mutating tool call (isMutatingTool = true).<br/>Pauses execution & stores pending action.
+    Agent-->>UI: 13. Return JSON {"status": "AWAITING_PERMISSION", "proposed_action": {...}}
+    UI->>User: 14. Render Diagnosis & Interactive Permission Approval Card
     
-    alt User Approves
+    alt User Approves via Button Click
         User->>UI: Click "Approve & Execute Fix"
         UI->>Agent: POST /api/approve {"tool_name": "k8s_patch_resource", "arguments": {...}}
-        Agent->>MCP: Execute Mutating Tool (`k8s_patch_resource`) with approval_token
-        MCP->>K8s: Patch Deployment Spec
-        K8s-->>MCP: Deployment updated & pod running
-        MCP-->>Agent: Success Response
-        Agent-->>UI: Return JSON {"result": "Successfully patched deployment..."}
-        UI-->>User: Display Remediation Complete
-    else User Rejects
+    else User Approves via Chat Text
+        User->>UI: Reply in chat: "yes, fix it" / "go ahead" / "approve"
+        UI->>Agent: POST /api/query {"query": "yes, fix it"}
+        Note over Agent: Detects isApprovalIntent() == true.<br/>Automatically matches pending action.
+    end
+
+    Note over Agent: Injects approval_token into payload
+    Agent->>MCP: 15. Execute Mutating Tool: CallTool("k8s_patch_resource", args) over SSE
+    Note over MCP: Normalizes container names &<br/>applies StrategicMergePatch<br/>(MergePatch fallback for CRDs)
+    MCP->>K8s: 16. dynamicClient.Resource(...).Patch(...)
+    K8s-->>MCP: 17. Resource updated & new ResourceVersion
+    MCP-->>Agent: 18. Success confirmation
+    Agent-->>UI: 19. Return JSON {"status": "REMEDIATED", "message": "Successfully patched..."}
+    UI-->>User: 20. Display Remediation Complete & Updated Pod Status
+
+    opt User Rejects Action
         User->>UI: Click "Reject"
-        UI-->>User: Display Action Canceled
+        UI->>Agent: Dismiss pending approval
+        UI-->>User: Display "Action Rejected by User. No cluster changes were performed."
     end
 ```
 

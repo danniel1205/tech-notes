@@ -196,6 +196,14 @@ func resolveGVR(group, version, resource string) schema.GroupVersionResource {
 	}
 }
 
+// NewGatedServerTool creates an MCP Server Tool marked with requires_approval: true
+// so that AI agents automatically gate it behind human-in-the-loop permission.
+func NewGatedServerTool[In, Out any](name, description string, handler mcp.ToolHandlerFor[In, Out]) *mcp.ServerTool {
+	t := mcp.NewServerTool(name, description, handler)
+	t.Tool.Meta = mcp.Meta{"requires_approval": true}
+	return t
+}
+
 func main() {
 	log.Println("Starting Scalable Dynamic Kubernetes MCP Server with Official Go SDK...")
 	if err := initK8sClient(); err != nil {
@@ -211,7 +219,7 @@ func main() {
 		mcp.NewServerTool("k8s_list_resources", "Generic tool to list ANY Kubernetes resource type in a namespace.", handleListResources),
 		mcp.NewServerTool("k8s_describe_resource", "Generic tool providing a comprehensive summary of ANY resource including related events.", handleDescribeResource),
 		mcp.NewServerTool("k8s_get_pod_logs", "Specialized tool to retrieve container logs for a pod.", handleGetPodLogs),
-		mcp.NewServerTool("k8s_patch_resource", "Generic mutating tool to patch ANY Kubernetes resource.", handlePatchResource),
+		NewGatedServerTool("k8s_patch_resource", "Generic mutating tool to patch ANY Kubernetes resource.", handlePatchResource),
 	)
 
 	port := os.Getenv("PORT")
@@ -401,6 +409,78 @@ func handleGetPodLogs(ctx context.Context, cc *mcp.ServerSession, params *mcp.Ca
 	}, nil
 }
 
+// normalizePatchData ensures container arrays in workload patches include the container "name".
+//
+// WHY THIS FUNCTION IS NEEDED:
+//
+//  1. LLM Partial JSON Generation: When LLMs (e.g. Qwen, Gemma) propose remediation patches (e.g. updating an image tag),
+//     they frequently omit the container "name" field, producing partial patches like:
+//     {"spec": {"template": {"spec": {"containers": [{"image": "nginx:latest"}]}}}}
+//
+//  2. Kubernetes StrategicMergePatch Requirement: Kubernetes list-merges container arrays using the
+//     patchMergeKey "name". If "name" is missing, the K8s API server rejects the patch with:
+//     "ValidationError: missing required field 'name' in spec.template.spec.containers[0]".
+//
+//  3. Fallback MergePatch Protection: Without "name", a standard JSON Merge Patch would overwrite
+//     the entire container list, unintentionally wiping out existing environment variables, ports, probes, and volume mounts.
+//
+// HOW IT WORKS:
+// If any container entry in the patch lacks a "name", this function queries the live cluster resource
+// via dynamicClient.Get(), matches the target container by index, and automatically injects the
+// container's existing name before submitting the patch to the Kubernetes API.
+func normalizePatchData(ctx context.Context, gvr schema.GroupVersionResource, namespace, name string, rawPatch []byte) []byte {
+	var patchMap map[string]interface{}
+	if err := json.Unmarshal(rawPatch, &patchMap); err != nil {
+		return rawPatch
+	}
+
+	containerPaths := [][]string{
+		{"spec", "template", "spec", "containers"},
+		{"spec", "containers"},
+	}
+
+	for _, path := range containerPaths {
+		containers, found, _ := unstructured.NestedSlice(patchMap, path...)
+		if !found || len(containers) == 0 {
+			continue
+		}
+
+		needsName := false
+		for _, c := range containers {
+			if cMap, ok := c.(map[string]interface{}); ok {
+				if _, hasName := cMap["name"]; !hasName {
+					needsName = true
+					break
+				}
+			}
+		}
+
+		if needsName && dynamicClient != nil {
+			if current, err := dynamicClient.Resource(gvr).Namespace(namespace).Get(ctx, name, metav1.GetOptions{}); err == nil {
+				if currContainers, currFound, _ := unstructured.NestedSlice(current.Object, path...); currFound {
+					for idx, c := range containers {
+						if cMap, ok := c.(map[string]interface{}); ok {
+							if _, hasName := cMap["name"]; !hasName && idx < len(currContainers) {
+								if currCMap, currOk := currContainers[idx].(map[string]interface{}); currOk {
+									if currName, ok := currCMap["name"].(string); ok && currName != "" {
+										cMap["name"] = currName
+									}
+								}
+							}
+						}
+					}
+					_ = unstructured.SetNestedSlice(patchMap, containers, path...)
+					if updatedBytes, err := json.Marshal(patchMap); err == nil {
+						return updatedBytes
+					}
+				}
+			}
+		}
+	}
+
+	return rawPatch
+}
+
 func handlePatchResource(ctx context.Context, cc *mcp.ServerSession, params *mcp.CallToolParamsFor[PatchResourceInput]) (*mcp.CallToolResultFor[any], error) {
 	in := params.Arguments
 	if in.ApprovalToken == "" {
@@ -413,52 +493,7 @@ func handlePatchResource(ctx context.Context, cc *mcp.ServerSession, params *mcp
 	}
 
 	gvr := resolveGVR(in.Group, in.Version, in.Resource)
-
-	patchData := []byte(in.PatchJSON)
-
-	// If patch modifies containers but omits container "name", auto-populate from existing spec
-	var patchMap map[string]interface{}
-	if err := json.Unmarshal(patchData, &patchMap); err == nil {
-		containersPaths := [][]string{
-			{"spec", "template", "spec", "containers"},
-			{"spec", "containers"},
-		}
-		for _, path := range containersPaths {
-			if containers, found, _ := unstructured.NestedSlice(patchMap, path...); found && len(containers) > 0 {
-				needsName := false
-				for _, c := range containers {
-					if cMap, ok := c.(map[string]interface{}); ok {
-						if _, hasName := cMap["name"]; !hasName {
-							needsName = true
-							break
-						}
-					}
-				}
-				if needsName {
-					// Retrieve current resource to match container names
-					if current, getErr := dynamicClient.Resource(gvr).Namespace(namespace).Get(ctx, in.Name, metav1.GetOptions{}); getErr == nil {
-						if currContainers, currFound, _ := unstructured.NestedSlice(current.Object, path...); currFound {
-							for idx, c := range containers {
-								if cMap, ok := c.(map[string]interface{}); ok {
-									if _, hasName := cMap["name"]; !hasName && idx < len(currContainers) {
-										if currCMap, currOk := currContainers[idx].(map[string]interface{}); currOk {
-											if currName, ok := currCMap["name"].(string); ok && currName != "" {
-												cMap["name"] = currName
-											}
-										}
-									}
-								}
-							}
-							_ = unstructured.SetNestedSlice(patchMap, containers, path...)
-							if updatedBytes, marshalErr := json.Marshal(patchMap); marshalErr == nil {
-								patchData = updatedBytes
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	patchData := normalizePatchData(ctx, gvr, namespace, in.Name, []byte(in.PatchJSON))
 
 	// Try StrategicMergePatchType first (standard for K8s built-ins), fallback to MergePatchType (CRDs)
 	patched, err := dynamicClient.Resource(gvr).Namespace(namespace).Patch(

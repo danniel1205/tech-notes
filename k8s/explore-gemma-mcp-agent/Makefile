@@ -40,10 +40,13 @@ kind-create:
 	@echo "🚀 Creating Kind cluster '$(KIND_CLUSTER_NAME)'..."
 	@kind get clusters | grep -q "^$(KIND_CLUSTER_NAME)$$" || kind create cluster --name $(KIND_CLUSTER_NAME)
 
-## kind-delete: Delete local Kind cluster
+## kind-delete: Delete local Kind cluster and clean up context
 kind-delete:
 	@echo "🧹 Deleting Kind cluster '$(KIND_CLUSTER_NAME)'..."
 	@kind delete cluster --name $(KIND_CLUSTER_NAME) 2>/dev/null || true
+	@kubectl config delete-context "kind-$(KIND_CLUSTER_NAME)" 2>/dev/null || true
+	@kubectl config delete-cluster "kind-$(KIND_CLUSTER_NAME)" 2>/dev/null || true
+	@kubectl config unset "users.kind-$(KIND_CLUSTER_NAME)" 2>/dev/null || true
 
 ## integ-test: Automatically provision Kind cluster, start MCP server, run E2E tests, and tear down
 integ-test:
