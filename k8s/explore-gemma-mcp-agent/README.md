@@ -124,6 +124,10 @@ sequenceDiagram
 │   ├── main_test.go               # Unit tests for HTMX handlers & state transitions
 │   ├── go.mod
 │   └── Dockerfile
+├── cli_go/                        # Interactive kubectl-agent plugin & CLI
+│   ├── main.go                    # Multi-turn REPL & one-shot CLI entrypoint
+│   ├── main_test.go               # Unit tests for approval flow & client
+│   └── go.mod
 ├── tests/
 │   └── integration/               # Automated E2E test suite against local Kind cluster
 │       ├── e2e_kind_test.go
@@ -255,28 +259,84 @@ make deploy-all
 
 There are **three flexible ways** to trigger the Agent to do its job:
 
-### Method 1: Interactive Web UI (Recommended)
-1. Port-forward the Web UI to your local machine:
+### Method 1: Interactive CLI & `kubectl` Plugin (Recommended)
+
+The CLI communicates natively with the in-cluster agent via the **Kubernetes API Server Service Proxy** using your active `~/.kube/config`. **No manual `kubectl port-forward` command is needed.**
+
+1. **Build the CLI tool**:
    ```bash
-   kubectl port-forward svc/k8s-agent-ui 8501:8501
+   make build
    ```
-2. Open `http://localhost:8501` in your browser.
-3. Type your question (e.g., *"Why is my test-broken-app deployment crashing?"*) and review the diagnosis & Human Permission approval card.
+
+2. **Run with CLI flags**:
+   ```bash
+   # Interactive Multi-Turn REPL Mode:
+   ./cli_go/bin/kubectl-agent -n default -s k8s-agent-service -p 8090
+
+   # One-Shot Troubleshooting Query:
+   ./cli_go/bin/kubectl-agent -n default -s k8s-agent-service -p 8090 "why is deployment test-broken-app failing in default?"
+   ```
+
+3. **Or run with Environment Variables (Cleanest for Day-to-Day Work)**:
+   ```bash
+   export AGENT_NAMESPACE="default"
+   export AGENT_SERVICE_NAME="k8s-agent-service"
+   export AGENT_SERVICE_PORT="8090"
+
+   # Interactive REPL:
+   ./cli_go/bin/kubectl-agent
+
+   # One-shot command:
+   ./cli_go/bin/kubectl-agent "check unhealthy pods in default namespace"
+   ```
+
+4. **(Optional) Install as Native `kubectl` Plugin**:
+   ```bash
+   make install-plugin
+   ```
+   Once installed to `~/.local/bin/`, you can use `kubectl agent` directly from any directory:
+   ```bash
+   kubectl agent "diagnose and fix test-broken-app in namespace default"
+   ```
+
+---
 
 ### Method 2: Via REST API / Curl
-1. Port-forward the Agent service:
+
+1. **Port-forward the Agent service**:
    ```bash
    kubectl port-forward svc/k8s-agent-service 8090:8090
    ```
-2. Send troubleshooting queries via HTTP POST:
+
+2. **Submit a troubleshooting query**:
    ```bash
    curl -X POST http://localhost:8090/api/query \
      -H "Content-Type: application/json" \
      -d '{"query": "Why is test-broken-app deployment failing in default namespace?"}'
    ```
 
-### Method 3: Direct CLI Execution inside gVisor Sandbox Container
-Trigger one-shot CLI troubleshooting directly inside the isolated gVisor pod:
-```bash
-kubectl exec -it deployment/k8s-agent -c agent -- /k8s-agent-go "Diagnose test-broken-app in default namespace"
-```
+3. **Approve a pending mutating action**:
+   ```bash
+   curl -X POST http://localhost:8090/api/approve \
+     -H "Content-Type: application/json" \
+     -d '{
+       "tool_name": "k8s_patch_resource",
+       "arguments": {
+         "name": "test-broken-app",
+         "namespace": "default",
+         "resource": "deployments",
+         "patch_json": "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"web\",\"image\":\"nginx:latest\"}]}}}}"
+       }
+     }'
+   ```
+
+---
+
+### Method 3: Interactive Web UI
+
+1. **Port-forward the Web UI**:
+   ```bash
+   kubectl port-forward svc/k8s-agent-ui 8501:8501
+   ```
+2. Open `http://localhost:8501` in your browser.
+3. Type your question and review the diagnosis & interactive approval card.

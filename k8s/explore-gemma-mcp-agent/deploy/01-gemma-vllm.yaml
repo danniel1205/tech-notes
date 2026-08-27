@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gemma-vllm
+  name: vllm
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gemma-vllm
+      app: vllm
   template:
     metadata:
       labels:
-        app: gemma-vllm
+        app: vllm
     spec:
       nodeSelector:
         cloud.google.com/gke-accelerator: nvidia-l4
@@ -21,8 +21,8 @@ spec:
         args:
         - "--model=Qwen/Qwen2.5-7B-Instruct"
         - "--port=8000"
-        - "--max-model-len=8192"
-        - "--gpu-memory-utilization=0.90"
+        - "--max-model-len=32768"
+        - "--gpu-memory-utilization=0.92"
         - "--enable-auto-tool-choice"
         - "--tool-call-parser=hermes"
         ports:
@@ -42,11 +42,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gemma-llm-service
+  name: llm-service
   namespace: default
 spec:
   ports:
   - port: 8000
     targetPort: 8000
   selector:
-    app: gemma-vllm
+    app: vllm

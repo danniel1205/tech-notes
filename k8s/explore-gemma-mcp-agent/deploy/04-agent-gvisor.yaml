@@ -24,7 +24,7 @@ spec:
         - name: PORT
           value: "8090"
         - name: LLM_API_BASE
-          value: "http://gemma-llm-service:8000/v1"
+          value: "http://llm-service:8000/v1"
         - name: LLM_MODEL
           value: "Qwen/Qwen2.5-7B-Instruct"
         - name: MCP_SERVER_URL

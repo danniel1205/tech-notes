@@ -1,19 +1,20 @@
-.PHONY: all unit-test test test-mcp test-agent test-ui kind-create kind-delete integ-test integration-test build docker-build docker-push docker-all deploy-all clean vendor help
+.PHONY: all unit-test test test-mcp test-agent test-ui test-cli kind-create kind-delete integ-test integration-test build install-plugin docker-build docker-push docker-all deploy-all clean vendor help
 
 SHELL := /bin/bash
 KIND_CLUSTER_NAME ?= k8s-agent-test
 PROJECT_ID ?= $(shell gcloud config get-value project 2>/dev/null || echo "your-project-id")
 REGISTRY ?= gcr.io/$(PROJECT_ID)
 TAG ?= latest
+INSTALL_DIR ?= $(HOME)/.local/bin
 
 # Default target
 all: unit-test
 
-## unit-test: Run unit tests across all Go subprojects (mcp_server_go, agent_go, ui_go)
+## unit-test: Run unit tests across all Go subprojects (mcp_server_go, agent_go, ui_go, cli_go)
 unit-test:
 	@echo "🧪 Running unit tests for all Go subprojects..."
 	@echo "--------------------------------------------------------"
-	@go test -v -cover ./mcp_server_go/... ./agent_go/... ./ui_go/...
+	@go test -v -cover ./mcp_server_go/... ./agent_go/... ./ui_go/... ./cli_go/...
 	@echo "--------------------------------------------------------"
 	@echo "✅ All unit tests passed!"
 
@@ -35,6 +36,11 @@ test-ui:
 	@echo "🧪 Testing ui_go..."
 	@cd ui_go && go test -v -cover .
 
+## test-cli: Run unit tests only for cli_go
+test-cli:
+	@echo "🧪 Testing cli_go..."
+	@cd cli_go && go test -v -cover .
+
 ## kind-create: Create local Kind cluster for testing
 kind-create:
 	@echo "🚀 Creating Kind cluster '$(KIND_CLUSTER_NAME)'..."
@@ -55,13 +61,21 @@ integ-test:
 ## integration-test: Alias for integ-test
 integration-test: integ-test
 
-## build: Build local binaries for all Go subprojects
+## build: Build local binaries for all Go subprojects (including kubectl-agent plugin)
 build:
 	@echo "🔨 Building binaries for all subprojects..."
 	@cd mcp_server_go && go build -o bin/k8s-mcp-server-go main.go
 	@cd agent_go && go build -o bin/k8s-agent-go main.go
 	@cd ui_go && go build -o bin/k8s-agent-ui-go main.go
+	@cd cli_go && go build -o bin/kubectl-agent main.go
 	@echo "✅ Build complete! Binaries located in subproject bin/ directories."
+
+## install-plugin: Install kubectl-agent plugin to user's PATH ($INSTALL_DIR, default ~/.local/bin)
+install-plugin: build
+	@mkdir -p $(INSTALL_DIR)
+	@cp cli_go/bin/kubectl-agent $(INSTALL_DIR)/kubectl-agent
+	@echo "✅ Installed kubectl-agent plugin to $(INSTALL_DIR)/kubectl-agent"
+	@echo "Run 'kubectl agent' to start the interactive troubleshooting session!"
 
 ## docker-build: Build Docker images for all subprojects (k8s-mcp-server, k8s-agent, k8s-agent-ui)
 docker-build:
