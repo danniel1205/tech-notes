@@ -248,49 +248,6 @@ inference architectures. It is the de facto API for managing
 
 ---
 
-## End-to-End Request Flow Sequence
-
-The diagram below maps out the sequence of control (metadata orchestration) and
-data (high-speed tensor transfer) paths from the moment an end user submits a
-prompt to the moment the response streams back to their screen.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as End User
-    participant Router as Global Router (Gateway)
-    participant P_Leader as Prefill Leader Pod
-    participant P_Worker as Prefill Worker Pods (GPUs)
-    participant D_Leader as Decode Leader Pod
-    participant D_Worker as Decode Worker Pods (GPUs)
-
-    User->>Router: Submit Prompt ("What is quantum computing?")
-    Note over Router: Scheduler selects optimal<br/>Prefill and Decode LWS Groups
-
-    Router->>P_Leader: Forward Request directly to selected Pod IP<br/>(Includes target Decode Worker IP metadata)
-    P_Leader->>P_Worker: Initiate Prefill execution
-    Note over P_Worker: Compute Prompt KV-Cache
-
-    P_Worker->>D_Worker: Direct KV-Cache Tensor Transfer<br/>(Bypasses Leaders via point-to-point RDMA or TCP)
-
-    P_Worker->>P_Leader: Signal transfer completion
-    P_Leader->>Router: Handoff successful
-
-    Router->>D_Leader: Start Autoregressive Decode Loop
-
-    loop Autoregressive Token Generation
-        D_Leader->>D_Worker: Run Single-Token Forward Pass
-        D_Worker->>D_Leader: Return Probability Logits
-        Note over D_Leader: Sample Logits & Select Next Token
-        D_Leader->>Router: Stream Next Token ("Quantum")
-        Router->>User: Flush Token to Client Browser
-    end
-
-    Note over D_Leader, D_Worker: Detect End-of-Sequence (EOS)<br/>& Free VRAM Memory Blocks
-```
-
----
-
 ## Kubernetes Alternatives: A Comparative Matrix
 
 When designing a distributed inference serving platform on Kubernetes, here is
@@ -363,29 +320,7 @@ orchestrate shards across multiple nodes. When coupled with
 
 ## FAQ: Prefill-Decode Disaggregated Networking
 
-### Q1: Why does a Prefill pod need a direct, point-to-point connection to a specific Decode pod to transfer the KV-Cache? Why not use a standard K8s load balancer
-
-In disaggregated LLM serving, a single user request is split into two phases
-(Prefill and Decode). The handoff between these phases is highly stateful and
-occurs at a millisecond scale within the active connection lifecycle of a single
-query:
-
-1. **Request Pairing:** At request admission, the serving framework's
-   router/scheduler assigns a specific **Prefill pod** and a specific **Decode
-   pod** to handle the execution.
-2. **Strict Session State:** The generated KV-Cache represents the exact
-   attentional state of *that specific user query*. Only the assigned Decode pod
-   holds the active token generation stream for that query.
-3. **Load Balancer Failure:** If the Prefill pod routed the KV-cache packets
-   through a standard round-robin load balancer (like a standard ClusterIP
-   service), the packets would get distributed randomly. If they landed on a
-   different Decode pod, they would be discarded as unassigned context, while
-   the correctly assigned Decode pod would stall forever waiting for its context.
-4. **VRAM Physical Coordination:** Modern engines (like vLLM using
-   PagedAttention) divide VRAM into physical blocks. The Prefill and Decode pods
-   must directly negotiate virtual-to-physical block maps beforehand.
-
-### Q2: If the KV-Cache is so large, how does point-to-point transfer remain efficient
+### Q1: If the KV-Cache is so large, how does point-to-point transfer remain efficient
 
 If transferring the KV-cache takes longer than it would to simply recompute the
 prefill on the Decode node, disaggregation loses its performance benefit. To
@@ -400,33 +335,35 @@ ensure transfer times remain in the low milliseconds:
   directly to the target pod IP, bypassing proxy sidecars (like Envoy) and K8s
   service load-balancers (`kube-proxy`) to eliminate extra serialization hops.
 
-### Q3: Does a user's entire chat session (multi-turn conversation) have to stick to the same Prefill and Decode pods
+### Q2: Does a user's entire chat session (multi-turn conversation) have to stick to the same Prefill and Decode pods
 
-**No.** Between independent conversational turns (e.g., User types Prompt 1,
-gets Answer 1, then types Prompt 2), the system behaves statelessly:
+**No, but stickiness is actively enforced in production to maximize performance.**
 
-1. **Prompt Concatenation:** To maintain conversation memory, the application
-   concatenates the entire chat history into a brand-new combined prompt for Turn 2.
-2. **New Independent Request:** Turn 2 is scheduled as an entirely new request.
-   It can be dispatched to a completely different Prefill pod and a completely
-   different Decode pod based on cluster load.
-3. **Stateful Handoff (Within the Turn):** Even though Turn 2 uses a completely
-   new pair of pods, *during the handoff phase of Turn 2*, the new Prefill pod
-   still requires a direct point-to-point connection to the newly assigned Decode
-   pod to stream that turn's new KV-Cache.
+Statelessly, Turn 2 is a new request with a concatenated prompt that can be sent
+anywhere. However:
 
-### Q4: Is the KV-Cache completely re-calculated from the entire history on every turn
+1. **Inefficiency without Stickiness:** If Turn 2 is routed to a random
+   Prefill/Decode pair, the prefix cache hits are missed, forcing the new prefill
+   node to re-calculate the entire prompt history from scratch.
+2. **Prefix-Aware Routing:** Production schedulers (like `llm-d` or Mooncake)
+   implement prefix-aware routing. They hash the prompt prefix and route the
+   request to the **same Prefill node** (to hit its local Radix Cache in GPU
+   memory) and the **same Decode node** (to reuse the already transferred
+   history cache).
 
-**Yes, conceptually.** Because standard self-attention is stateless, each turn
-must process the entire combined history to evaluate the context, generating the
-corresponding KV-cache.
+### Q3: Is the KV-Cache completely re-calculated from the entire history on every turn
 
-* **Radix Cache Optimization:** Advanced engines (like vLLM) optimize this by
-  caching previous KV-cache blocks in GPU memory (Radix Attention). If a new
-  turn is routed to a pod that still holds the previous turn's cache blocks, it
-  can re-use them and only compute the KV-cache for the newly appended prompt.
-  However, the complete combined KV-cache is still what's ultimately delivered
-  to the Decode pod to run generation.
+**Only if there is a cache miss.**
+
+If prefix-aware routing successfully hits the cache:
+
+* **Radix Cache Optimization:** The prefiller retrieves the history's KV cache
+  locally from GPU VRAM (Radix Attention) and only computes the KV cache for the
+  newly appended query tokens, avoiding history recomputation.
+* **Incremental Cache Transfer:** Instead of transferring the entire combined
+  KV cache, advanced engines only push the **newly computed KV cache slice** to
+  the decoder. The decoder then appends this new slice onto the history cache it
+  already holds, eliminating redundant network transfer overhead.
 
 ---
 
