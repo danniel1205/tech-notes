@@ -420,7 +420,7 @@ cloud-native architecture.
   * **Dynamic IP Bindings:** Injected GKE pod IPs via Kubernetes fieldRefs (`VLLM_NIXL_SIDE_CHANNEL_HOST`) to enable Nixl connection resolution.
 * **References:**
   * Guide: [gemma-4-gke-lws-multi-nodes-guide.md][guide_p3]
-  * Summary: [disaggregated_serving_summary.md][summary_p3]
+  * Summary: [summary.md][summary_p3]
 
 #### Phase 4: `gemma-4-disagg-multi-nodes-llmd` (Production-Ready native GKE Routing)
 
@@ -440,9 +440,7 @@ cloud-native architecture.
 [summary_p1]: resources/gemma-2-disagg/gemma-2-disagg-serving-summary.md
 [guide_p2]: resources/gemma-4-disagg/gemma-4-gke-lws-guide.md
 [guide_p3]: resources/gemma-4-disagg-multi-nodes/gemma-4-gke-lws-multi-nodes-guide.md
-[summary_p3]: resources/gemma-4-disagg-multi-nodes/disaggregated_serving_summary.md
+[summary_p3]: resources/gemma-4-disagg-multi-nodes/summary.md
 [guide_p4]: resources/gemma-4-disagg-multi-nodes-llmd/gemma-4-disagg-multi-node-llmd-guide.md
 [architecture_comparison_p4]: resources/gemma-4-disagg-multi-nodes-llmd/llmd_architecture_comparison.md
-
-
 
