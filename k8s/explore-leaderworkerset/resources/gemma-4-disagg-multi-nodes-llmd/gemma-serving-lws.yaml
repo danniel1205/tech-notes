@@ -55,16 +55,22 @@ spec:
                   sleep 5
                 done &&
                 
+                # Construct group-specific rendezvous address dynamically
+                GROUP_INDEX=${LWS_GROUP_INDEX:-0}
+                KV_RENDEZVOUS_IP="gemma-prefill-${GROUP_INDEX}.gemma-prefill"
+
                 # Start vLLM pointing to the Ray cluster
                 exec python3 -m vllm.entrypoints.openai.api_server \
-                  --model "google/gemma-4-12b-it" \
+                  --model "$MODEL_ID" \
                   --max-model-len 4096 \
                   --enforce-eager \
                   --tensor-parallel-size 2 \
                   --distributed-executor-backend ray \
-                  --kv-transfer-config '{"kv_connector":"NixlPushConnector","kv_role":"kv_producer","kv_rank":0,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","engine_id":"gemma4-prefill-group","kv_connector_extra_config":{"mem_pool_size_gb":2,"send_type":"PUT"}}' \
+                  --kv-transfer-config "{\"kv_connector\":\"NixlPushConnector\",\"kv_role\":\"kv_producer\",\"kv_rank\":0,\"kv_parallel_size\":2,\"kv_ip\":\"${KV_RENDEZVOUS_IP}\",\"engine_id\":\"gemma4-prefill-group-${GROUP_INDEX}\",\"kv_connector_extra_config\":{\"mem_pool_size_gb\":2,\"send_type\":\"PUT\"}}" \
                   --port 8000
             env:
+              - name: MODEL_ID
+                value: "google/gemma-4-12b-it"
               - name: VLLM_USE_V1
                 value: "0"
               - name: HF_TOKEN
@@ -129,11 +135,13 @@ spec:
                 # Preload weights to local cache on both nodes before starting Ray/vLLM.
                 # vLLM's distributed loader only downloads on Rank 0, which deadlocks on GKE 
                 # multi-node setups where nodes do not share a network filesystem (NFS).
-                hf download google/gemma-4-12b-it model.safetensors config.json --token "$HF_TOKEN" &&
+                hf download "$MODEL_ID" --token "$HF_TOKEN" &&
                 pip install msgpack ray &&
                 sleep 5 &&
                 exec ray start --address="$(LWS_LEADER_ADDRESS):6379" --block
             env:
+              - name: MODEL_ID
+                value: "google/gemma-4-12b-it"
               - name: VLLM_USE_V1
                 value: "0"
               - name: HF_TOKEN
@@ -229,16 +237,22 @@ spec:
                   sleep 5
                 done &&
                 
+                # Construct group-specific rendezvous address dynamically
+                GROUP_INDEX=${LWS_GROUP_INDEX:-0}
+                KV_RENDEZVOUS_IP="gemma-prefill-${GROUP_INDEX}.gemma-prefill"
+
                 # Start vLLM pointing to the Ray cluster
                 exec python3 -m vllm.entrypoints.openai.api_server \
-                  --model "google/gemma-4-12b-it" \
+                  --model "$MODEL_ID" \
                   --max-model-len 4096 \
                   --enforce-eager \
                   --tensor-parallel-size 2 \
                   --distributed-executor-backend ray \
-                  --kv-transfer-config '{"kv_connector":"NixlPullConnector","kv_role":"kv_consumer","kv_rank":1,"kv_parallel_size":2,"kv_ip":"gemma-prefill-0.gemma-prefill","engine_id":"gemma4-decode-group","kv_connector_extra_config":{"mem_pool_size_gb":2,"send_type":"PUT"}}' \
+                  --kv-transfer-config "{\"kv_connector\":\"NixlPullConnector\",\"kv_role\":\"kv_consumer\",\"kv_rank\":1,\"kv_parallel_size\":2,\"kv_ip\":\"${KV_RENDEZVOUS_IP}\",\"engine_id\":\"gemma4-decode-group-${GROUP_INDEX}\",\"kv_connector_extra_config\":{\"mem_pool_size_gb\":2,\"send_type\":\"PUT\"}}" \
                   --port 8000
             env:
+              - name: MODEL_ID
+                value: "google/gemma-4-12b-it"
               - name: VLLM_USE_V1
                 value: "0"
               - name: HF_TOKEN
@@ -303,11 +317,13 @@ spec:
                 # Preload weights to local cache on both nodes before starting Ray/vLLM.
                 # vLLM's distributed loader only downloads on Rank 0, which deadlocks on GKE 
                 # multi-node setups where nodes do not share a network filesystem (NFS).
-                hf download google/gemma-4-12b-it model.safetensors config.json --token "$HF_TOKEN" &&
+                hf download "$MODEL_ID" --token "$HF_TOKEN" &&
                 pip install msgpack ray &&
                 sleep 5 &&
                 exec ray start --address="$(LWS_LEADER_ADDRESS):6379" --block
             env:
+              - name: MODEL_ID
+                value: "google/gemma-4-12b-it"
               - name: VLLM_USE_V1
                 value: "0"
               - name: HF_TOKEN

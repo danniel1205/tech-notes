@@ -105,21 +105,22 @@ Upon intercepting the request, the Router prepares a modified payload to send to
 
 The Prefill Leader (Rank 0) and Prefill Worker (Rank 1) coordinate using Ray/NCCL to run the tensor parallel
 prefill computation (defined in [gemma-serving-lws.yaml:L57-58](gemma-serving-lws.yaml#L57-L58) and worker connection
-[L133](gemma-serving-lws.yaml#L133)). They perform All-Reduce calls across network sockets using NCCL TCP
+[L134](gemma-serving-lws.yaml#L134)). They perform All-Reduce calls across network sockets using NCCL TCP
 configurations (defined in [gemma-serving-lws.yaml:L78-83](gemma-serving-lws.yaml#L78-L83)) to exchange activations
 at the boundary of each transformer layer.
 
 #### Step 4: Rank 0 Nixl Cache Transfer
 
-Once prompt calculation completes, the Prefill Leader (Rank 0) initiates a Nixl P2P connection to
-the Decode Leader (Rank 0) over TCP port `14579` and pushes the KV Cache for attention **Heads 1-4**
-(Nixl connector setup defined in [gemma-serving-lws.yaml:L59](gemma-serving-lws.yaml#L59)).
+Once prompt calculation completes, the Prefill Leader (Rank 0) immediately transmits the KV Cache
+for attention **Heads 1-4** over the pre-established, warmed-up Nixl P2P connection (initialized at
+startup over TCP port `14579`) to the Decode Leader (Rank 0) (Nixl connector setup defined in
+[gemma-serving-lws.yaml:L59](gemma-serving-lws.yaml#L59)).
 
 #### Step 5: Rank 1 Nixl Cache Transfer
 
-Concurrently, the Prefill Worker (Rank 1) initiates a Nixl P2P connection to the Decode Worker (Rank 1)
-over TCP port `14580` and pushes the KV Cache for attention **Heads 5-8** (Nixl connector logic mapping
-initiated via [gemma-serving-lws.yaml:L59](gemma-serving-lws.yaml#L59)).
+Concurrently, the Prefill Worker (Rank 1) transmits the KV Cache for attention **Heads 5-8** over the
+pre-established, warmed-up Nixl P2P connection (initialized at startup over TCP port `14580`) to the
+Decode Worker (Rank 1) (Nixl connector logic mapping initiated via [gemma-serving-lws.yaml:L59](gemma-serving-lws.yaml#L59)).
 
 #### Step 6: Connection Metadata Returned
 
