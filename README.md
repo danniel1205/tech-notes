@@ -10,6 +10,7 @@ This repo contains the notes/tutorials from my personal tech exploration.
 
 - [AI Inference Concepts](ai/ai-inference-concpets/readme.md)
   - [Disaggregated Serving Concepts](ai/ai-inference-concpets/disaggregated-serving.md)
+- [AI Infra: Zero to Hero in 26 Weeks](ai/ai-infra-zero-to-hero/readme.md)
 - [Build simple local RAG](ai/local-rag/readme.md)
   - [Build local RAG](ai/local-rag/notebook.ipynb)
 - [Try out building AI agent on local](ai/ai-agent/notebook.ipynb)
