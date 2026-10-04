@@ -1,11 +1,10 @@
 # Progress
 
-Last updated: 2026-09-26 by cloudtop (planning session). Current week: **Week 1 (not started)**.
+Last updated: 2026-10-04 by mac (inference deep dive session). Current week: **Week 1 (in progress)**.
 
 ## Next up
 
-- **On mac:** Start Week 1. Weekday: read *Attention Is All You Need* + kipply's *Transformer Inference Arithmetic*; install Ollama, run an ~8B model and record tokens/s.
-  Weekend: write `lab/calculators/llm_math.py` (predict first, then compare with measured tok/s).
+- **On mac:** Complete Step 4 (Decode phase loop) and FFN internals; install Ollama, benchmark ~8B model tok/s; implement `lab/calculators/llm_math.py` (predict parameters and tok/s first, then measure).
 - **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`) so `sync.sh end` can push. Request GPU quota (L4 now; 8×H100/A3 for weeks 7, 11, 12).
 
 ## Setup checklist
@@ -13,14 +12,14 @@ Last updated: 2026-09-26 by cloudtop (planning session). Current week: **Week 1 
 - [x] Plan written (`readme.md`)
 - [x] Sync folder created (`AGENTS.md`, `decisions.md`, `PROGRESS.md`, `sessions/`, `sync.sh`)
 - [ ] cloudtop: GitHub auth works for push
-- [ ] mac: `tech-notes` cloned on branch `kb/ai-infra`, folder opened in Antigravity
+- [x] mac: `tech-notes` cloned on branch `kb/ai-infra`, folder opened in Antigravity
 - [ ] GPU quota requested (L4, A3/H100, optional TPU v6e)
 
 ## Weekly checklist
 
 | Week | Topic | Paper | Lab | Note | Drill |
 |---|---|---|---|---|---|
-| 1 | LLMs for systems people | [ ] | [ ] | [ ] | [ ] |
+| 1 | LLMs for systems people | [x] | [ ] | [x] | [ ] |
 | 2 | GPU hardware and rooflines | [ ] | [ ] | [ ] | [ ] |
 | 3 | Quantization and local inference | [ ] | [ ] | [ ] | [ ] |
 | 4 | Continuous batching, PagedAttention, vLLM V1 | [ ] | [ ] | [ ] | [ ] |
@@ -63,6 +62,9 @@ Last updated: 2026-09-26 by cloudtop (planning session). Current week: **Week 1 
 
 | Week | Machine | What | Setup | Result |
 |---|---|---|---|---|
+| 1 | mac | Embedding Matrix Size | Llama 3 8B (128k vocab × 4096 dims, FP16) | ~1.05 GB in GPU VRAM |
+| 1 | mac | Layer Projection Weights | W_Q, W_K, W_V, W_O (each 4096 × 4096, FP16) | ~134 MB per layer (33.5 MB each) |
+| 1 | mac | KV Cache Footprint | 2 (K, V) × 32 layers × 4096 dims × 2 bytes | ~0.5 MB per token (2 GB for 4k context) |
 
 ## Open questions
 
