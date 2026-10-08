@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-04 by mac (inference deep dive session). Current week: **Week 1 (in progress)**.
+Last updated: 2026-10-08 by mac (transformer internals and architecture deep dive session). Current week: **Week 1 (in progress)**.
 
 ## Next up
 
-- **On mac:** Complete Step 4 (Decode phase loop) and FFN internals; install Ollama, benchmark ~8B model tok/s; implement `lab/calculators/llm_math.py` (predict parameters and tok/s first, then measure).
+- **On mac:** Install Ollama, benchmark ~8B model tok/s; implement `calculators/llm_math.py` (predict parameters and tok/s first, then measure); run Week 1 interview drill.
 - **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`) so `sync.sh end` can push. Request GPU quota (L4 now; 8×H100/A3 for weeks 7, 11, 12).
 
 ## Setup checklist
@@ -64,6 +64,7 @@ Last updated: 2026-10-04 by mac (inference deep dive session). Current week: **W
 |---|---|---|---|---|
 | 1 | mac | Embedding Matrix Size | Llama 3 8B (128k vocab × 4096 dims, FP16) | ~1.05 GB in GPU VRAM |
 | 1 | mac | Layer Projection Weights | W_Q, W_K, W_V, W_O (each 4096 × 4096, FP16) | ~134 MB per layer (33.5 MB each) |
+| 1 | mac | Layer Total Weights | Attention (134 MB) + FFN SwiGLU (268 MB) FP16 | ~402 MB per layer (~13 GB total) |
 | 1 | mac | KV Cache Footprint | 2 (K, V) × 32 layers × 4096 dims × 2 bytes | ~0.5 MB per token (2 GB for 4k context) |
 
 ## Open questions
