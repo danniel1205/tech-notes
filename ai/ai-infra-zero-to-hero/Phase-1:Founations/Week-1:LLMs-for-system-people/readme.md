@@ -43,6 +43,31 @@ This mechanism is called **Attention**.
 Because all pairs of words can be checked at the same time, this computation perfectly matches
 how GPUs work: thousands of cores crunching massive parallel matrix operations.
 
+### Architectural Complexity & Hardware Trade-offs (Table 1 from the Paper)
+
+The paper mathematically proved why Self-Attention was superior to Recurrent (RNN) and Convolutional (CNN) models for parallel hardware:
+
+| Architecture | Complexity per Layer | Sequential Operations | Maximum Path Length |
+|---|---|---|---|
+| **Self-Attention** | `O(n^2 * d)` | **`O(1)`** | **`O(1)`** |
+| **Recurrent (RNN)** | `O(n * d^2)` | **`O(n)`** | **`O(n)`** |
+| **Convolutional (CNN)** | `O(k * n * d^2)` | **`O(1)`** | **`O(log_k(n))`** |
+
+*Notation: `n` = sequence length, `d` = hidden dimension (e.g., 4096), `k` = convolution kernel size.*
+
+* **`O(1)` Sequential Operations (GPU Saturation):** In an RNN, computing token `n` requires `n` sequential
+  steps (`O(n)`), leaving thousands of GPU CUDA cores idle. Self-Attention processes all `n` tokens in a
+  single parallel GEMM step (`O(1)`), saturating GPU tensor cores.
+* **`O(1)` Maximum Path Length (Direct Routing):** In an RNN, information must traverse `n` intermediate hops,
+  diluting context. In Self-Attention, every token directly attends to every other token in a single hop
+  (`O(1)`), eliminating long-range context degradation.
+* **The Complexity Tipping Point (`n^2 * d` vs `n * d^2`):**
+  * *In 2017 (`n < d`):* With `n = 512` and `d = 4096`, `n^2 * d` (~1.07B ops) was roughly 8× cheaper than
+    `n * d^2` (~8.59B ops).
+  * *Modern LLMs (`n >> d`):* At long contexts (e.g., `n = 128,000`), the quadratic `n^2` attention cost
+    explodes to trillions of operations and tens of gigabytes of VRAM. This quadratic bottleneck directly
+    motivated modern innovations like FlashAttention and chunked prefill.
+
 ---
 
 ## 2. From Text to Numbers: Embeddings & Positions
@@ -127,6 +152,26 @@ Attention(Q, K, V) = softmax( (Q * K^T) / sqrt(d_k) ) * V
 3. **Normalize with Softmax:** Converts scores across the sequence into probabilities that sum to 1.0 (the "attention weights").
 4. **Weighted Sum (`* V`):** Multiply the attention weights by Values V. Each token gathers a blend of information from relevant tokens.
 
+### Causal Attention Masking: Enforcing Forward Time Flow
+
+In generative language models, words cannot look into the future. Token i must only attend to tokens <= i.
+
+* **The Problem:** In Prefill, all n prompt tokens enter the GPU simultaneously. Without constraints, Query 1 could look ahead at Key 2 or Key 4 ("cheating" on next-token prediction).
+* **The Mechanism:** An upper-triangular mask matrix is added to the raw dot-product scores before softmax:
+  ```text
+  Masked_Scores = (Q * K^T) / sqrt(d_k) + Mask
+  ```
+  Where any position `(i, j)` with `j > i` is set to `-inf` (negative infinity).
+* **Softmax Annihilation:** Because `e^(-inf) = 0`, all future positions receive exactly `0%` attention weight. Token i only aggregates information from tokens 1 .. i.
+* **Kubernetes Analogy:** Like a strict egress NetworkPolicy: Pod i can only send packets to Pods with timestamp ID <= i. Attempts to connect to future Pods are dropped at the firewall (`-inf`).
+* **Systems & Infra Impact:**
+  * *Prefill Tiling Savings:* The upper triangle represents ~50% of the `[n, n]` grid. High-performance
+    CUDA kernels (like FlashAttention with `is_causal=True`) skip scheduling threads for upper-triangle tiles,
+    cutting prefill FLOPs and memory loads roughly in half.
+  * *Decode Needs No Mask:* In Decode, the model processes only one new token at a time. Its Query vector
+    attends over the historical KV cache (`K_1 .. K_current`), so all available keys are strictly in the past
+    and no masking is required.
+
 ---
 
 ## 4. Multi-Head Attention (MHA)
@@ -148,6 +193,33 @@ FFN(x) = max(0, x * W_1 + b_1) * W_2 + b_2
 
 - In the original paper, the intermediate dimension expands to `4 * d_model` before projecting back down.
 - **Systems takeaway:** FFNs contain roughly **two-thirds of the model's total parameters**! While attention decides *where to look*, the FFN acts as the dense memory/knowledge retrieval bank.
+
+### The "Add & Norm" Block: Residual Connections, RMSNorm, and Kernel Fusion
+
+In the Transformer architecture, every sublayer (Attention and FFN) is wrapped inside an **Add & Norm** stage:
+
+```text
+x_next = LayerNorm(x + Sublayer(x))
+```
+
+* **The "Add" (Residual / Skip Connection):**
+  * Instead of replacing the vector at each layer, the sublayer only computes a delta (`patch`). The addition
+    `x + delta` merges this patch into the base vector highway.
+  * *Kubernetes Analogy:* Like applying a strategic merge patch to a base Deployment YAML. If a layer
+    calculates nothing useful, `x + 0 = x`, preserving base token identity across 32 layers without
+    representation collapse.
+* **The "Norm" (LayerNorm vs RMSNorm):**
+  * *2017 Paper (LayerNorm):* Standardizes the vector's 4,096 numbers by computing their mean and variance,
+    re-centering around 0 to prevent float magnitudes from exploding.
+  * *Modern LLMs (RMSNorm):* Research proved that mean-centering is unnecessary; scaling by magnitude
+    (Root Mean Square) is sufficient. Llama and Mistral use RMSNorm in a Pre-LN structure
+    (`x + Sublayer(RMSNorm(x))`), saving 10–15% FLOPs per layer.
+* **Systems Goldmine (Kernel Fusion):**
+  * In unoptimized PyTorch, `Add` and `Norm` launch as two separate CUDA kernels, each writing and
+    re-reading vectors from slow GPU VRAM.
+  * In serving engines (vLLM, TensorRT-LLM), they are fused into a single **`Fused Add-RMSNorm`** CUDA kernel.
+    The vector remains entirely within high-speed GPU on-chip SRAM/registers, eliminating two slow VRAM
+    round-trips during the memory-bandwidth-bound decode phase.
 
 ---
 
@@ -468,6 +540,9 @@ The vector `x_4_final` for position 4 multiplies by `W_unembed` (`[4096, 128000]
 
 * It has 4,096 rows.
 * It has 128,000 columns (one column for every single token in the vocabulary!).
+* **Weight Tying (Section 3.4 of the Paper):** In the 2017 paper (and models like GPT-2 and Gemma),
+  `W_unembed` shares the exact same float table as `W_E`. Tying weights saves ~1.05 GB of GPU VRAM in FP16.
+  Llama 3 leaves them untied for higher accuracy at the cost of extra memory.
 
 When you multiply:
 
