@@ -409,7 +409,8 @@ We trace the prompt: **`"what is quantum computing"`** through the system.
 
 #### Step 2: Layer 1 Attention (The Prefill Phase)
 
-All 4 prompt vectors enter Layer 1 **simultaneously in parallel** across GPU tensor cores (compute-bound GEMM). And will travel through all 32 layers of LLM in parallel and generate 4 * 32 KV caches simultaneously.
+All 4 prompt vectors enter Layer 1 **simultaneously in parallel** across GPU tensor cores (compute-bound GEMM).
+They travel through all 32 layers of the LLM and generate 4 * 32 KV caches.
 
 ##### 1. Generating Q, K, V Projections
 
@@ -647,9 +648,95 @@ Time_Per_Token = Model_Weight_GB / Memory_Bandwidth_GBs
 Max_Tokens_Per_Second = Memory_Bandwidth_GBs / Model_Weight_GB
 ```
 
-* **Why compute doesn't limit it:** Multiplying 1 token vector by weights takes under 1 ms of GPU math; the compute cores spend ~95% of their time idling, waiting for the memory bus to deliver weights.
+* **Why compute doesn't limit it:** Multiplying 1 token vector by weights takes under 1 ms of GPU math;
+  the compute cores spend ~95% of their time idling, waiting for the memory bus to deliver weights.
 * **Real-World Expected Speed:** Accounts for ~70% to 80% memory bus efficiency after Metal/CUDA kernel launch overhead and KV cache memory traffic:
   `Expected_Tokens_Per_Second = (Memory_Bandwidth_GBs / Model_Weight_GB) * 0.75`.
 * **Example (Apple M4 Pro with Llama-3-8B INT4):**
   `273 GB/s / 4.62 GB * 0.75 = ~44.3 tokens/sec` (matches measured ~45.1 tokens/sec).
+
+---
+
+## 10. Attention Head Architecture: MHA vs. MQA vs. GQA
+
+The evolution from Multi-Head Attention to Grouped-Query Attention is one of the most critical optimizations for LLM serving infrastructure.
+
+### The Architectures Compared
+
+* **MHA (Multi-Head Attention, 2017):**
+  * Query-to-KV ratio is `1:1`. 32 Query heads have 32 independent Key heads and 32 Value heads (**32 KV heads**).
+  * *Systems Cost:* Giant KV cache footprint (**512 KB / token** in FP16), severely restricting concurrent sequences.
+* **MQA (Multi-Query Attention, 2019):**
+  * Query-to-KV ratio is `32:1`. All 32 Query heads share **1 single Key head and 1 single Value head**.
+  * *Systems Cost:* Slashes KV cache by 32x (**16 KB / token**), but degrades model reasoning accuracy on complex benchmarks.
+* **GQA (Grouped-Query Attention, 2023 - Modern Standard):**
+  * Query-to-KV ratio is `4:1` (e.g. Llama 3, Mistral) or `2:1` (e.g. Gemma 2/4). 32 Query heads are split into 8 groups; each group shares **1 Key head and 1 Value head** (**8 KV heads**).
+  * *Systems Cost:* Delivers 99%+ of MHA accuracy while slashing KV cache memory by **4x to 8x** (**128 KB / token**).
+
+```text
+MHA (1:1 Ratio):        GQA (4:1 Ratio):        MQA (32:1 Ratio):
+Q1 Q2 Q3 ... Q32        [Q1..Q4] [Q5..Q8] ...   [Q1............Q32]
+ |  |  |      |             |        |                   |
+K1 K2 K3 ... K32           K1       K2                  K1
+V1 V2 V3 ... V32           V1       V2                  V1
+(32 KV heads)           (8 KV heads)            (1 KV head)
+```
+
+### Why Infrastructure Engineers Care (The 3 Sizing Impacts)
+
+1. **4x to 8x VRAM Savings:** Slashes per-user KV memory from ~4.2 GB down to ~1.0 GB at an 8,192 context window.
+2. **4x to 8x Higher Serving Concurrency:** Allows a single GPU Pod on Kubernetes to host 4x to 8x more concurrent active user streams without running Out Of Memory (OOM).
+3. **Faster Decode Latency:** On every decode step, the GPU streams the historical KV cache over the bus.
+   Streaming 1 GB of GQA cache takes 4x less bus bandwidth than 4 GB of MHA cache, boosting tokens/sec.
+
+### Kubernetes Analogy
+
+* **MHA:** Every worker thread in a Pod creates its own private database connection pool (massive memory waste).
+* **MQA:** All 32 worker threads share a single connection (low memory, but creates contention/degradation).
+* **GQA:** Worker threads share a pool per team of 4 (minimal memory overhead with zero contention).
+
+---
+
+## 11. Hardware Execution: Why Prefill is Compute-Bound and Decode is Memory-Bandwidth Bound
+
+Understanding why LLM serving bottlenecks change between phases requires examining how weights move between GPU VRAM and on-chip SRAM.
+
+### Summary Comparison Table
+
+| Dimension | Prefill Phase (Prompt Ingestion) | Decode Phase (Token Generation) |
+|---|---|---|
+| **Input Shape** | **Batch of prompt tokens** (e.g. 4,000 tokens) | **1 single token vector** per step |
+| **Math Operation** | **GEMM** (Matrix-Matrix Multiply) | **GEMV** (Matrix-Vector Multiply) |
+| **Arithmetic Intensity** | **High** (thousands of FLOPs per byte) | **Low** (~2 FLOPs per byte loaded) |
+| **Weight Tile Reuse** | 10 MB tile loaded once, reused across 4,000 tokens | 10 MB tile used for 1 token and evicted |
+| **Hardware Timing** | Math takes 30 us; tile load takes 3 us | Math takes 0.008 us; tile load takes 3 us |
+| **Latency Hiding** | **Yes (Double Buffering):** TMA pre-fetches next tile | **No:** Cores finish in 8 ns and sit idle 2.99 us |
+| **Bottleneck** | **Compute-Bound (TFLOPS):** Cores 100% busy | **Bandwidth-Bound (GB/s):** Cores 95%+ idle |
+
+### The Physical Execution Mechanism
+
+#### 1. Prefill: High Arithmetic Intensity & Latency Hiding
+
+* When prompt tokens arrive, the GPU chunks layer weights into tiles (e.g., 10 MB each).
+* Because all 4,000 tokens are present, multiplying a 10 MB tile against 4,000 tokens requires 80 GFLOPs of math, taking ~30 microseconds on Tensor Cores.
+* Transferring the next 10 MB tile from VRAM across the bus takes only ~3 microseconds.
+* **Double Buffering:** The GPU uses a Ping-Pong buffer in on-chip SRAM. While Tensor Cores crunch Buffer A, the memory controller (TMA) pre-fetches the next tile into Buffer B in the background.
+* The Tensor Cores finish Buffer A and immediately swap to Buffer B with **0 us wait time**. Compute stays 100% saturated.
+
+#### 2. Decode: Low Arithmetic Intensity & ALU Starvation
+
+* During autoregressive decode, the GPU generates only 1 token per step.
+* Multiplying a 10 MB weight tile against 1 token vector requires only 20 MFLOPs of math, finishing in ~0.008 microseconds (8 nanoseconds).
+* The next tile still takes ~3 microseconds to transfer across the memory bus.
+* The Tensor Cores finish in 8 nanoseconds and must sit completely idle for ~2.99 microseconds waiting for the bus.
+* The compute cores spend over 95% of their cycles idling. Decode throughput is strictly governed by memory bus bandwidth (GB/s).
+
+### The Systems Takeaway
+
+> *Prefill is compute-bound because high token count allows the GPU to reuse weights across thousands
+> of tokens and hide memory latency behind matrix math (GEMM).*
+>
+> *Decode is memory-bandwidth bound because generating one token forces the bus to stream all model
+> weights for only one operation per parameter (GEMV), leaving Tensor Cores starved for data.*
+
 
