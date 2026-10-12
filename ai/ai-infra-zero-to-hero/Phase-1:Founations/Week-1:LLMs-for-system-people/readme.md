@@ -590,3 +590,66 @@ Now begins the autoregressive loop for generating tokens 5, 6, 7... sequentially
 |---|---|---|---|
 | **Prefill** | Processes prompt (`"what is quantum computing"`) | **Compute-Bound** (TFLOPS) | Full matrix-matrix multiplication (`Batch × Tokens`). GPU tensor cores are fully saturated. |
 | **Decode** | Generates tokens 1-by-1 (`"is"`, `"a"`, `"branch"`) | **Memory-Bandwidth Bound** (GB/s) | GPU streams weights + entire KV cache from VRAM for each single token to compute one vector. |
+
+---
+
+## 9. The 4 Core Inference Formulas (Capacity Planning & Sizing)
+
+Before deploying any LLM service on Kubernetes or GPU nodes, infrastructure and platform engineers use four fundamental formulas to size GPU nodes, plan VRAM capacity, and predict latency.
+
+### 1. Model Weights Memory (GB)
+
+```text
+Weight_Bytes = Total_Parameters * Bytes_Per_Precision
+```
+
+* **FP16 / BF16:** 2.0 bytes per parameter (an 8B model = ~16 GB).
+* **FP8:** 1.0 byte per parameter (an 8B model = ~8 GB).
+* **INT4:** 0.5 bytes per parameter (an 8B model = ~4.6 GB with ~15% grouping metadata overhead).
+* **Why it matters:** This is the static baseline VRAM required simply to hold model weights in GPU memory before processing any user requests.
+
+### 2. KV Cache Footprint per Token
+
+For every past token in a conversation, every transformer layer must permanently store both its Key vector and Value vector:
+
+```text
+KV_Bytes_Per_Token = 2 * Layers * KV_Heads * Head_Dim * Bytes_Per_Precision
+```
+
+* **Factor of 2:** Caches both the Key (`K`) and Value (`V`) vectors.
+* **`Layers`:** Every layer has independent projection weights and maintains its own distinct cache buffer in VRAM.
+* **`KV_Heads * Head_Dim`:** The total floating-point numbers in one Key or Value vector in that layer.
+* **`Bytes_Per_Precision`:** Byte size of each float (FP16 = 2 bytes, FP8 = 1 byte).
+* **Example (Llama-3-8B in FP16):**
+  `2 * 32 layers * 8 KV heads * 128 head_dim * 2 bytes = 131,072 bytes (128 KB / token)`.
+* **Memory per Active User:**
+  `User_KV_Memory = KV_Bytes_Per_Token * Context_Length`.
+  At an 8,192 context window, one single user occupies `128 KB * 8192 = 1.05 GB` of VRAM.
+
+### 3. Max Concurrent Sequences on a GPU
+
+Analogous to Kubernetes Pod scheduling (`Allocatable Memory = Capacity - System Reserve - Pod Requests`):
+
+```text
+Available_KV_VRAM = Total_GPU_VRAM - Model_Weights_GB - Runtime_Overhead_GB
+Max_Concurrent_Users = Available_KV_VRAM / (KV_Bytes_Per_Token * Context_Length)
+```
+
+* **`Runtime_Overhead_GB`:** Buffer reserved for activation scratchpads and CUDA runtime memory (typically 1–2 GB).
+* **Why it matters:** Slices the remaining GPU memory into maximum concurrent streams. If requests exceed this ceiling, the serving engine must queue requests, preempt KV caches, or risk OOM crashes.
+
+### 4. Decode Speed Roofline (Memory-Bandwidth Bound)
+
+During single-stream autoregressive decode (batch size = 1), generating 1 token requires streaming all model weights across the memory bus from VRAM to compute cores once:
+
+```text
+Time_Per_Token = Model_Weight_GB / Memory_Bandwidth_GBs
+Max_Tokens_Per_Second = Memory_Bandwidth_GBs / Model_Weight_GB
+```
+
+* **Why compute doesn't limit it:** Multiplying 1 token vector by weights takes under 1 ms of GPU math; the compute cores spend ~95% of their time idling, waiting for the memory bus to deliver weights.
+* **Real-World Expected Speed:** Accounts for ~70% to 80% memory bus efficiency after Metal/CUDA kernel launch overhead and KV cache memory traffic:
+  `Expected_Tokens_Per_Second = (Memory_Bandwidth_GBs / Model_Weight_GB) * 0.75`.
+* **Example (Apple M4 Pro with Llama-3-8B INT4):**
+  `273 GB/s / 4.62 GB * 0.75 = ~44.3 tokens/sec` (matches measured ~45.1 tokens/sec).
+

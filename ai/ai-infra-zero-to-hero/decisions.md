@@ -23,6 +23,13 @@ Why the plan in [readme.md](./readme.md) looks the way it does. Append new decis
 | 15 | GPU scarcity | H100/A3 and TPU v6e may be out of stock. Add fallbacks (DWS flex-start, L4/A100, P/D over TCP, llm-d-inference-sim) only when needed |
 | 16 | Sync between machines | This folder (public `tech-notes` repo) is the shared memory for mac/Antigravity and cloudtop/Jetski. No employer-internal info |
 
+## 2026-10-11: Lab code organization (mac, Antigravity)
+
+| # | Topic | Decision |
+|---|---|---|
+| 17 | Lab code location | Put lab code in each week's folder: `Phase-X:.../Week-Y:.../lab/` (e.g. `Phase-1:.../Week-1:.../lab/llm_math.py`). Applied to Week 1 and future weeks |
+
 ## Open decisions
 
-- **Where the project code lives.** Options: a separate public repo (portfolio), or inside this folder. Until decided, keep Week 1–3 code under `lab/` in this folder.
+- **Portfolio repo extraction.** Keep lab code in phase/week folders.
+  Decide later if and when to mirror or export into a standalone `ai-platform-lab` repo for showcase.

@@ -1,11 +1,11 @@
 # Progress
 
-Last updated: 2026-10-08 by mac (transformer internals and architecture deep dive session). Current week: **Week 1 (in progress)**.
+Last updated: 2026-10-11 by mac (inference formulas, GPU microarchitecture, and interview drill session). Current week: **Week 1 (in progress)**.
 
 ## Next up
 
-- **On mac:** Install Ollama, benchmark ~8B model tok/s; implement `calculators/llm_math.py` (predict parameters and tok/s first, then measure); run Week 1 interview drill.
-- **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`) so `sync.sh end` can push. Request GPU quota (L4 now; 8×H100/A3 for weeks 7, 11, 12).
+- **On mac:** Complete Week 1 interview drill (Questions 3 and 4), then start Week 2 (GPU hardware and rooflines).
+- **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`) so `sync.sh end` can push. Request GPU quota (L4 now; 8x H100/A3 for weeks 7, 11, 12).
 
 ## Setup checklist
 
@@ -19,7 +19,7 @@ Last updated: 2026-10-08 by mac (transformer internals and architecture deep div
 
 | Week | Topic | Paper | Lab | Note | Drill |
 |---|---|---|---|---|---|
-| 1 | LLMs for systems people | [x] | [ ] | [x] | [ ] |
+| 1 | LLMs for systems people | [x] | [x] | [x] | [ ] |
 | 2 | GPU hardware and rooflines | [ ] | [ ] | [ ] | [ ] |
 | 3 | Quantization and local inference | [ ] | [ ] | [ ] | [ ] |
 | 4 | Continuous batching, PagedAttention, vLLM V1 | [ ] | [ ] | [ ] | [ ] |
@@ -66,6 +66,8 @@ Last updated: 2026-10-08 by mac (transformer internals and architecture deep div
 | 1 | mac | Layer Projection Weights | W_Q, W_K, W_V, W_O (each 4096 × 4096, FP16) | ~134 MB per layer (33.5 MB each) |
 | 1 | mac | Layer Total Weights | Attention (134 MB) + FFN SwiGLU (268 MB) FP16 | ~402 MB per layer (~13 GB total) |
 | 1 | mac | KV Cache Footprint | 2 (K, V) × 32 layers × 4096 dims × 2 bytes | ~0.5 MB per token (2 GB for 4k context) |
+| 1 | mac | Llama 3.1 8B INT4 Ollama | Apple M4 Pro (64 GB, 273 GB/s bandwidth) | Prefill: 104.3 tok/s, Decode: 45.1 tok/s (~81% bus eff) |
+| 1 | mac | Gemma 4 31B KV Cache | 60 layers, 16 KV heads, avg head_dim 299 (FP16) | ~1.10 MB / token (~35.0 GB per user at 32k context) |
 
 ## Open questions
 
