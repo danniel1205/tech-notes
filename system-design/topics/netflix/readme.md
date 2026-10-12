@@ -273,6 +273,7 @@ The following two blogs describes how Netflix fills their videos to CDN servers:
 - Client app periodically checks the current watch time.
 - Client sends the signal to backend service on above events. The following is an example from Youtube video watch. The
   `docid=bR6O-9a_AHI` is the video ID, `st=85.758&et=85.758` is the start time and end time.
+
 ``` text
 https://www.youtube.com/api/stats/watchtime?ns=yt&el=detailpage&cpn=bZfoq7D_wSN4WyjJ&docid=bR6O-9a_AHI&ver=2&referrer=
 https%3A%2F%2Fwww.youtube.com%2Ffeed%2Fhistory&cmt=85.758&ei=3oQkYPfTEs7Ckga847b4Bw&fmt=247&fs=0&rt=549.002&of=I-NSJmZOT

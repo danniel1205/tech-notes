@@ -178,5 +178,3 @@ spec:
 ## References
 
 * <https://arunprasad86.medium.com/kata-containers-an-overview-7ed95dacfb7a>
-
-

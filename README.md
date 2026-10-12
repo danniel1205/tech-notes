@@ -166,4 +166,3 @@ This repo contains the notes/tutorials from my personal tech exploration.
 ### How Alibaba Builds Systems
 
 - [Virtual Control Plane implementation: A Multi-Tenant Framework for Cloud Container Services](how-alibaba-xxx-series/virtual-control-plane/readme.md)
-

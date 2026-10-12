@@ -67,6 +67,7 @@ Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisio
     ```
 
   - Setting up network plugin
+
     ``` bash
     ~/tmp/rancher  kubectl get job rke-network-plugin-deploy-job -n kube-system -o yaml
     apiVersion: batch/v1
@@ -149,22 +150,29 @@ Official doc is [here](https://rancher.com/docs/rancher/v2.x/en/cluster-provisio
     startTime: "2020-06-11T23:11:36Z"
     succeeded: 1
     ```
+
   - Setting up coredns
+
   ``` bash
   ~/tmp/rancher  kubectl get jobs -A
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-coredns-addon-deploy-job        1/1           6s         87m
   ```
+
   - Setting up metrics server
+
   ``` bash
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-metrics-addon-deploy-job        1/1           11s        87m
   ```
+
   - Setting up nginx ingress controller
+
   ``` bash
   NAMESPACE     NAME                                COMPLETIONS   DURATION   AGE
   kube-system   rke-ingress-controller-deploy-job   1/1           9s         86m
   ```
+
   - Setting up user addons
 - Finishing up the cluster provisoning
   - Installing Rancher CRDs

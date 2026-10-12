@@ -100,6 +100,7 @@ gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE
 We will install LeaderWorkerSet (LWS) using the official Helm chart. This installs the core `LeaderWorkerSet` CRD and controller.
 
 Run the following command:
+
 ```bash
 helm install lws oci://registry.k8s.io/lws/charts/lws \
     --version v0.9.0 \
@@ -109,6 +110,7 @@ helm install lws oci://registry.k8s.io/lws/charts/lws \
 ```
 
 Verify that the operator pod is running:
+
 ```bash
 kubectl get pods -n lws-system
 ```
@@ -138,6 +140,7 @@ disaggregated serving architecture by manually creating two standard
 Check out [gemma-serving-lws.yaml](gemma-serving-lws.yaml) for the full manifest.
 
 Apply the serving configuration:
+
 ```bash
 kubectl apply -f gemma-serving-lws.yaml
 ```
@@ -152,12 +155,14 @@ Check out [gemma-global-configmap.yaml](gemma-global-configmap.yaml) for the con
 Check out [gemma-global-router.yaml](gemma-global-router.yaml) for the full manifest.
 
 Apply the deployment:
+
 ```bash
 kubectl apply -f gemma-global-configmap.yaml
 kubectl apply -f gemma-global-router.yaml
 ```
 
 Tunnel the router service port to your local workstation:
+
 ```bash
 kubectl port-forward svc/gemma-router-svc 8080:8080
 ```

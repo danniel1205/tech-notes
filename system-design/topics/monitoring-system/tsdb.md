@@ -11,6 +11,7 @@ identifier -> (t0, v0), (t1, v1), (t2, v2), (t3, v3), ....
 ```
 
 identifier: A metric name with a dictionary of label dimensions.
+
 ```text
 requests_total{path="/status", method="GET", instance=”10.0.0.1:80”}
 ```
@@ -48,7 +49,7 @@ across the vertical dimension.
 
 This approach provides two benefits: 1) Batch write, 2) Good compression.
 
-**Problems from V2 solution**
+##### Problems from V2 solution
 
 * With several millions files, we may run out of `inodes` on our filesystem.
 * There are several thousands of chunks per second are ready to be persisted. This still requires thousands of individual

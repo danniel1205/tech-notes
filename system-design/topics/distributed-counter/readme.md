@@ -314,7 +314,3 @@ partitioned network in the CRDT database is the following:
 ## References
 
 * <https://systemdesign.one/distributed-counter-system-design/>
-
-
-
-

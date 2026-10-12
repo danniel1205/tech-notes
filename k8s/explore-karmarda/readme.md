@@ -104,5 +104,3 @@ TODOs:
 
 - Pods to Pods communication across clusters
 - Deep dive into karmada-scheduler-estimator
-
-

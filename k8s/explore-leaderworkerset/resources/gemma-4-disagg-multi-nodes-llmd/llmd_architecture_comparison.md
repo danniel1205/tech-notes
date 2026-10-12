@@ -136,7 +136,8 @@ The lines (edges) in the relationship diagram above represent critical integrati
 the Kubernetes control plane to the physical GCP Load Balancer routing logic:
 
 1. **`Gateway` $\rightarrow$ `GCP Regional L7 Load Balancer` (Provisioning):**
-   GKE's Gateway Controller watches the `Gateway` resource with class `gke-l7-rilb`. It communicates with the Google Cloud Compute API to provision a regional, Envoy-managed Internal Application Load Balancer.
+   GKE's Gateway Controller watches the `Gateway` resource with class `gke-l7-rilb`. It communicates with the
+   Google Cloud Compute API to provision a regional, Envoy-managed Internal Application Load Balancer.
 
 2. **`HTTPRoute` $\rightarrow$ `Gateway` (Binding):**
    The `HTTPRoute` binds its routing rules to the Gateway's listeners. Any HTTP traffic reaching the Load Balancer IP matching the path prefix rules (e.g., `/v1`) is forwarded to the designated backend.
@@ -162,7 +163,8 @@ the Kubernetes control plane to the physical GCP Load Balancer routing logic:
    to EPP port `9002` for routing decisions.
 
 6. **`EPP` $\rightarrow$ `InferencePool` (State Monitoring):**
-   The EPP continuously monitors the InferencePool CRD, querying pod liveness and checking their GKE/LWS annotations to separate `prefill-leader`/`decode-leader` targets from stateless compute worker pods.
+   The EPP continuously monitors the InferencePool CRD, querying pod liveness and checking their GKE/LWS
+   annotations to separate `prefill-leader`/`decode-leader` targets from stateless compute worker pods.
 
 7. **`EPP` $\rightarrow$ `Prefill Leader` / `Decode Leader` (Scheduling Decisions):**
    Based on the request state (prefill phase vs subsequent token generation/decode phase),

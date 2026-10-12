@@ -1,9 +1,5 @@
 # Conflict-free Replicated Date Types
 
----
-tags:- CRDT
----
-
 ## What is CRDT
 
 In many system, some date needs to be replicated and stored distributively. Examples are:
