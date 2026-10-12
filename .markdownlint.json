@@ -1,0 +1,39 @@
+{
+  // Enable all rules by default
+  "default": true,
+  // MD013/line-length: Limit line length to 200 characters, excluding tables and code blocks
+  "MD013": {
+    "line_length": 200,
+    "tables": false,
+    "code_blocks": false
+  },
+  // --------------------------------------------------------------------------
+  // Rules inherited from md_style.rb (previously excluded in Ruby mdl)
+  // --------------------------------------------------------------------------
+  // MD004/ul-style: Unordered list style (allows mixing '-', '*', and '+' markers)
+  "MD004": false,
+  // MD010/no-hard-tabs: Allow hard tab characters in code blocks or indentation
+  "MD010": false,
+  // MD024/no-duplicate-heading: Allow duplicate headings across different sections (e.g. "Overview", "Summary")
+  "MD024": false,
+  // --------------------------------------------------------------------------
+  // List formatting
+  // --------------------------------------------------------------------------
+  // MD007/ul-indent: Unordered list indentation (allows flexible 2 or 4-space nested list indentation)
+  "MD007": false,
+  // MD029/ol-prefix: Ordered list prefixes (avoids false positives when sub-bullets interrupt numbered lists)
+  "MD029": false,
+  // MD032/blanks-around-lists: Lists should be surrounded by blank lines
+  "MD032": false,
+  // --------------------------------------------------------------------------
+  // Modern rules (added in markdownlint, did not exist in Ruby mdl)
+  // --------------------------------------------------------------------------
+  // MD045/no-alt-text: Images must have alternate text (allows screenshots with empty alt text: ![](url))
+  "MD045": false,
+  // MD051/link-fragments: Link fragments must match existing headings
+  "MD051": false,
+  // MD059/descriptive-link-text: Forbids generic link text (allows [here](url) or [link](url))
+  "MD059": false,
+  // MD060/table-column-style: Non-standard table column formatting
+  "MD060": false
+}

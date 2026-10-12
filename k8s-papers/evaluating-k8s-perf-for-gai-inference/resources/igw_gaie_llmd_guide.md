@@ -26,7 +26,7 @@ for **stateless web traffic** and uses simple algorithms like round-robin or
 least-connections. AI inference workloads are fundamentally different:
 
 | Characteristic | Traditional Web Traffic | AI Inference Traffic |
-|---|---|---|
+| --- | --- | --- |
 | **State** | Stateless | Highly stateful (KV cache, loaded adapters) |
 | **Resource usage** | CPU-bound, lightweight | GPU-bound, memory-intensive |
 | **Request duration** | Milliseconds | Seconds to minutes |
@@ -80,7 +80,7 @@ graph TD
 ```
 
 | Resource | Purpose |
-|---|---|
+| --- | --- |
 | **InferencePool** | Replaces `Service` — defines a group of model-serving pods with inference-aware routing logic |
 | **InferenceModel** | Maps a client-facing model name to a backend InferencePool; supports traffic splitting between model versions |
 | **Endpoint Picker (EPP)** | ext-proc server implementing the Inference Scheduler; selects optimal pod using real-time metrics |
@@ -156,7 +156,7 @@ Gateway API Inference Extension handles **routing**, neither alone solves the fu
 production serving challenge:
 
 | Challenge | vLLM alone | IGW alone | llm-d |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Single-node inference | ✅ | ❌ | ✅ |
 | Intelligent routing | ❌ | ✅ | ✅ |
 | Prefill/Decode disaggregation | Partial | ❌ | ✅ |
@@ -224,7 +224,7 @@ graph BT
 ```
 
 | Layer | Component | Role |
-|---|---|---|
+| --- | --- | --- |
 | **Layer 0** | vLLM / SGLang | Runs the model on accelerators |
 | **Layer 1** | Gateway API + Implementations | Standard K8s HTTP routing |
 | **Layer 2** | Gateway API Inference Extension | Makes the gateway model-aware (CRDs + EPP) |

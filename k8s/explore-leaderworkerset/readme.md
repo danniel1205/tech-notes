@@ -259,7 +259,7 @@ how the different primitives compare:
 | **Group Abstraction** | None (all pods identical) | Individual identity (`pod-0`, `pod-1`) | Coordinated execution to completion | "Super Pod" (Leader + Workers) |
 | **Dual-Template Spec** | No | No | No | **Yes** |
 | **All-or-Nothing Restart** | No | No | Yes (if configured) | **Yes** |
-| **HPA & Service Integration**| Native | Complex | Poor | **Native** |
+| **HPA & Service Integration** | Native | Complex | Poor | **Native** |
 | **Use Case Suitability** | Simple single-GPU/CPU serving | Not ideal (poor group lifecycle) | Batch/Training only | **Best for Multi-Host/LLM serving** |
 
 ---
@@ -443,4 +443,3 @@ cloud-native architecture.
 [summary_p3]: resources/gemma-4-disagg-multi-nodes/summary.md
 [guide_p4]: resources/gemma-4-disagg-multi-nodes-llmd/gemma-4-disagg-multi-node-llmd-guide.md
 [architecture_comparison_p4]: resources/gemma-4-disagg-multi-nodes-llmd/llmd_architecture_comparison.md
-

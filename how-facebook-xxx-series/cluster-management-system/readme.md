@@ -180,9 +180,9 @@ automatically send resize job request to front end in order to fulfill the horiz
 
 ![twine-sharding](resources/twine-sharding.png)
 
-| Comparison         | Twine     | K8S  |
+| Comparison | Twine | K8S |
 | ----------------------- | --------------------------------------- | --------------------- |
-| Machine allocation      | Dynamic                                 | Static                |
+| Machine allocation | Dynamic | Static |
 | Job metadata management | Within same `Scheduler` and `Allocator` | Split and distributed |
 
 ## Availability

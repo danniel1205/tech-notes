@@ -53,7 +53,7 @@ curl -X GET -H "authorization: Bearer <JWT>" \
 -d {user_id: "xxx", users_status: {"user_b", "user_c"}} https://xxx/users/presence
 ```
 
-**We might not need to send user_id, because JWT contains user information**
+[!NOTE]**We might not need to send user_id, because JWT contains user information**
 
 ## Architecture
 

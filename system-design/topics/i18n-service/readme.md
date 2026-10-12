@@ -57,12 +57,12 @@ We need to store the base phrase when it is created, and also need to store the 
   singular or plural.
 - wide-column could be used to handle more advanced cases.
 
-  |   |default|singular|plural|
+  ||default|singular|plural|
   |---|---|---|---|
   |123_cn|他|他|他们|
   |123_en|he|he|they|
-  |124_cn|你好| | |
-  |124_en|hello| | |
+  |124_cn|你好|||
+  |124_en|hello|||
 
 Considering the extensibility, using wide-column data store like DynamoDB, BigTable, Cassandra would be a good idea.
 
@@ -144,6 +144,7 @@ type I18n interface {
     |---|---|---|---|
     |123_en|This is an apple.| | |
     |123_cn|这是一个苹果。| | |
+
   - Client who wants to retrieve the message could read from cache or databases if cache misses.
 
 ## Design details
@@ -157,9 +158,9 @@ type I18n interface {
 
 ---
 
-|   |cn_default|cn_singular|cn_plural|en_default|en_singular|en_plural|
+||cn_default|cn_singular|cn_plural|en_default|en_singular|en_plural|
 |---|---|---|---|---|---|---|
-|123|你好| | |Hello| | |
+|123|你好|||Hello|||
 
 ---
 

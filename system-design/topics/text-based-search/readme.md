@@ -82,6 +82,7 @@ documentID : list of terms
 #### Inverted index building
 
 - Update the mapping from term to termID
+
   ```text
   term       : termID
   --------------------------
@@ -90,14 +91,17 @@ documentID : list of terms
   apple      | 2
   ...
   ```
+
 - Building the inverted index
-  ```
+
+  ```text
   termID     : list of postings (docID, position)
   --------------------------
   0          | [(0, 0)]
   1          | [(0, 2)]
   ...
   ```
+
 ##### Real-time inverted indexing
 
 ![inverted-indexing-1](resoureces/inverted-indexing.png)

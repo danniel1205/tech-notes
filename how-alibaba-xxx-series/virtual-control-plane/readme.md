@@ -1,9 +1,5 @@
 # Virtual Control Plane implementation: A Multi-Tenant Framework for Cloud Container Services
 
----
-tags:- cluster-api-provider-nested, virtualCluster, multi-tenancy, k8s
----
-
 ## What problem does it try to solve
 
 K8S is barely satisfactory in supporting multi-tenancy, and lacks strong isolation mechanism. Current solution with

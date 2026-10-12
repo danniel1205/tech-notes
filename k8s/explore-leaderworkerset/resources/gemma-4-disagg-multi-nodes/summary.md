@@ -188,9 +188,11 @@ production manifests implement several critical workarounds and system configura
 > **The Manifest Implementation:**
 > We execute an explicit Hugging Face download command on **both** the leader and worker templates
 > inside [gemma-serving-lws.yaml:L128-L131](gemma-serving-lws.yaml#L128-L131) before starting Ray or vLLM:
+>
 > ```bash
 > hf download google/gemma-4-12b-it model.safetensors config.json --token "$HF_TOKEN"
 > ```
+>
 > This pre-populates the Hugging Face cache directory local to each VM node, enabling NFS-free
 > distributed loading.
 
@@ -205,6 +207,7 @@ production manifests implement several critical workarounds and system configura
 > **The Manifest Implementation:**
 > We dynamically bind `VLLM_NIXL_SIDE_CHANNEL_HOST` to the pod's real GKE Pod IP using Kubernetes
 > field references inside the leader's env block of [gemma-serving-lws.yaml:L63-L66](gemma-serving-lws.yaml#L63-L66):
+>
 > ```yaml
 > - name: VLLM_NIXL_SIDE_CHANNEL_HOST
 >   valueFrom:
@@ -223,10 +226,12 @@ production manifests implement several critical workarounds and system configura
 > **The Manifest Implementation:**
 > We fall back to the stable V0 engine core by setting this variable to `"0"` in all container
 > environment blocks inside [gemma-serving-lws.yaml:L69-L70](gemma-serving-lws.yaml#L69-L70):
+>
 > ```yaml
 > - name: VLLM_USE_V1
 >   value: "0"
 > ```
+>
 > This forces coordination to use stable Ray Actors over standard TCP network sockets.
 
 ### 4. NCCL Network Tuning for VPC Nodes
@@ -238,9 +243,9 @@ production manifests implement several critical workarounds and system configura
 >
 > **The Manifest Implementation:**
 > We configure env variables in all pod templates inside [gemma-serving-lws.yaml:L78-L87](gemma-serving-lws.yaml#L78-L87) to disable IB/P2P and bind traffic to the primary GKE ethernet interface:
-> *   `NCCL_SOCKET_IFNAME="eth0"` (Binds to GKE default network interface)
-> *   `NCCL_IB_DISABLE="1"` (Disables InfiniBand queries)
-> *   `NCCL_P2P_DISABLE="1"` (Disables inter-node PCIe Peer-to-Peer access)
+> * `NCCL_SOCKET_IFNAME="eth0"` (Binds to GKE default network interface)
+> * `NCCL_IB_DISABLE="1"` (Disables InfiniBand queries)
+> * `NCCL_P2P_DISABLE="1"` (Disables inter-node PCIe Peer-to-Peer access)
 
 ### 5. IPC Lock Security Capability
 
@@ -250,6 +255,7 @@ production manifests implement several critical workarounds and system configura
 > manifest [gemma-serving-lws.yaml](gemma-serving-lws.yaml#L106-L109) to allow NCCL to
 > lock shared memory pages directly, preventing page swaps and optimizing GPU
 > memory bandwidth during distributed All-Reduce steps:
+>
 > ```yaml
 > securityContext:
 >   capabilities:

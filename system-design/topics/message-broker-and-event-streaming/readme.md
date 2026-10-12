@@ -107,12 +107,14 @@ leadership.
 - Messages are buffered in the downstream queue and will be pushed(by default or pulled from pull API) to consumers.
   - Consumer registers itself to a specific queue and implements the handler for the delivery.
   - Connections between RabbitMQ and consumers are established.
+
     ```java
     ConnectionFactory factory = new ConnectionFactory();
     factory.setUri("amqp://userName:password@hostName:portNumber/virtualHost");
     // provides a custom connection name
     Connection conn = factory.newConnection("app:audit component:event-consumer");
     ```
+
 - Messages are stored in DRAM(has [durability setting](https://www.rabbitmq.com/persistence-conf.html#how-it-works) to
   configure how disk is involved).
 - Messages are delivered to consumers in FIFO order from each queue(queue is sorted, so retry still keeps the order).

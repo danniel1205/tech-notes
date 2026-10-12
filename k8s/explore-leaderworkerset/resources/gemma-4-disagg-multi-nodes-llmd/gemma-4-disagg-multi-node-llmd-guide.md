@@ -111,10 +111,13 @@ not directly reachable from a local terminal outside the VPC network.
 
 1. **Retrieve the allocated Gateway IP:**
    Query the Gateway to find the private IP address:
+
    ```bash
    kubectl get gateway gemma-gateway
    ```
+
    Or save it directly to an environment variable:
+
    ```bash
    export GW_IP=$(kubectl get gateway gemma-gateway -o jsonpath='{.status.addresses[0].value}')
    echo "Gateway IP: $GW_IP"
@@ -122,6 +125,7 @@ not directly reachable from a local terminal outside the VPC network.
 
 2. **Deploy a local port-forwarding proxy pod:**
    Deploy a temporary `socat` pod inside the cluster to bridge traffic to the retrieved `$GW_IP`:
+
    ```bash
    kubectl run gateway-proxy \
        --image=alpine/socat \
@@ -131,35 +135,35 @@ not directly reachable from a local terminal outside the VPC network.
 
 3. **Establish a local port-forward tunnel:**
    Use a local port like **`8888`** to avoid conflicts with other local proxy processes (such as port `8080` which is commonly used):
+
    ```bash
    kubectl port-forward pod/gateway-proxy 8888:8080
    ```
 
 4. **Query the completions endpoint from your local terminal:**
    Open a separate local shell window and execute `curl` with streaming enabled and pipe it to a python parser for clean, human-readable console rendering:
-   ```bash
-   curl -s -N http://localhost:8888/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "google/gemma-4-12b-it",
-       "messages": [
-         {"role": "user", "content": "Tell me a short 1-sentence story about space."}
-       ],
-       "max_tokens": 50,
-       "temperature": 0.0,
-       "stream": true
-     }' | python3 -c '
+
+```bash
+curl -s -N http://localhost:8888/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+    "model": "google/gemma-4-12b-it",
+    "messages": [
+        {"role": "user", "content": "Tell me a short 1-sentence story about space."}
+    ],
+    "max_tokens": 50,
+    "temperature": 0.0,
+    "stream": true
+    }' | python3 -c '
 import sys, json
 for line in sys.stdin:
-    if line.startswith("data: ") and "[DONE]" not in line:
-        try:
-            chunk = json.loads(line[6:])
-            content = chunk["choices"][0]["delta"].get("content", "")
-            print(content, end="", flush=True)
-        except Exception:
-            pass
+if line.startswith("data: ") and "[DONE]" not in line:
+    try:
+        chunk = json.loads(line[6:])
+        content = chunk["choices"][0]["delta"].get("content", "")
+        print(content, end="", flush=True)
+    except Exception:
+        pass
 print()
 '
-   ```
-
-
+```
