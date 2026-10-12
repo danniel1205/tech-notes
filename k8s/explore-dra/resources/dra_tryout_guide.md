@@ -38,6 +38,7 @@ nodes:
 ```
 
 Run:
+
 ```bash
 kind create cluster --config kind-config.yaml
 ```
@@ -49,6 +50,7 @@ Check if the DRA API objects are available:
 ```bash
 kubectl api-resources | grep -i resource
 ```
+
 You should see `deviceclasses` and `resourceclaims`.
 
 ---
@@ -60,6 +62,7 @@ Use this if you have a Google Cloud Project and want to test real hardware slici
 ### 1. Enable GKE API
 
 Ensure the GKE API is enabled:
+
 ```bash
 gcloud services enable container.googleapis.com
 ```
@@ -260,6 +263,7 @@ the automated driver installer DaemonSet**.
   DaemonSet and patch its NodeAffinity rules so that it triggers the
   driver compilation onto your nodes:
 
+  ```bash
   kubectl apply -f <https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml>
 
   kubectl patch daemonset nvidia-driver-installer -n kube-system --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/affinity", "value": {"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"cloud.google.com/gke-accelerator","operator":"Exists"}]}]}}}}]'
@@ -294,6 +298,3 @@ However, GKE's NVIDIA driver publishes its hardware names inside the
   ```yaml
   expression: device.attributes["gpu.nvidia.com"].productName == "Tesla T4"
   ```
-
-
-

@@ -66,6 +66,3 @@ their effective cessation:
 ## References
 
 * <https://systemdesign.one/gossip-protocol/>
-
-
-

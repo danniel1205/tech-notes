@@ -77,6 +77,7 @@ gcloud container node-pools create decode-pool \
 We configure the LWS manifest with `size: 2`. The leader starts Ray head, and the worker joins it.
 
 Apply the LWS manifest:
+
 ```bash
 kubectl apply -f gemma-serving-lws.yaml
 ```
@@ -88,11 +89,13 @@ kubectl apply -f gemma-serving-lws.yaml
 To coordinate disaggregated serving, deploy the Global Router proxy.
 
 1. Apply the router configmap containing the FastAPI routing script:
+
    ```bash
    kubectl apply -f gemma-router-configmap.yaml
    ```
 
 2. Apply the global router service and deployment:
+
    ```bash
    kubectl apply -f gemma-global-router.yaml
    ```
@@ -104,35 +107,38 @@ To coordinate disaggregated serving, deploy the Global Router proxy.
 1. Wait for the serving stack rollout to complete. Because of the native
    Kubernetes readiness probes, the router pod will only become `Ready` once
    both prefill and decode backends are fully initialized and serving:
+
    ```bash
    kubectl rollout status deployment/gemma-router
    ```
 
 2. Establish a local port-forward to the router service:
+
    ```bash
    kubectl port-forward svc/gemma-router-svc 8080:8080
    ```
 
 3. Send a completions request:
-   ```bash
-   curl -s -N http://localhost:8080/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "google/gemma-4-12b-it",
-       "messages": [
-         {"role": "user", "content": "What is quantum computing? Explain in 2 sentences."}
-       ],
-       "stream": true
-     }' | python3 -c '
-import sys, json
-for line in sys.stdin:
-    if line.startswith("data: ") and "[DONE]" not in line:
-        try:
-            chunk = json.loads(line[6:])
-            content = chunk["choices"][0]["delta"].get("content", "")
-            print(content, end="", flush=True)
-        except Exception:
-            pass
-print()
-'
-   ```
+
+  ```bash
+  curl -s -N http://localhost:8080/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "google/gemma-4-12b-it",
+      "messages": [
+        {"role": "user", "content": "What is quantum computing? Explain in 2 sentences."}
+      ],
+      "stream": true
+    }' | python3 -c '
+  import sys, json
+  for line in sys.stdin:
+  if line.startswith("data: ") and "[DONE]" not in line:
+      try:
+          chunk = json.loads(line[6:])
+          content = chunk["choices"][0]["delta"].get("content", "")
+          print(content, end="", flush=True)
+      except Exception:
+          pass
+  print()
+  '
+  ```

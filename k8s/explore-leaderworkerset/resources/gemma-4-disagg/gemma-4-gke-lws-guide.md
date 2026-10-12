@@ -85,11 +85,13 @@ prefill engine to execute prompt processing in the background, and forwards the
 full request to the decode engine to generate tokens.
 
 1. Apply the router configmap containing the FastAPI routing script:
+
    ```bash
    kubectl apply -f gemma-router-configmap.yaml
    ```
 
 2. Apply the global router service and deployment:
+
    ```bash
    kubectl apply -f gemma-global-router.yaml
    ```
@@ -99,31 +101,33 @@ full request to the decode engine to generate tokens.
 ## Step 4: Complete a Chat completion (Validating the serving)
 
 1. Establish a local port-forward to the router service:
+
    ```bash
    kubectl port-forward svc/gemma-router-svc 8080:8080
    ```
 
 2. Send a completions request:
-   ```bash
-   curl -s -N http://localhost:8080/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -d '{
-       "model": "google/gemma-4-12b-it",
-       "messages": [
-         {"role": "user", "content": "What is quantum computing? Explain in 2 sentences."}
-       ],
-       "stream": true
-     }' | python3 -c "
-import sys, json
-for line in sys.stdin:
-    if line.startswith('data: ') and not '[DONE]' in line:
-        try:
-            chunk = json.loads(line[6:])
-            content = chunk['choices'][0]['delta'].get('content', '')
-            print(content, end='', flush=True)
-        except Exception:
-            pass
-print()
-"
-   ```
 
+  ```bash
+  curl -s -N http://localhost:8080/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+      "model": "google/gemma-4-12b-it",
+      "messages": [
+        {"role": "user", "content": "What is quantum computing? Explain in 2 sentences."}
+      ],
+      "stream": true
+    }' | python3 -c "
+  import sys, json
+  for line in sys.stdin:
+  if line.startswith('data: ') and not '[DONE]' in line:
+      try:
+          chunk = json.loads(line[6:])
+          content = chunk['choices'][0]['delta'].get('content', '')
+          print(content, end='', flush=True)
+      except Exception:
+          pass
+  print()
+  "
+
+  ```

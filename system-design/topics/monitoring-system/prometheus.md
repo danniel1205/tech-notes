@@ -44,6 +44,7 @@ The following is based on V3 design. ([Prometheus TSDB from scratch](https://web
 
 - `b-000001` is a block(2h time window). ([Ref](https://prometheus.io/docs/prometheus/latest/storage/#on-disk-layout))
 - `chunks/000001` holds the raw data for various series:
+
   ```text
   ^
   series
@@ -54,6 +55,7 @@ The following is based on V3 design. ([Prometheus TSDB from scratch](https://web
   | {__name__="error_total",   method="POST", ["t1:v1","t2:v2"]}
   -----------------------------------------------------time---->
   ```
+
 - Each block has an inverted index file.
 - Each block has an metadata file.
 

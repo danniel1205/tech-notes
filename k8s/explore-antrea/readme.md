@@ -85,7 +85,8 @@ spec:
 ```
 
 This network policy isolates all the Pods from `app: nginx-deploy` with the following rules:
-```
+
+```text
 * Allow the ingress traffic from the Pods with run: ubuntu label
 * Allow the ingress traffic from the allowed Pods to 80 port
 * Allow all egress traffic
