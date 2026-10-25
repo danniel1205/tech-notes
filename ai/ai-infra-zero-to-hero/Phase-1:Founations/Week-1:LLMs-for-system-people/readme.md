@@ -699,39 +699,88 @@ V1 V2 V3 ... V32           V1       V2                  V1
 
 ## 11. Hardware Execution: Why Prefill is Compute-Bound and Decode is Memory-Bandwidth Bound
 
-Understanding why LLM serving bottlenecks change between phases requires examining how weights move between GPU VRAM and on-chip SRAM.
+Understanding why LLM serving bottlenecks change between phases requires examining the physical silicon: how weights move between off-chip GPU VRAM and on-chip SRAM.
 
-### Summary Comparison Table
+### 1. Physical Hardware Hierarchy
+
+```text
+ ┌────────────────────────────────────────────────────────┐
+ │                      GPU VRAM (HBM)                    │
+ │  * Capacity: HUGE (16 GB to 80 GB+)                    │
+ │  * Location: Off-chip memory stacks                    │
+ │  * Holds: Model Weights (16 GB) + KV Cache             │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            │  Internal Memory Bus (Speed: GB/s)
+                            │  * Apple M4 Pro: 273 GB/s
+                            │  * NVIDIA H100:  3,350 GB/s
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │                 On-Chip Silicon (SRAM)                 │
+ │  * Capacity: TINY (~40 MB across all SMs)              │
+ │  * Location: Right next to Tensor Cores                │
+ │  * Role: Active scratchpad and tile buffer             │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+                Tensor Cores (Math Engine)
+                * Raw Speed: TFLOPS (Trillions of ops/sec)
+```
+
+**The Core Physical Constraint:** Tensor Cores cannot execute math directly on VRAM.
+Every single weight parameter must travel across the internal memory bus into on-chip SRAM
+before arithmetic can occur.
+
+### 2. Summary Comparison Table
 
 | Dimension | Prefill Phase (Prompt Ingestion) | Decode Phase (Token Generation) |
 |---|---|---|
 | **Input Shape** | **Batch of prompt tokens** (e.g. 4,000 tokens) | **1 single token vector** per step |
 | **Math Operation** | **GEMM** (Matrix-Matrix Multiply) | **GEMV** (Matrix-Vector Multiply) |
-| **Arithmetic Intensity** | **High** (thousands of FLOPs per byte) | **Low** (~2 FLOPs per byte loaded) |
+| **Arithmetic Intensity** | **High** (thousands of FLOPs per byte) | **Low** (~1-2 FLOPs per byte loaded) |
 | **Weight Tile Reuse** | 10 MB tile loaded once, reused across 4,000 tokens | 10 MB tile used for 1 token and evicted |
 | **Hardware Timing** | Math takes 30 us; tile load takes 3 us | Math takes 0.008 us; tile load takes 3 us |
 | **Latency Hiding** | **Yes (Double Buffering):** TMA pre-fetches next tile | **No:** Cores finish in 8 ns and sit idle 2.99 us |
 | **Bottleneck** | **Compute-Bound (TFLOPS):** Cores 100% busy | **Bandwidth-Bound (GB/s):** Cores 95%+ idle |
 
-### The Physical Execution Mechanism
+### 3. The Math Race: Compute Time vs. Memory Bus Time (NVIDIA H100 Example)
 
-#### 1. Prefill: High Arithmetic Intensity & Latency Hiding
+Consider serving an **8 Billion parameter model** (e.g. Llama 3 8B in FP16 = **16 GB of weights**) on an **NVIDIA H100** (989 TFLOPS BF16, 3,350 GB/s memory bandwidth):
 
-* When prompt tokens arrive, the GPU chunks layer weights into tiles (e.g., 10 MB each).
-* Because all 4,000 tokens are present, multiplying a 10 MB tile against 4,000 tokens requires 80 GFLOPs of math, taking ~30 microseconds on Tensor Cores.
-* Transferring the next 10 MB tile from VRAM across the bus takes only ~3 microseconds.
-* **Double Buffering:** The GPU uses a Ping-Pong buffer in on-chip SRAM. While Tensor Cores crunch Buffer A, the memory controller (TMA) pre-fetches the next tile into Buffer B in the background.
-* The Tensor Cores finish Buffer A and immediately swap to Buffer B with **0 us wait time**. Compute stays 100% saturated.
+#### A. Generating 1 Token in Decode
 
-#### 2. Decode: Low Arithmetic Intensity & ALU Starvation
+* **Math Work:** `2 FLOPs * 8,000,000,000 params = 16 Billion FLOPs (16 GFLOPs)`.
+* **Data Transfer:** Must stream all **16 GB of weights** across the bus from VRAM to SRAM.
+* **Tensor Core compute time:** `16 GFLOPs / 989,000 GFLOPs/sec ≈ 0.016 milliseconds (16 microseconds)`.
+* **Memory Bus transfer time:** `16 GB / 3,350 GB/sec ≈ 4.8 milliseconds (4,800 microseconds)`.
+* **The Starvation:** The Tensor Cores finish math in 16 us (0.3% of the time).
+  For the other 4,784 us (**99.7% of the time**), the Tensor Cores sit completely frozen
+  and idle waiting for weights to travel over the memory bus.
 
-* During autoregressive decode, the GPU generates only 1 token per step.
-* Multiplying a 10 MB weight tile against 1 token vector requires only 20 MFLOPs of math, finishing in ~0.008 microseconds (8 nanoseconds).
-* The next tile still takes ~3 microseconds to transfer across the memory bus.
-* The Tensor Cores finish in 8 nanoseconds and must sit completely idle for ~2.99 microseconds waiting for the bus.
-* The compute cores spend over 95% of their cycles idling. Decode throughput is strictly governed by memory bus bandwidth (GB/s).
+#### B. Ingesting 4,000 Tokens in Prefill
 
-### The Systems Takeaway
+* **Math Work:** `4,000 tokens * 16 GFLOPs = 64,000 GFLOPs = 64 TFLOPs`.
+* **Data Transfer:** Still streams the same **16 GB of weights**.
+* **Tensor Core compute time:** `64 TFLOPs / 989 TFLOPS ≈ 65 milliseconds`.
+* **Memory Bus transfer time:** Still `4.8 milliseconds`!
+* **The Saturation:** Because compute (65 ms) takes 13x longer than bus transfer (4.8 ms),
+  memory loading is 100% hidden in the background via double-buffering.
+  Tensor Cores run non-stop at 100% load.
+
+### 4. The Golden Architectural Rule: Decode Speed Roofline
+
+Because Decode is throttled entirely by the memory bus, single-stream generation speed simplifies to:
+
+```text
+Max_Tokens_Per_Second = Memory_Bandwidth_GBs / Model_Weight_GB
+```
+
+* **Why TFLOPS does not appear in this formula:** Buying a GPU with 10x more Tensor Cores will **not** increase single-stream decode speed by even 1%.
+* **The only two ways to speed up single-stream decode:**
+  1. **Widen the memory bus:** (e.g. Apple M4 Pro at 273 GB/s -> H100 at 3,350 GB/s -> B200 at 8,000 GB/s).
+  2. **Compress model weights via quantization:** (e.g. FP16 16 GB -> INT4 4.5 GB, cutting byte transfer by ~3.5x).
+
+### 5. The Systems Takeaway
 
 > *Prefill is compute-bound because high token count allows the GPU to reuse weights across thousands
 > of tokens and hide memory latency behind matrix math (GEMM).*
