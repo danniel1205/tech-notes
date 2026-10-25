@@ -1,6 +1,6 @@
 # AI Infra: Zero to Hero in 26 Weeks
 
-*A learning and interview-prep plan for a Kubernetes engineer moving into AI Infra (inference + agentic platforms)*
+[!NOTE] A learning and interview-prep plan for a Kubernetes engineer moving into AI Infra (inference + agentic platforms)
 
 > [!NOTE]
 > Resources were gathered through web research in late Sep 2026. The AI infra ecosystem changes monthly.
@@ -51,7 +51,8 @@ graph LR
 ```
 
 Suggested repo layout:
-```
+
+```texxt
 ai-platform-lab/
 ├── calculators/        # Python: memory / KV / roofline / cost math
 ├── bench/              # load profiles, inference-perf configs, results/*.md
@@ -554,7 +555,7 @@ For **agentic designs**, add runtime (state/resume), tool infra (MCP gateway), s
 
 ### Mock design bank
 
-**Inference**
+#### Inference
 
 1. A multi-tenant LLM platform on K8s serving 20 models (7B–400B) with per-tenant SLOs and quotas.
 2. How many H100s for 70B at 500 QPS, 1.5K in / 300 out, p99 TTFT < 1 s, TPOT < 40 ms?
@@ -564,7 +565,7 @@ For **agentic designs**, add runtime (state/resume), tool infra (MCP gateway), s
 6. A benchmarking and observability plan to compare vLLM vs SGLang vs TRT-LLM fairly.
 7. Failure handling for TP=8 groups (Xid errors, draining, gang rescheduling).
 
-**Agentic**
+#### Agentic
 
 1. A multi-tenant platform for customer-supplied agents.
 2. A code-execution sandbox service (10k concurrent, sub-second start).

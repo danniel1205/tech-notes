@@ -158,9 +158,11 @@ In generative language models, words cannot look into the future. Token i must o
 
 * **The Problem:** In Prefill, all n prompt tokens enter the GPU simultaneously. Without constraints, Query 1 could look ahead at Key 2 or Key 4 ("cheating" on next-token prediction).
 * **The Mechanism:** An upper-triangular mask matrix is added to the raw dot-product scores before softmax:
+
   ```text
   Masked_Scores = (Q * K^T) / sqrt(d_k) + Mask
   ```
+
   Where any position `(i, j)` with `j > i` is set to `-inf` (negative infinity).
 * **Softmax Annihilation:** Because `e^(-inf) = 0`, all future positions receive exactly `0%` attention weight. Token i only aggregates information from tokens 1 .. i.
 * **Kubernetes Analogy:** Like a strict egress NetworkPolicy: Pod i can only send packets to Pods with timestamp ID <= i. Attempts to connect to future Pods are dropped at the firewall (`-inf`).
@@ -440,12 +442,14 @@ The GPU executes one fast, saturated matrix multiplication (`1 × 4096` times `4
 For token 4 (`"computing"`):
 
 * Each head computes its own dot products against all preceding prompt tokens (and itself):
+
   ```text
   Raw_Score(4, 1) = (Q_4_head · K_1_head ["what"])      / sqrt(128)
   Raw_Score(4, 2) = (Q_4_head · K_2_head ["is"])        / sqrt(128)
   Raw_Score(4, 3) = (Q_4_head · K_3_head ["quantum"])   / sqrt(128)
   Raw_Score(4, 4) = (Q_4_head · K_4_head ["computing"]) / sqrt(128)
   ```
+
 * **Causal Mask:** Tokens cannot look ahead. Position 4 inspects only positions 1, 2, 3, and 4 (tokens 5+ do not exist yet).
 * **Softmax Normalization:** Converts those 4 raw scores into percentages summing to 100% per head:
   * With `"what"` (`K_1`): 5%
@@ -456,6 +460,7 @@ For token 4 (`"computing"`):
 ##### 3. Blending Value Vectors (`Blended_V_4` vs. Original `V_4`)
 
 * Each head blends the 4 prompt Value vectors using the exact percentages calculated above:
+
   ```text
   Blended_V_4_head = (0.05 * V_1_head ["what"])
                    + (0.05 * V_2_head ["is"])
@@ -469,9 +474,11 @@ For token 4 (`"computing"`):
   * *Synthesizing siloed heads:* Right after concatenation, the 32 heads sit in isolated partitions. `W_O` cross-correlates their separate findings into one cohesive conclusion.
   * *K8s Analogy:* Like a Root Cause Analysis engine correlating alerts from 32 separate Prometheus exporters (Node, Network, Kubelet) into a single actionable incident diagnosis.
   * *Coordinate alignment:* Projects the synthesized result back into the model's primary 4,096-dimensional coordinate space:
+
     ```text
     Attention_Output_4 = Blended_V_4 * W_O   (4,096 floats)
     ```
+
 * **Residual Patch #1 (`x_4_after_attn = x_4_original + Attention_Output_4`, also called `x_4_mid`):**
   * *Identity preservation (The Git Patch / K8s Overlay):* `Attention_Output_4` contains only relational context (from `"quantum"`).
   * Replacing `x_4` would cause the token to forget it was originally `"computing"`. Adding preserves the base object and applies context as an overlay patch (`kubectl patch`).
@@ -490,12 +497,14 @@ For token 4 (`"computing"`):
   * `W_up [4096 × 14336]`: Expands features from 4,096 into 14,336 high-dimensional concept slots.
   * `W_down [14336 × 4096]`: Compresses filtered concepts back down to 4,096 dimensions.
 * **Step-by-Step FFN Math:**
+
   ```text
   gate_vector  = RMSNorm(x_4_after_attn) * W_gate   [1 × 14336]
   up_vector    = RMSNorm(x_4_after_attn) * W_up     [1 × 14336]
   filtered     = SiLU(gate_vector) * up_vector      (element-wise multiply / concept mask)
   FFN_Output_4 = filtered * W_down                  [1 × 4096]
   ```
+
 * **Residual Patch #2 (`x_4_layer1_final = x_4_after_attn + FFN_Output_4`):**
   * Injects the factual world-knowledge lookup on top of the contextualized representation.
   * `x_4_layer1_final` has now completed Layer 1 and is ready to enter **Layer 2**.
@@ -787,5 +796,3 @@ Max_Tokens_Per_Second = Memory_Bandwidth_GBs / Model_Weight_GB
 >
 > *Decode is memory-bandwidth bound because generating one token forces the bus to stream all model
 > weights for only one operation per parameter (GEMV), leaving Tensor Cores starved for data.*
-
-
