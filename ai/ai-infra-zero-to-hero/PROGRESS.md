@@ -1,10 +1,10 @@
 # Progress
 
-Last updated: 2026-10-11 by mac. Current week: **Week 1 complete -> Week 2 (ready to start)**.
+Last updated: 2026-10-25 by mac. Current week: **Week 2 (in progress)**.
 
 ## Next up
 
-- **On mac:** Start Week 2: read FlashAttention (2022) paper, explore GPU memory hierarchy, and understand roofline models.
+- **On mac:** Deep dive into Week 2 Spec #1 Subsection 3: Bare Metal K8s vs. KubeVirt VM Clusters (VFIO, Re-BAR, vNUMA alignment, GPUDirect RDMA/Storage), then explore Spec #2 (Memory Bandwidth).
 - **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`); request GPU quota (L4 now; 8x H100/A3 for later weeks);
   run Week 2 GCE L4 profiling lab (`nvidia-smi dmon`, `dcgmi dmon`, `nsys profile`).
 
@@ -63,13 +63,16 @@ Last updated: 2026-10-11 by mac. Current week: **Week 1 complete -> Week 2 (read
 
 | Week | Machine | What | Setup | Result |
 |---|---|---|---|---|
-| 1 | mac | Embedding Matrix Size | Llama 3 8B (128k vocab × 4096 dims, FP16) | ~1.05 GB in GPU VRAM |
-| 1 | mac | Layer Projection Weights | W_Q, W_K, W_V, W_O (each 4096 × 4096, FP16) | ~134 MB per layer (33.5 MB each) |
+| 1 | mac | Embedding Matrix Size | Llama 3 8B (128k vocab x 4096 dims, FP16) | ~1.05 GB in GPU VRAM |
+| 1 | mac | Layer Projection Weights | W_Q, W_K, W_V, W_O (each 4096 x 4096, FP16) | ~134 MB per layer (33.5 MB each) |
 | 1 | mac | Layer Total Weights | Attention (134 MB) + FFN SwiGLU (268 MB) FP16 | ~402 MB per layer (~13 GB total) |
-| 1 | mac | KV Cache Footprint | 2 (K, V) × 32 layers × 4096 dims × 2 bytes | ~0.5 MB per token (2 GB for 4k context) |
+| 1 | mac | KV Cache Footprint | 2 (K, V) x 32 layers x 4096 dims x 2 bytes | ~0.5 MB per token (2 GB for 4k context) |
 | 1 | mac | Llama 3.1 8B INT4 Ollama | Apple M4 Pro (64 GB, 273 GB/s bandwidth) | Prefill: 104.3 tok/s, Decode: 45.1 tok/s (~81% bus eff) |
 | 1 | mac | Gemma 4 31B KV Cache | 60 layers, 16 KV heads, avg head_dim 299 (FP16) | ~1.10 MB / token (~35.0 GB per user at 32k context) |
 | 1 | mac | Llama 3 8B GQA KV Footprint | 32 layers, 8 KV heads, head_dim 128, FP16 | 128 KB / token (~1.05 GB per user at 8k context) |
+| 2 | mac | Single-Token Decode Compute vs Bus Time | Llama-3-8B FP16 (16 GB) on NVIDIA H100 | Compute: 16 us, Bus Transfer: 4,800 us (99.7% ALU idle) |
+| 2 | mac | Prompt Prefill Compute vs Bus Time | 4,000 tokens on Llama-3-8B FP16, NVIDIA H100 | Compute: 65 ms, Bus Transfer: 4.8 ms (100% ALU saturation) |
+| 2 | mac | PCIe vs Internal HBM Bus Speed | PCIe Gen4 (64 GB/s) vs H100 HBM3 (3,350 GB/s) | PCIe is ~50x slower than internal GPU memory bus |
 
 ## Open questions
 

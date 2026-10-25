@@ -352,6 +352,51 @@ In production AI infrastructure, the model server and the model weights are deco
   * `tokenizer.json`: The BPE vocabulary rules, loaded into **Host CPU RAM**.
   * `*.safetensors`: Binary weight tensors streamed directly into **GPU VRAM** at startup.
 
+#### Weight Loading at Startup: The Two Memory Boundaries
+
+A common question in systems engineering is: *Do we load the whole model weights into GPU VRAM upfront, or can we load Layer 0 first and stream subsequent layers from Host RAM on demand?*
+
+The answer is: **100% of the model weights across all layers must be loaded and permanently resident in GPU VRAM at Pod startup.**
+
+There are two completely separate memory boundaries:
+
+```text
+ ┌────────────────────────────────────────────────────────┐
+ │                      Host CPU RAM                      │
+ │  * Holds model files on disk / RAM (Safetensors)       │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            │  Boundary 1: PCIe Bus (SLOW: ~64 GB/s)
+                            │  Runs ONCE at Pod Startup!
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │                     GPU VRAM (HBM)                     │
+ │  * Holds ALL 32 layers PERMANENTLY (16 GB total)       │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            │  Boundary 2: Internal Memory Bus (FAST: 3,350 GB/s)
+                            │  Runs on EVERY token generated!
+                            ▼
+ ┌────────────────────────────────────────────────────────┐
+ │                 On-Chip Silicon (SRAM)                 │
+ │  * Tiny (~40 MB). Holds only ONE layer tile at a time! │
+ └──────────────────────────┬─────────────────────────────┘
+                            │
+                            ▼
+                Tensor Cores (Arithmetic)
+```
+
+1. **Boundary 1 (Host RAM -> GPU VRAM via PCIe):**
+   * Occurs **once at container boot**.
+   * vLLM streams all 32 layers from the persistent volume / host memory into GPU VRAM.
+   * If all layers do not fit into VRAM, the Pod crashes immediately with a `CUDA out of memory` error (`CrashLoopBackOff`).
+   * *Why we cannot stream layers over PCIe during inference:* PCIe Gen4 (64 GB/s) is **50x slower**
+     than the internal HBM bus (3,350 GB/s). Pulling layers over PCIe on every token would
+     collapse decode throughput from 50 tokens/s down to 1 token every 2 seconds.
+2. **Boundary 2 (GPU VRAM -> On-Chip SRAM via Internal HBM Bus):**
+   * Occurs **continuously during inference** (both Prefill and Decode).
+   * Because all 32 layers already sit in VRAM, the GPU streams each layer's weights in small tiles into on-chip SRAM (~40 MB) for the Tensor Cores to process.
+
 #### How Weights and Tables Are Created
 
 1. **The Tokenizer Vocabulary:** Built once before training begins. Byte Pair Encoding (BPE) starts with 256
