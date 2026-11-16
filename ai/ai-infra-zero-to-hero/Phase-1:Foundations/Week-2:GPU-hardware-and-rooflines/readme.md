@@ -25,7 +25,7 @@ When platform engineers provision Kubernetes worker nodes, they look at node cap
 When deploying LLM workloads on GPU nodes, you read a GPU datasheet with the exact same mental model:
 
 | GPU Spec Field | What it Actually Is | Kubernetes / Systems Equivalent | Why Infra Engineers Care |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **VRAM / HBM Capacity** | High Bandwidth Memory size (e.g. 24 GB, 80 GB, 141 GB, 192 GB) | Node RAM (`node.status.capacity.memory`) | Limits max model weights + KV cache allocatable pool before OOM. |
 | **Memory Bandwidth** | Rate at which weights move from HBM to compute cores (e.g. 3,350 GB/s) | Main Memory Bus Throughput (e.g. DDR5 / PCIe bandwidth) | **Directly sets single-stream Decode tokens/second.** |
 | **Streaming Multiprocessors (SMs)** | Independent hardware compute clusters on the die (e.g. 132 SMs on H100) | Physical CPU Socket / Core count | Determines hardware concurrency and thread block scheduling slots. |
@@ -90,17 +90,31 @@ When a model runtime (like vLLM or TensorRT-LLM) boots in a Kubernetes Pod, VRAM
 
 ##### How KV Cache Pool Allocation Affects Concurrency
 
-* **Static Pool Reservation:** Engines pre-allocate the entire KV pool at boot to avoid `cudaMalloc` fragmentation during request execution. The GPU reports ~90% memory usage immediately on boot.
-* **Dynamic Page Leasing:** Active sessions lease blocks (e.g. 16 tokens/block via PagedAttention) and free them upon completion.
-* **Pool Exhaustion:** When the KV pool runs out of free blocks, the engine either **queues**
-  incoming requests (degrading Time-To-First-Token) or **preempts** active lower-priority streams
-  by swapping their KV pages to CPU RAM or scheduling them for recomputation.
-* **Who Handles What (Engine vs. Kubernetes):**
-  * **Model Server (vLLM inside Pod):** Handles internal request queuing (`vllm:num_requests_waiting`) and block swapping/preemption (`--swap-space=4` in CPU RAM).
-  * **Kubernetes Platform Layer:** Configures **KEDA / HPA** on Prometheus metrics
-    (`gpu_cache_usage_factor > 0.80`) to scale up new Pods *before* preemption happens,
-    uses **Gateway API Inference Extension** for KV-cache-aware routing, and sizes Pod CPU
-    memory limits to prevent Linux host OOM kills from swap buffers.
+Walkthrough example: hosting **`Muse-Spark-Open-816B-A42B` (INT4, ~469 GB weights)** on a single **8x H100 node (640 GB total VRAM)** with `gpu_memory_utilization = 0.90`:
+
+* **1. Static Pool Reservation (Boot-Time Slab):**
+  * `gpu_memory_utilization = 0.90` (`576 GB`) is the **total VRAM budget** (`Weights + KV Cache Pool`), *not* 576 GB for KV cache alone.
+    The remaining 10% (`64 GB`) stays as headroom for CUDA drivers, NCCL, and activation spikes.
+  * After loading `~469 GB` of INT4 weights, vLLM statically reserves the remaining **`~107 GB`** in one shot at boot (like Postgres `shared_buffers` or DPDK hugepages) to avoid `cudaMalloc` fragmentation.
+  * Because the `107 GB` slab is locked at boot, `nvidia-smi` reports **~90% VRAM used (`576 / 640 GB`)** even with 0 active users.
+* **2. Dynamic Page Leasing (PagedAttention Inside the Slab):**
+  * vLLM slices that static `~107 GB` pool into fixed-size blocks (16 tokens/block; at `~60 KB/token` hybrid FP8, `1 block = ~1 MB`, yielding `~110,000` free blocks).
+  * Like an OS virtual-memory page table, sessions lease blocks **on demand** as tokens grow rather than reserving worst-case `100k` context (`~6 GB`) upfront:
+    a `1,000-token` prompt leases only `63` blocks (`~60 MB`), freeing them upon completion.
+  * Thus **~17 concurrent users** at `100k` context is the **worst-case floor**; if average requests use `10k` tokens, the same `107 GB` pool supports **~170 concurrent users**.
+* **3. Pool Exhaustion (When the 18th 100k-Context Request Arrives):**
+  * **Scenario A — Admission Queuing:** If Users 1–17 already hold `~107 GB`, Request #18 waits in vLLM's internal `waiting` queue (`vllm:num_requests_waiting`). Users 1–17 stream normally; #18 sees higher **TTFT**.
+  * **Scenario B — Mid-Decode Preemption:** If 20 users admitted at `50k` tokens (`60 GB`) all grow toward `100k` and hit 0 free blocks mid-decode, vLLM avoids deadlock by preempting a victim sequence:
+    * **Recomputation (default in vLLM V1):** Drops the victim's KV blocks, appends generated tokens to its prompt, and re-runs Prefill later once VRAM frees up.
+    * **CPU Swapping (`--swap-space`):** Copies KV blocks over PCIe to Host CPU RAM and swaps them back later (requires sizing Pod `resources.limits.memory` to avoid Linux `OOMKilled`).
+* **4. Who Handles What (Engine vs. Kubernetes + KEDA):**
+  * **Why default K8s HPA fails:** Host CPU/RAM stay flat, and GPU VRAM (`nvidia-smi` / DCGM `FB_USED`) stays pinned at ~90% from 0 to 17 users.
+  * **Model Server (vLLM inside Pod):** Manages internal admission queuing, dynamic block leasing, and preemption/swapping.
+  * **Kubernetes Platform Layer:**
+    * **KEDA:** Scales out on `vllm:kv_cache_usage_perc` (e.g. `> 0.75`–`0.80`) and `vllm:num_requests_waiting` *before* preemption starts.
+    * **Preemption Alerting (`vllm:num_preemptions_total`):** Treat `rate(vllm:num_preemptions_total[5m]) > 0` in Grafana as a "too late" alarm.
+      If it climbs, `469 GB` weight cold-start is outpacing the 20% KV buffer — lower the KEDA threshold (e.g. `0.80 -> 0.70`) and use fast weight caching or warm standby nodes.
+    * **Gateway API Inference Extension (EPP):** Replaces blind `kube-proxy` round-robin so Request #18 routes to the newly scaled Replica #2 instead of overloading saturated Replica #1.
 
 #### 3. Bare Metal K8s vs. KubeVirt VM Clusters
 
@@ -120,7 +134,34 @@ In production, how VRAM is exposed depends heavily on whether your Kubernetes cl
     cross the high-latency UPI/QPI inter-socket link, degrading prompt ingestion speeds. Strict
     NUMA pinning (`dedicatedCpuPlacement: true`) is essential.
 
-#### 4. Hardware Partitioning (MIG) vs. Software Sharing
+#### 4. Model Weights Cold-Start Journey (Object Storage -> Local PV -> VRAM)
+
+```text
+STAGE 1: Remote Object Storage -> Local PV
+[S3 / GCS] ──(HTTPS/TLS)──> [Node NIC] ──> [Host CPU RAM (TCP/Page Cache)] ──> [Local NVMe PV]
+
+STAGE 2 (Standard Path — Default): Local PV -> Host RAM -> GPU VRAM
+[Local NVMe PV] ──(PCIe DMA)──> [Host CPU RAM (Page Cache + PyTorch Buffer)] ──(PCIe H2D)──> [GPU HBM VRAM]
+
+STAGE 2 (GDS / Direct DMA Path — Bare Metal Optimized):
+[Local NVMe PV] ──────────────(Direct Peer-to-Peer PCIe Switch, skips CPU RAM)─────────────> [GPU HBM VRAM]
+```
+
+* **Key Hardware Terms:**
+  * **NVMe / NIC:** Local PCIe SSDs (`NVMe`) storing cached model shards vs. high-speed RDMA network cards (`NIC`, e.g. 400 Gbps InfiniBand/RoCE) for network pulls and multi-node traffic.
+  * **Direct DMA:** Peer-to-peer PCIe transfers allowing an NVMe SSD or NIC to write directly into GPU VRAM without bouncing through Host CPU RAM.
+  * **GDS (GPUDirect Storage):** NVIDIA driver (`nvidia-fs` / `cuFile`) enabling Direct DMA from NVMe storage to GPU VRAM (its NIC twin, **GPUDirect RDMA**, does the same from NIC to VRAM).
+* **Stage 1 (Object Storage -> Local NVMe PV):**
+  * An `initContainer` pulls `.safetensors` shards over HTTPS through the Node NIC and Host CPU RAM onto a Local NVMe PV (`469 GB` over a 25 Gbps NIC takes ~2.5+ min).
+  * **K8s Mitigation:** Avoid root-disk `emptyDir` (`DiskPressure` evictions); pre-warm weights on node-local NVMe via a DaemonSet so scaling Pods skip Stage 1.
+* **Stage 2 (Local PV -> GPU HBM VRAM):**
+  * **Standard Path:** `mmap`/`read()` pulls shards into Host CPU RAM (Page Cache + PyTorch buffers), then `cudaMemcpyAsync` pushes each GPU's TP shard across PCIe (`~32-64 GB/s`) into HBM.
+  * **K8s Trap (`OOMKilled`):** Linux cgroups v2 counts Host CPU buffers and page cache charges against `resources.limits.memory`; undersized Pod memory limits cause `OOMKilled` before weights reach VRAM.
+  * **GDS Path (Bare Metal):** Streams shards directly from NVMe across the PCIe switch into HBM VRAM, bypassing Host CPU RAM and eliminating host memory spikes.
+* **Stage 3 (Post-Load Boot before `Ready`):**
+  * After weights land in VRAM, vLLM reserves the static KV cache pool, initializes NCCL NVLink rings, and captures CUDA graphs (~15-45 sec) before passing the K8s `readinessProbe`.
+
+#### 5. Hardware Partitioning (MIG) vs. Software Sharing
 
 * **Software Sharing (Time-Slicing / MPS):** Multiple Pods share the same 80 GB VRAM. However, there is zero memory isolation; if one Pod exhausts memory, it can cause OOM errors for all co-located Pods.
 * **MIG (Multi-Instance GPU):** The H100 physically slices its 80 GB VRAM and 132 SMs into isolated
@@ -132,7 +173,7 @@ In production, how VRAM is exposed depends heavily on whether your Kubernetes cl
 ## 3. Comparison of Common Cloud GPUs
 
 | Spec | NVIDIA L4 | NVIDIA A100 SXM | NVIDIA H100 SXM | NVIDIA H200 SXM | NVIDIA B200 SXM |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | **Architecture** | Ada Lovelace | Ampere | Hopper | Hopper | Blackwell |
 | **VRAM (HBM)** | 24 GB GDDR6 | 80 GB HBM2e | 80 GB HBM3 | 141 GB HBM3e | 192 GB HBM3e |
 | **Memory Bandwidth** | 300 GB/s | 2,039 GB/s | 3,350 GB/s | 4,800 GB/s | 8,000 GB/s |

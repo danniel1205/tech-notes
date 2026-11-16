@@ -1,11 +1,11 @@
 # Progress
 
-Last updated: 2026-10-25 by mac. Current week: **Week 2 (in progress)**.
+Last updated: 2026-11-15 by mac. Current week: **Week 2 (in progress)**.
 
 ## Next up
 
-- **On mac:** Deep dive into Week 2 Spec #1 Subsection 3: Bare Metal K8s vs. KubeVirt VM Clusters (VFIO, Re-BAR, vNUMA alignment, GPUDirect RDMA/Storage), then explore Spec #2 (Memory Bandwidth).
-- **On cloudtop:** Set up GitHub auth (`gh auth login` + `gh auth setup-git`); request GPU quota (L4 now; 8x H100/A3 for later weeks);
+- **On mac:** Deep-dive Week 2 Specs #2-#5 (Memory Bandwidth, SMs, Tensor Cores, NVLink), Roofline / Ridge Point math, and FlashAttention paper; run `make md-fix` once Docker is running.
+- **On cloudtop:** Run `./sync.sh start`; set up GitHub auth (`gh auth login` + `gh auth setup-git`) if needed; request GPU quota (L4 now; 8x H100/A3 later);
   run Week 2 GCE L4 profiling lab (`nvidia-smi dmon`, `dcgmi dmon`, `nsys profile`).
 
 ## Setup checklist
@@ -73,6 +73,7 @@ Last updated: 2026-10-25 by mac. Current week: **Week 2 (in progress)**.
 | 2 | mac | Single-Token Decode Compute vs Bus Time | Llama-3-8B FP16 (16 GB) on NVIDIA H100 | Compute: 16 us, Bus Transfer: 4,800 us (99.7% ALU idle) |
 | 2 | mac | Prompt Prefill Compute vs Bus Time | 4,000 tokens on Llama-3-8B FP16, NVIDIA H100 | Compute: 65 ms, Bus Transfer: 4.8 ms (100% ALU saturation) |
 | 2 | mac | PCIe vs Internal HBM Bus Speed | PCIe Gen4 (64 GB/s) vs H100 HBM3 (3,350 GB/s) | PCIe is ~50x slower than internal GPU memory bus |
+| 2 | mac | `Muse-Spark-Open-816B-A42B` Sizing | INT4 (~469 GB weights) on 1x 8x H100 (640 GB VRAM) | ~107 GB KV pool; ~17 users @ 100k ctx (~170 @ 10k ctx) |
 
 ## Open questions
 
